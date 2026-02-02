@@ -20,6 +20,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://acchelperback.onrender.com/api/:path*" },
     { "source": "/admin.html", "destination": "/admin.html" },
     { "source": "/login.html", "destination": "/login.html" }
   ]
