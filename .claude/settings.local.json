@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"D:\\\\MyProject\\\\AccHelper\")",
+      "WebSearch",
+      "Bash(python -m venv:*)",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\pip.exe\" install -r \"D:\\\\MyProject\\\\AccHelper\\\\requirements.txt\")",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" --version)",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" \"D:\\\\MyProject\\\\AccHelper\\\\run.py\")",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" -m json.tool:*)",
+      "Bash(findstr:*)",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" -c \"import urllib.request, json; req = urllib.request.Request\\(''http://localhost:8001/api/chat'', data=json.dumps\\({''question'': ''부가가치세 신고 기한'', ''session_id'': ''test123''}\\).encode\\(''utf-8''\\), headers={''Content-Type'': ''application/json''}\\); resp = urllib.request.urlopen\\(req\\); print\\(resp.read\\(\\).decode\\(''utf-8''\\)\\)\")",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" -c \"import urllib.request, json; req = urllib.request.Request\\(''http://localhost:8001/api/stats''\\); req.add_header\\(''Cookie'', open\\(''cookies.txt''\\).read\\(\\).split\\(''session_token''\\)[1].strip\\(\\).split\\(\\)[0] if ''session_token'' in open\\(''cookies.txt''\\).read\\(\\) else ''''\\); print\\(''test''\\)\")",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" -c \"\nimport urllib.request, json, http.cookiejar\ncj = http.cookiejar.MozillaCookieJar\\(''cookies.txt''\\)\ncj.load\\(\\)\nopener = urllib.request.build_opener\\(urllib.request.HTTPCookieProcessor\\(cj\\)\\)\n\n# Test stats\nresp = opener.open\\(''http://localhost:8001/api/stats''\\)\nprint\\(''Stats:'', resp.read\\(\\).decode\\(''utf-8''\\)\\)\n\n# Test QA list\nresp = opener.open\\(''http://localhost:8001/api/qa?page=1&size=5''\\)\ndata = json.loads\\(resp.read\\(\\).decode\\(''utf-8''\\)\\)\nprint\\(''QA total:'', data[''total''], ''pages:'', data[''pages'']\\)\nprint\\(''First QA id:'', data[''items''][0][''qa_id''] if data[''items''] else ''none''\\)\n\")",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe\" -c:*)",
+      "Bash(netstat:*)",
+      "Bash(D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\python.exe:*)",
+      "Bash(D:MyProjectAccHelpervenvScriptspython.exe -c \"import urllib.request; r=urllib.request.urlopen\\(''http://localhost:8001/''\\); print\\(r.status, r.read\\(\\)[:200]\\)\")",
+      "Bash(D:MyProjectAccHelpervenvScriptspython.exe -c \"import urllib.request; r=urllib.request.urlopen\\(''http://localhost:8001/''\\); print\\(''Status:'', r.status\\)\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MyProject\\\\AccHelper && venv\\\\Scripts\\\\python.exe -c \"\"import uvicorn; uvicorn.run\\(''app.main:app'', host=''0.0.0.0'', port=8001\\)\"\"\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MyProject\\\\AccHelper && venv\\\\Scripts\\\\python.exe -c \"\"import urllib.request; r=urllib.request.urlopen\\(''http://localhost:8001/''\\); print\\(''Status:'', r.status\\)\"\"\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MyProject\\\\AccHelper && venv\\\\Scripts\\\\python.exe C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--MyProject-AccHelper\\\\0e6c53e4-f56f-4be4-8f3b-94430bda98cc\\\\scratchpad\\\\test_phase3.py\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\MyProject\\\\AccHelper && venv\\\\Scripts\\\\python.exe C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--MyProject-AccHelper\\\\0e6c53e4-f56f-4be4-8f3b-94430bda98cc\\\\scratchpad\\\\test_phase4.py\")",
+      "Bash(dir:*)",
+      "Bash(\"D:\\\\MyProject\\\\AccHelper\\\\venv\\\\Scripts\\\\pip.exe\" install python-dotenv slowapi)"
+    ]
+  }
+}
