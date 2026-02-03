@@ -38,13 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         hideError();
 
-        const companyCode = document.getElementById('companyCode').value.trim();
+        const companyId = document.getElementById('companyId').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const remember = document.getElementById('remember').checked;
 
-        if (!companyCode) {
-            showError('회사 코드를 입력해 주세요.');
+        if (!companyId) {
+            showError('회사 ID를 입력해 주세요.');
             return;
         }
         if (!email) {
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const result = await apiPost('/auth/login', {
-                company_code: companyCode,
+                company_id: parseInt(companyId),
                 email,
                 password,
                 remember,
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const findEmailResult = document.getElementById('findEmailResult');
 
     function openFindEmail() {
-        document.getElementById('findCompanyCode').value = document.getElementById('companyCode').value || '';
+        document.getElementById('findCompanyId').value = document.getElementById('companyId').value || '';
         document.getElementById('findFullName').value = '';
         findEmailResult.className = 'modal-result';
         findEmailResult.innerHTML = '';
@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     findEmailModal.addEventListener('click', (e) => { if (e.target === findEmailModal) closeFindEmail(); });
 
     document.getElementById('findEmailBtn').addEventListener('click', async () => {
-        const companyCode = document.getElementById('findCompanyCode').value.trim();
+        const companyId = document.getElementById('findCompanyId').value.trim();
         const fullName = document.getElementById('findFullName').value.trim();
-        if (!companyCode || !fullName) {
+        if (!companyId || !fullName) {
             findEmailResult.className = 'modal-result show error';
-            findEmailResult.textContent = '회사 코드와 이름을 모두 입력해 주세요.';
+            findEmailResult.textContent = '회사 ID와 이름을 모두 입력해 주세요.';
             return;
         }
 
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.classList.add('loading');
 
         try {
-            const res = await apiPost('/auth/find-email', { company_code: companyCode, full_name: fullName });
+            const res = await apiPost('/auth/find-email', { company_id: parseInt(companyId), full_name: fullName });
             if (res.success && res.masked_email) {
                 findEmailResult.className = 'modal-result show success';
                 findEmailResult.innerHTML = '가입된 이메일:<span class="result-email">' + escapeHtmlSimple(res.masked_email) + '</span>';
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resetPwResult = document.getElementById('resetPwResult');
 
     function openResetPw() {
-        document.getElementById('resetCompanyCode').value = document.getElementById('companyCode').value || '';
+        document.getElementById('resetCompanyId').value = document.getElementById('companyId').value || '';
         document.getElementById('resetEmail').value = document.getElementById('email').value || '';
         resetPwResult.className = 'modal-result';
         resetPwResult.innerHTML = '';
@@ -159,11 +159,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     resetPwModal.addEventListener('click', (e) => { if (e.target === resetPwModal) closeResetPw(); });
 
     document.getElementById('resetPwBtn').addEventListener('click', async () => {
-        const companyCode = document.getElementById('resetCompanyCode').value.trim();
+        const companyId = document.getElementById('resetCompanyId').value.trim();
         const email = document.getElementById('resetEmail').value.trim();
-        if (!companyCode || !email) {
+        if (!companyId || !email) {
             resetPwResult.className = 'modal-result show error';
-            resetPwResult.textContent = '회사 코드와 이메일을 모두 입력해 주세요.';
+            resetPwResult.textContent = '회사 ID와 이메일을 모두 입력해 주세요.';
             return;
         }
 
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.classList.add('loading');
 
         try {
-            const res = await apiPost('/auth/reset-password', { company_code: companyCode, email });
+            const res = await apiPost('/auth/reset-password', { company_id: parseInt(companyId), email });
             if (res.success) {
                 resetPwResult.className = 'modal-result show success';
                 resetPwResult.textContent = res.message;
@@ -194,6 +194,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Focus company code field
-    document.getElementById('companyCode').focus();
+    // Focus company ID field
+    document.getElementById('companyId').focus();
 });
