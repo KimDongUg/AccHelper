@@ -83,6 +83,117 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // ── Find Email Modal ──
+    const findEmailModal = document.getElementById('findEmailModal');
+    const findEmailResult = document.getElementById('findEmailResult');
+
+    function openFindEmail() {
+        document.getElementById('findCompanyCode').value = document.getElementById('companyCode').value || '';
+        document.getElementById('findFullName').value = '';
+        findEmailResult.className = 'modal-result';
+        findEmailResult.innerHTML = '';
+        findEmailModal.classList.add('show');
+        document.getElementById('findFullName').focus();
+    }
+
+    function closeFindEmail() {
+        findEmailModal.classList.remove('show');
+    }
+
+    document.getElementById('findEmailLink').addEventListener('click', (e) => { e.preventDefault(); openFindEmail(); });
+    document.getElementById('findEmailClose').addEventListener('click', closeFindEmail);
+    document.getElementById('findEmailCancelBtn').addEventListener('click', closeFindEmail);
+    findEmailModal.addEventListener('click', (e) => { if (e.target === findEmailModal) closeFindEmail(); });
+
+    document.getElementById('findEmailBtn').addEventListener('click', async () => {
+        const companyCode = document.getElementById('findCompanyCode').value.trim();
+        const fullName = document.getElementById('findFullName').value.trim();
+        if (!companyCode || !fullName) {
+            findEmailResult.className = 'modal-result show error';
+            findEmailResult.textContent = '회사 코드와 이름을 모두 입력해 주세요.';
+            return;
+        }
+
+        const btn = document.getElementById('findEmailBtn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        try {
+            const res = await apiPost('/auth/find-email', { company_code: companyCode, full_name: fullName });
+            if (res.success && res.masked_email) {
+                findEmailResult.className = 'modal-result show success';
+                findEmailResult.innerHTML = '가입된 이메일:<span class="result-email">' + escapeHtmlSimple(res.masked_email) + '</span>';
+            } else {
+                findEmailResult.className = 'modal-result show error';
+                findEmailResult.textContent = res.message || '일치하는 정보를 찾을 수 없습니다.';
+            }
+        } catch (err) {
+            findEmailResult.className = 'modal-result show error';
+            findEmailResult.textContent = err.message || '요청 처리 중 오류가 발생했습니다.';
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    });
+
+    // ── Reset Password Modal ──
+    const resetPwModal = document.getElementById('resetPwModal');
+    const resetPwResult = document.getElementById('resetPwResult');
+
+    function openResetPw() {
+        document.getElementById('resetCompanyCode').value = document.getElementById('companyCode').value || '';
+        document.getElementById('resetEmail').value = document.getElementById('email').value || '';
+        resetPwResult.className = 'modal-result';
+        resetPwResult.innerHTML = '';
+        resetPwModal.classList.add('show');
+        document.getElementById('resetEmail').focus();
+    }
+
+    function closeResetPw() {
+        resetPwModal.classList.remove('show');
+    }
+
+    document.getElementById('resetPwLink').addEventListener('click', (e) => { e.preventDefault(); openResetPw(); });
+    document.getElementById('resetPwClose').addEventListener('click', closeResetPw);
+    document.getElementById('resetPwCancelBtn').addEventListener('click', closeResetPw);
+    resetPwModal.addEventListener('click', (e) => { if (e.target === resetPwModal) closeResetPw(); });
+
+    document.getElementById('resetPwBtn').addEventListener('click', async () => {
+        const companyCode = document.getElementById('resetCompanyCode').value.trim();
+        const email = document.getElementById('resetEmail').value.trim();
+        if (!companyCode || !email) {
+            resetPwResult.className = 'modal-result show error';
+            resetPwResult.textContent = '회사 코드와 이메일을 모두 입력해 주세요.';
+            return;
+        }
+
+        const btn = document.getElementById('resetPwBtn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        try {
+            const res = await apiPost('/auth/reset-password', { company_code: companyCode, email });
+            if (res.success) {
+                resetPwResult.className = 'modal-result show success';
+                resetPwResult.textContent = res.message;
+            } else {
+                resetPwResult.className = 'modal-result show error';
+                resetPwResult.textContent = res.message;
+            }
+        } catch (err) {
+            resetPwResult.className = 'modal-result show error';
+            resetPwResult.textContent = err.message || '요청 처리 중 오류가 발생했습니다.';
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    });
+
+    // Simple HTML escape for login page (no DOM dependency on admin.js escapeHtml)
+    function escapeHtmlSimple(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     // Focus company code field
     document.getElementById('companyCode').focus();
 });

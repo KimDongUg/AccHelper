@@ -71,6 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
 
+    // Profile button
+    document.getElementById('profileBtn').addEventListener('click', () => openProfileModal());
+
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         clearInterval(sessionCheckTimer);
@@ -574,6 +577,87 @@ async function confirmDelete() {
     } catch (e) {
         closeDeleteConfirm();
         showToast('삭제에 실패했습니다: ' + e.message, 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  PROFILE MODAL
+ * ═══════════════════════════════════════════════ */
+async function openProfileModal() {
+    try {
+        const me = await apiGet('/admins/me');
+        document.getElementById('profileEmail').value = me.email || '';
+        document.getElementById('profileFullName').value = me.full_name || '';
+        document.getElementById('profilePhone').value = me.phone || '';
+        document.getElementById('profileCurrentPw').value = '';
+        document.getElementById('profileNewPw').value = '';
+        document.getElementById('profileNewPwConfirm').value = '';
+        document.getElementById('profileModal').classList.add('show');
+    } catch (e) {
+        showToast('내 정보를 불러올 수 없습니다.', 'error');
+    }
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').classList.remove('show');
+}
+
+async function saveProfile() {
+    const fullName = document.getElementById('profileFullName').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+    const currentPw = document.getElementById('profileCurrentPw').value;
+    const newPw = document.getElementById('profileNewPw').value;
+    const newPwConfirm = document.getElementById('profileNewPwConfirm').value;
+
+    const saveBtn = document.getElementById('profileSaveBtn');
+    saveBtn.disabled = true;
+
+    try {
+        // Update profile info (name, phone)
+        await apiPatch('/admins/me', {
+            full_name: fullName || null,
+            phone: phone || null,
+        });
+
+        // Change password if fields are filled
+        if (currentPw || newPw || newPwConfirm) {
+            if (!currentPw) {
+                showToast('현재 비밀번호를 입력해 주세요.', 'error');
+                saveBtn.disabled = false;
+                return;
+            }
+            if (!newPw) {
+                showToast('새 비밀번호를 입력해 주세요.', 'error');
+                saveBtn.disabled = false;
+                return;
+            }
+            if (newPw.length < 8) {
+                showToast('새 비밀번호는 8자 이상이어야 합니다.', 'error');
+                saveBtn.disabled = false;
+                return;
+            }
+            if (newPw !== newPwConfirm) {
+                showToast('새 비밀번호가 일치하지 않습니다.', 'error');
+                saveBtn.disabled = false;
+                return;
+            }
+            await apiPatch('/admins/me/password', {
+                current_password: currentPw,
+                new_password: newPw,
+            });
+        }
+
+        // Update header display name
+        if (fullName) {
+            document.getElementById('adminUsername').textContent = fullName + '님';
+        }
+
+        showToast('내 정보가 수정되었습니다.', 'success');
+        closeProfileModal();
+    } catch (e) {
+        showToast(e.message || '저장에 실패했습니다.', 'error');
+    } finally {
+        saveBtn.disabled = false;
     }
 }
 

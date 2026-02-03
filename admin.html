@@ -21,6 +21,7 @@
             <span id="headerCompanyName" style="font-size:var(--text-sm);color:var(--primary);font-weight:600"></span>
             <span id="adminUsername" style="font-size:var(--text-sm);color:var(--gray-600)"></span>
             <span id="roleBadge" class="role-badge" style="display:none"></span>
+            <button id="profileBtn" class="btn btn-outline btn-sm" aria-label="내 정보">내 정보</button>
             <a href="/" class="btn btn-outline btn-sm">챗봇</a>
             <button id="logoutBtn" class="btn btn-sm" style="color:var(--gray-600)" aria-label="로그아웃">로그아웃</button>
         </div>
@@ -299,6 +300,48 @@
             <div class="actions">
                 <button class="btn btn-outline" onclick="closeDeleteConfirm()">취소</button>
                 <button class="btn btn-danger" id="confirmDeleteBtn" aria-label="삭제 확인">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="profileModalTitle">내 정보 수정</h3>
+                <button class="modal-close" onclick="closeProfileModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="profileEmail">이메일</label>
+                    <input type="email" id="profileEmail" class="form-control" disabled style="background:var(--gray-100)">
+                </div>
+                <div class="form-group">
+                    <label for="profileFullName">이름</label>
+                    <input type="text" id="profileFullName" class="form-control" placeholder="이름을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="profilePhone">전화번호</label>
+                    <input type="text" id="profilePhone" class="form-control" placeholder="전화번호를 입력하세요">
+                </div>
+                <hr style="margin:1.25rem 0;border:0;border-top:1px solid var(--gray-200)">
+                <p style="font-size:var(--text-sm);color:var(--gray-500);margin-bottom:0.75rem">비밀번호를 변경하려면 아래를 입력하세요.</p>
+                <div class="form-group">
+                    <label for="profileCurrentPw">현재 비밀번호</label>
+                    <input type="password" id="profileCurrentPw" class="form-control" placeholder="현재 비밀번호" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label for="profileNewPw">새 비밀번호</label>
+                    <input type="password" id="profileNewPw" class="form-control" placeholder="새 비밀번호 (8자 이상)" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="profileNewPwConfirm">새 비밀번호 확인</label>
+                    <input type="password" id="profileNewPwConfirm" class="form-control" placeholder="새 비밀번호 확인" autocomplete="new-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeProfileModal()">취소</button>
+                <button class="btn btn-primary" id="profileSaveBtn" onclick="saveProfile()">저장</button>
             </div>
         </div>
     </div>

@@ -77,12 +77,74 @@
                 </button>
             </form>
 
+            <div class="login-links">
+                <a href="#" id="findEmailLink">아이디 찾기</a>
+                <span class="divider">|</span>
+                <a href="#" id="resetPwLink">비밀번호 찾기</a>
+            </div>
+
             <div class="login-signup">
                 계정이 없으신가요? <a href="/register.html">회원가입</a>
             </div>
 
         </div>
     </main>
+
+    <!-- Find Email Modal -->
+    <div class="modal-overlay" id="findEmailModal" role="dialog" aria-modal="true" aria-labelledby="findEmailTitle">
+        <div class="modal login-modal">
+            <div class="modal-header">
+                <h3 id="findEmailTitle">아이디(이메일) 찾기</h3>
+                <button class="modal-close" id="findEmailClose" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="findEmailResult" class="modal-result" role="status" aria-live="polite"></div>
+                <div class="form-group">
+                    <label for="findCompanyCode">회사 코드</label>
+                    <input type="text" id="findCompanyCode" class="form-control" placeholder="회사 코드를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label for="findFullName">이름</label>
+                    <input type="text" id="findFullName" class="form-control" placeholder="이름을 입력하세요" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="findEmailCancelBtn">취소</button>
+                <button class="btn btn-primary" id="findEmailBtn">
+                    <span class="btn-text">찾기</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal-overlay" id="resetPwModal" role="dialog" aria-modal="true" aria-labelledby="resetPwTitle">
+        <div class="modal login-modal">
+            <div class="modal-header">
+                <h3 id="resetPwTitle">비밀번호 찾기</h3>
+                <button class="modal-close" id="resetPwClose" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="resetPwResult" class="modal-result" role="status" aria-live="polite"></div>
+                <div class="form-group">
+                    <label for="resetCompanyCode">회사 코드</label>
+                    <input type="text" id="resetCompanyCode" class="form-control" placeholder="회사 코드를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label for="resetEmail">이메일</label>
+                    <input type="email" id="resetEmail" class="form-control" placeholder="가입된 이메일을 입력하세요" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="resetPwCancelBtn">취소</button>
+                <button class="btn btn-primary" id="resetPwBtn">
+                    <span class="btn-text">임시 비밀번호 발송</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <footer class="site-footer" role="contentinfo">
         <div class="footer-inner">
