@@ -254,8 +254,8 @@ function renderTable(items) {
             <td>${qa.qa_id}</td>
             <td><span class="badge badge-category">${qa.category}</span></td>
             ${isSuperAdmin ? `<td>${escapeHtml(qa.company_name || '-')}</td>` : ''}
-            <td class="question-cell" title="${escapeHtml(qa.question)}">${highlightText(qa.question, 100)}</td>
-            <td class="answer-cell" title="${escapeHtml(qa.answer)}">${highlightText(qa.answer, 150)}</td>
+            <td class="question-cell" title="${escapeHtml(qa.question)}"><a href="#" class="cell-link" onclick="openEditModal(${qa.qa_id});return false">${highlightText(qa.question, 100)}</a></td>
+            <td class="answer-cell" title="${escapeHtml(qa.answer)}"><a href="#" class="cell-link" onclick="openEditModal(${qa.qa_id});return false">${highlightText(qa.answer, 150)}</a></td>
             <td>
                 <button class="toggle-btn ${qa.is_active ? 'active' : ''}" onclick="toggleActive(${qa.qa_id})" role="switch" aria-checked="${qa.is_active}" ${isViewer ? 'disabled' : ''} title="${qa.is_active ? '활성' : '비활성'}"></button>
             </td>

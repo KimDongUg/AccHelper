@@ -1,7 +1,7 @@
 .admin-container {
-    max-width: var(--max-width);
+    max-width: 100%;
     margin: 0 auto;
-    padding: var(--space-lg);
+    padding: var(--space-lg) var(--space-xl);
 }
 
 .admin-title {
@@ -240,6 +240,20 @@
 .qa-table td.answer-cell {
     color: var(--gray-600);
     font-size: 0.8125rem;
+}
+
+.cell-link {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cell-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
 }
 
 .qa-table .actions {
@@ -598,6 +612,6 @@
 /* Large screens */
 @media (min-width: 1440px) {
     .admin-container {
-        max-width: var(--max-width);
+        max-width: 100%;
     }
 }
