@@ -220,6 +220,11 @@
     to { transform: rotate(360deg); }
 }
 
+.qa-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
 /* Cells */
 .qa-table .col-question {
     width: 30%;
@@ -598,20 +603,20 @@
 /* Tablet */
 @media (min-width: 768px) {
     .admin-container {
-        padding: 2.5rem;
+        padding: 1.5rem;
     }
 }
 
 /* Desktop */
 @media (min-width: 1024px) {
     .admin-container {
-        padding: 2.5rem 3.75rem;
+        padding: 1.5rem 2rem;
     }
 }
 
 /* Large screens */
 @media (min-width: 1440px) {
     .admin-container {
-        max-width: 100%;
+        padding: 1.5rem 2.5rem;
     }
 }
