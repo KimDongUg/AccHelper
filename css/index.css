@@ -400,6 +400,31 @@
     margin-bottom: var(--space-md);
 }
 
+/* Company card — disabled / 준비중 */
+.company-card-disabled {
+    opacity: 0.55;
+    cursor: default;
+    position: relative;
+}
+
+.company-card-disabled:hover {
+    border-color: var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    transform: none;
+}
+
+.company-card-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--white);
+    background: var(--gray-400);
+    padding: 0.125rem 0.5rem;
+    border-radius: 10px;
+}
+
 /* Company label in header */
 .company-label {
     font-size: var(--text-sm);

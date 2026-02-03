@@ -78,9 +78,21 @@ async function loadCompanies() {
             card.appendChild(icon);
             card.appendChild(info);
 
-            card.addEventListener('click', () => {
-                window.location.href = `/?company=${encodeURIComponent(c.company_code)}`;
-            });
+            if (c.company_id === 2) {
+                card.classList.add('company-card-disabled');
+                const badge = document.createElement('span');
+                badge.className = 'company-card-badge';
+                badge.textContent = '준비중';
+                card.appendChild(badge);
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('준비중 입니다.');
+                });
+            } else {
+                card.addEventListener('click', () => {
+                    window.location.href = `/?company=${encodeURIComponent(c.company_code)}`;
+                });
+            }
 
             companyGrid.appendChild(card);
         });
