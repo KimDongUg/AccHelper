@@ -6,6 +6,8 @@ let sessionCheckTimer = null;
 let currentSearchTerm = '';
 let currentRole = 'viewer';
 let logPage = 1;
+let companiesList = [];
+let companyMap = {};  // id → name
 
 /* ═══════════════════════════════════════════════
  *  INIT
@@ -41,6 +43,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('tabAdmins').style.display = '';
         }
 
+        // super_admin: load companies for filter & modal
+        if (currentRole === 'super_admin') {
+            try {
+                const companies = await apiGet('/companies/public');
+                companiesList = companies;
+                companyMap = {};
+                companies.forEach(c => { companyMap[c.company_id] = c.company_name; });
+
+                // Show company column header
+                document.getElementById('companyColHeader').style.display = '';
+
+                // Populate company filter dropdown
+                const companyFilter = document.getElementById('companyFilter');
+                companyFilter.style.display = '';
+                companies.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.company_id;
+                    opt.textContent = c.company_name;
+                    companyFilter.appendChild(opt);
+                });
+
+                // Populate modal company select
+                const modalCompany = document.getElementById('modalCompany');
+                companies.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.company_id;
+                    opt.textContent = c.company_name;
+                    modalCompany.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Companies load error:', e);
+            }
+        }
+
         // Hide edit buttons for viewer
         if (currentRole === 'viewer') {
             const addQaBtn = document.getElementById('addQaBtn');
@@ -70,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
+    document.getElementById('companyFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
 
     // Profile button
     document.getElementById('profileBtn').addEventListener('click', () => openProfileModal());
@@ -169,10 +206,13 @@ async function loadQaList() {
     const status = document.getElementById('statusFilter').value;
     currentSearchTerm = search;
 
+    const companyFilterVal = document.getElementById('companyFilter').value;
+
     const params = new URLSearchParams({ page: currentPage, size: PAGE_SIZE });
     if (search) params.append('search', search);
     if (category) params.append('category', category);
     if (status) params.append('status', status);
+    if (companyFilterVal) params.append('company_id', companyFilterVal);
 
     document.getElementById('tableLoading').classList.add('show');
     try {
@@ -200,6 +240,7 @@ function renderTable(items) {
     const tbody = document.getElementById('qaTableBody');
     const empty = document.getElementById('emptyState');
     const isViewer = currentRole === 'viewer';
+    const isSuperAdmin = currentRole === 'super_admin';
 
     if (items.length === 0) {
         tbody.innerHTML = '';
@@ -212,6 +253,7 @@ function renderTable(items) {
         <tr>
             <td>${qa.qa_id}</td>
             <td><span class="badge badge-category">${qa.category}</span></td>
+            ${isSuperAdmin ? `<td>${escapeHtml(qa.company_name || '-')}</td>` : ''}
             <td class="question-cell" title="${escapeHtml(qa.question)}">${highlightText(qa.question, 100)}</td>
             <td class="answer-cell" title="${escapeHtml(qa.answer)}">${highlightText(qa.answer, 150)}</td>
             <td>
@@ -334,6 +376,16 @@ function openCreateModal() {
     document.getElementById('modalKeywords').value = '';
     document.getElementById('modalActive').checked = true;
     resetModalHints();
+
+    // super_admin: show company selector
+    const companyGroup = document.getElementById('modalCompanyGroup');
+    if (currentRole === 'super_admin' && companiesList.length > 0) {
+        companyGroup.style.display = '';
+        document.getElementById('modalCompany').value = companiesList[0].company_id;
+    } else {
+        companyGroup.style.display = 'none';
+    }
+
     document.getElementById('qaModal').classList.add('show');
 }
 
@@ -348,6 +400,16 @@ async function openEditModal(qaId) {
         document.getElementById('modalKeywords').value = qa.keywords;
         document.getElementById('modalActive').checked = qa.is_active;
         resetModalHints();
+
+        // super_admin: show company selector with current value
+        const companyGroup = document.getElementById('modalCompanyGroup');
+        if (currentRole === 'super_admin' && companiesList.length > 0) {
+            companyGroup.style.display = '';
+            document.getElementById('modalCompany').value = qa.company_id;
+        } else {
+            companyGroup.style.display = 'none';
+        }
+
         document.getElementById('qaModal').classList.add('show');
     } catch (e) { showToast('Q&A를 불러올 수 없습니다.', 'error'); }
 }
@@ -372,6 +434,11 @@ async function saveQa() {
         keywords: document.getElementById('modalKeywords').value.trim(),
         is_active: document.getElementById('modalActive').checked,
     };
+
+    // super_admin: include selected company_id
+    if (currentRole === 'super_admin' && companiesList.length > 0) {
+        data.company_id = parseInt(document.getElementById('modalCompany').value, 10);
+    }
 
     try {
         if (qaId) {
