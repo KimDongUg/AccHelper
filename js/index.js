@@ -1,12 +1,22 @@
-/* ── Site Intro slide-up ───────────────────── */
+/* ── Site Intro (처음 방문 시에만 표시) ────────── */
 (function () {
+    const intro = document.querySelector('.site-intro');
+    if (!intro) return;
+
+    // 이미 본 적 있으면 즉시 제거
+    if (sessionStorage.getItem('introSeen')) {
+        intro.remove();
+        return;
+    }
+
+    // 처음 방문 — 플래그 저장 후 애니메이션 표시
+    sessionStorage.setItem('introSeen', '1');
+
     const isMobile = window.innerWidth <= 400 && window.innerHeight <= 900;
 
     if (isMobile) {
         // 모바일: 15초 후 3초간 fade out
         setTimeout(() => {
-            const intro = document.querySelector('.site-intro');
-            if (!intro) return;
             intro.style.transition = 'opacity 3s ease';
             intro.style.opacity = '0';
             setTimeout(() => { intro.remove(); }, 3000);
@@ -14,8 +24,6 @@
     } else {
         // 태블릿/데스크탑: 5초 후 슬라이드업
         setTimeout(() => {
-            const intro = document.querySelector('.site-intro');
-            if (!intro) return;
             const inner = intro.querySelector('.site-intro-inner');
             const totalH = intro.offsetHeight;
 
