@@ -105,7 +105,13 @@ async function apiFetch(path, options = {}) {
             if (response.status === 401) {
                 AuthSession.redirectToLogin();
             }
-            throw new Error(data.detail || '요청 처리 중 오류가 발생했습니다.');
+            let message = '요청 처리 중 오류가 발생했습니다.';
+            if (typeof data.detail === 'string') {
+                message = data.detail;
+            } else if (Array.isArray(data.detail)) {
+                message = data.detail.map(e => e.msg || JSON.stringify(e)).join(', ');
+            }
+            throw new Error(message);
         }
         return data;
     } catch (err) {

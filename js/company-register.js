@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const step2Indicator = document.getElementById('step2Indicator');
     const companySummary = document.getElementById('companySummary');
 
-    let createdCompanyId = null;
-    let createdCompanyName = '';
     let autoCompanyCode = '';
+
+    // Step 1에서 수집한 회사 정보 보관
+    let companyData = {};
 
     // Auto-generate company code from latest company_id + 1
     (async function loadNextCode() {
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         step1Indicator.classList.remove('active');
         step1Indicator.classList.add('completed');
         step2Indicator.classList.add('active');
-        companySummary.textContent = createdCompanyName;
+        companySummary.textContent = companyData.company_name;
         hideError();
         document.getElementById('email').focus();
     }
@@ -79,8 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
         hideError();
     }
 
-    // Step 1: Register company
-    companyForm.addEventListener('submit', async (e) => {
+    // Step 1: 회사 정보 수집 (API 호출 없음, Step 2로 이동)
+    companyForm.addEventListener('submit', (e) => {
         e.preventDefault();
         hideError();
 
@@ -94,24 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
-        setLoading(nextBtn, true);
+        companyData = {
+            company_name: companyName,
+            company_code: companyCode,
+            address: companyAddress,
+            phone: companyPhone,
+        };
 
-        try {
-            const result = await apiPost('/companies/register', {
-                company_name: companyName,
-                company_code: companyCode,
-                address: companyAddress,
-                phone: companyPhone,
-            });
-
-            createdCompanyId = result.company_id;
-            createdCompanyName = companyName;
-            goToStep2();
-        } catch (err) {
-            showError(err.message);
-        } finally {
-            setLoading(nextBtn, false);
-        }
+        goToStep2();
     });
 
     // Previous button
@@ -119,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         goToStep1();
     });
 
-    // Step 2: Register first user
+    // Step 2: 관리자 계정 입력 → 회사+관리자 한번에 등록
     userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         hideError();
@@ -139,23 +130,19 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(registerBtn, true);
 
         try {
-            const result = await apiPost('/auth/register', {
-                company_id: createdCompanyId,
-                email,
-                password,
-                full_name: fullName,
-                phone: phone || null,
+            const result = await apiPost('/companies/register', {
+                ...companyData,
+                admin_email: email,
+                admin_password: password,
+                admin_name: fullName,
+                admin_phone: phone || null,
             });
 
-            if (result.success) {
-                showSuccess(result.message || '등록이 완료되었습니다. 로그인 페이지로 이동합니다.');
-                userForm.reset();
-                setTimeout(() => {
-                    window.location.href = '/login.html';
-                }, 1500);
-            } else {
-                showError(result.message || '등록에 실패했습니다.');
-            }
+            showSuccess('회사와 관리자 계정이 등록되었습니다. 로그인 페이지로 이동합니다.');
+            userForm.reset();
+            setTimeout(() => {
+                window.location.href = '/login.html';
+            }, 1500);
         } catch (err) {
             showError(err.message);
         } finally {
