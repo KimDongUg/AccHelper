@@ -663,6 +663,17 @@ async function openProfileModal() {
         document.getElementById('profileCurrentPw').value = '';
         document.getElementById('profileNewPw').value = '';
         document.getElementById('profileNewPwConfirm').value = '';
+
+        // Load company info
+        const sess = AuthSession.get();
+        if (sess && sess.companyId) {
+            try {
+                const company = await apiGet(`/companies/${sess.companyId}`);
+                document.getElementById('profileCompanyName').value = company.company_name || '';
+                document.getElementById('profileCompanyAddress').value = company.address || '';
+            } catch {}
+        }
+
         document.getElementById('profileModal').classList.add('show');
     } catch (e) {
         showToast('내 정보를 불러올 수 없습니다.', 'error');
@@ -674,6 +685,8 @@ function closeProfileModal() {
 }
 
 async function saveProfile() {
+    const companyName = document.getElementById('profileCompanyName').value.trim();
+    const companyAddress = document.getElementById('profileCompanyAddress').value.trim();
     const fullName = document.getElementById('profileFullName').value.trim();
     const phone = document.getElementById('profilePhone').value.trim();
     const currentPw = document.getElementById('profileCurrentPw').value;
@@ -684,6 +697,19 @@ async function saveProfile() {
     saveBtn.disabled = true;
 
     try {
+        // Update company info
+        const sess = AuthSession.get();
+        if (sess && sess.companyId) {
+            await apiPut(`/companies/${sess.companyId}`, {
+                company_name: companyName || null,
+                address: companyAddress || null,
+            });
+            // Update header company name
+            if (companyName) {
+                document.getElementById('headerCompanyName').textContent = companyName;
+            }
+        }
+
         // Update profile info (name, phone)
         await apiPatch('/admins/me', {
             full_name: fullName || null,

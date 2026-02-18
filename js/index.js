@@ -112,7 +112,7 @@ async function loadCompanies() {
 
             const code = document.createElement('span');
             code.className = 'company-card-code';
-            code.textContent = c.company_code;
+            code.textContent = c.address || c.company_code;
 
             info.appendChild(name);
             info.appendChild(code);
