@@ -103,7 +103,12 @@
                         <li>기본 관리비 안내</li>
                         <li>14일 무료체험 후 자동 결제</li>
                     </ul>
-                    <button class="btn btn-primary plan-select-btn" data-plan="basic">14일 무료체험 시작</button>
+                    <div class="plan-actions">
+                        <button id="trialBtn" class="btn btn-primary plan-select-btn">14일 무료체험 시작</button>
+                        <button id="trialExpiredBtn" class="btn btn-primary plan-select-btn" disabled style="display:none;">무료체험 기간이 끝났습니다.</button>
+                        <div class="plan-divider"><span>또는</span></div>
+                        <button id="subscribeBtn" class="btn btn-outline plan-select-btn">구독 신청</button>
+                    </div>
                 </div>
             </div>
 

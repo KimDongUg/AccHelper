@@ -268,8 +268,39 @@
     font-weight: var(--font-bold);
 }
 
+.plan-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
 .plan-select-btn {
     width: 100%;
+}
+
+.plan-divider {
+    text-align: center;
+    position: relative;
+    margin: var(--space-xs) 0;
+}
+
+.plan-divider span {
+    font-size: var(--text-xs);
+    color: var(--gray-400);
+    background: var(--white);
+    padding: 0 var(--space-sm);
+    position: relative;
+    z-index: 1;
+}
+
+.plan-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gray-200);
 }
 
 /* ── Billing Policy ── */

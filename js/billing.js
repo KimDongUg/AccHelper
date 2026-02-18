@@ -39,9 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const tossPayments = TossPayments(TOSS_CLIENT_KEY);
 
     // ── Bind events ──
-    document.querySelectorAll('.plan-select-btn').forEach(btn => {
-        btn.addEventListener('click', () => requestBillingAuth(tossPayments, sess));
-    });
+    const trialBtn = document.getElementById('trialBtn');
+    if (trialBtn) {
+        trialBtn.addEventListener('click', startTrial);
+    }
+
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', () => requestBillingAuth(tossPayments, sess));
+    }
 
     const changeCardBtn = document.getElementById('changeCardBtn');
     if (changeCardBtn) {
@@ -79,10 +85,21 @@ async function loadSubscriptionStatus() {
     const planSection = document.getElementById('planSection');
     const promoSection = document.getElementById('promoSection');
 
-    function showPlanSelection() {
+    function showPlanSelection(trialExpired) {
         statusSection.style.display = 'none';
         planSection.style.display = '';
         if (promoSection) promoSection.style.display = '';
+
+        const trialBtn = document.getElementById('trialBtn');
+        const trialExpiredBtn = document.getElementById('trialExpiredBtn');
+
+        if (trialExpired) {
+            if (trialBtn) trialBtn.style.display = 'none';
+            if (trialExpiredBtn) trialExpiredBtn.style.display = '';
+        } else {
+            if (trialBtn) trialBtn.style.display = '';
+            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
+        }
     }
 
     try {
@@ -95,11 +112,30 @@ async function loadSubscriptionStatus() {
             window.location.href = '/admin.html';
             return;
         } else {
-            showPlanSelection();
+            showPlanSelection(data.trialExpired);
         }
     } catch (err) {
         loadingEl.style.display = 'none';
-        showPlanSelection();
+        showPlanSelection(false);
+    }
+}
+
+/* ──────────────────────────────────────────────
+ *  Start free trial
+ * ────────────────────────────────────────────── */
+async function startTrial() {
+    const trialBtn = document.getElementById('trialBtn');
+    trialBtn.disabled = true;
+
+    try {
+        await apiPost('/billing/trial');
+        showAlert('14일 무료체험이 시작되었습니다!', 'success');
+        setTimeout(() => {
+            window.location.href = '/admin.html';
+        }, 1500);
+    } catch (err) {
+        showAlert(err.message || '무료체험 시작에 실패했습니다.', 'error');
+        trialBtn.disabled = false;
     }
 }
 
