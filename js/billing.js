@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const sess = AuthSession.get();
-    const customerKey = `user_${sess.userId}_${sess.companyId}`;
+    const customerKey = `company_${sess.companyId}`;
 
     // Show company label
     const companyLabel = document.getElementById('companyLabel');
