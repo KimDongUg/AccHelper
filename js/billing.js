@@ -72,10 +72,9 @@ function requestBillingAuth(customerKey) {
         }
 
         var tossPayments = TossPayments(TOSS_CLIENT_KEY);
-        var billing = tossPayments.billing({ customerKey: customerKey });
 
-        billing.requestAuth({
-            method: 'CARD',
+        tossPayments.requestBillingAuth('카드', {
+            customerKey: customerKey,
             successUrl: window.location.origin + '/api/billing/success',
             failUrl: window.location.origin + '/billing.html?status=fail',
         }).catch(function (err) {
