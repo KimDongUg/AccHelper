@@ -139,7 +139,7 @@ function renderSubscribers(items) {
             <td>${s.company_id ?? '-'}</td>
             <td><a href="#" class="cell-link" onclick="openCompanyModal(${s.company_id});return false">${escapeHtml(s.company_name || '-')}</a></td>
             <td>${escapeHtml(s.plan || s.subscription_plan || '-')}</td>
-            <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'))}</td>
+            <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'), s.trial_ends_at)}</td>
             <td class="col-card">${escapeHtml(s.card_number ? (s.card_company ? s.card_company + ' ' : '') + s.card_number : (s.has_billing_key ? '카드 등록됨' : '-'))}</td>
             <td>${s.total_paid != null ? formatMoney(s.total_paid) : '-'}</td>
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
@@ -157,9 +157,13 @@ async function openCompanyModal(companyId) {
     document.getElementById('companyModalTitle').textContent = s.company_name;
 
     const planLabel = { enterprise: '유료(Enterprise)', trial: '체험(Trial)', free: '무료' }[s.subscription_plan] || s.subscription_plan;
-    const statusLabel = s.billing_active
+    let statusLabel = s.billing_active
         ? (s.subscription_plan === 'trial' ? '체험중' : '활성')
         : '비활성';
+    if (s.subscription_plan === 'trial' && s.trial_ends_at) {
+        const diff = Math.ceil((new Date(s.trial_ends_at) - new Date()) / 86400000);
+        statusLabel += ` (${diff > 0 ? diff : 0}일)`;
+    }
 
     let cardInfo = '-';
     if (s.card_number) {
@@ -274,11 +278,18 @@ function renderPayments(items) {
 /* ═══════════════════════════════════════════════
  *  BADGE RENDERERS
  * ═══════════════════════════════════════════════ */
-function renderStatusBadge(status) {
+function renderStatusBadge(status, trialEndsAt) {
     if (!status) return '<span class="badge-inactive">-</span>';
     const s = status.toLowerCase();
     if (s === 'active' || s === 'paid')       return `<span class="badge-active">활성</span>`;
-    if (s === 'trial')                        return `<span class="badge-trial">체험중</span>`;
+    if (s === 'trial') {
+        let daysLeft = '';
+        if (trialEndsAt) {
+            const diff = Math.ceil((new Date(trialEndsAt) - new Date()) / 86400000);
+            daysLeft = ` (${diff > 0 ? diff : 0}일)`;
+        }
+        return `<span class="badge-trial">체험중${daysLeft}</span>`;
+    }
     if (s === 'expired' || s === 'cancelled') return `<span class="badge-expired">${s === 'expired' ? '만료' : '해지'}</span>`;
     if (s === 'free')                         return `<span class="badge-inactive">무료</span>`;
     return `<span class="badge-inactive">${escapeHtml(status)}</span>`;
