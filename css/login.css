@@ -318,6 +318,104 @@
     100% { box-shadow: var(--shadow-lg); }
 }
 
+/* ── Company Register: Wide card ───────────── */
+.login-card-wide {
+    max-width: 480px;
+}
+
+/* Step indicator */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: var(--space-xl);
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-400);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    transition: color 0.2s;
+}
+
+.step.active {
+    color: var(--primary);
+}
+
+.step.completed {
+    color: var(--success, #2E7D32);
+}
+
+.step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    border: 2px solid var(--gray-300);
+    background: var(--white);
+    transition: all 0.2s;
+}
+
+.step.active .step-number {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--white);
+}
+
+.step.completed .step-number {
+    border-color: var(--success, #2E7D32);
+    background: var(--success, #2E7D32);
+    color: var(--white);
+}
+
+.step-divider {
+    width: 40px;
+    height: 2px;
+    background: var(--gray-300);
+    margin: 0 0.75rem;
+    transition: background 0.2s;
+}
+
+.step.completed ~ .step-divider,
+.step.completed + .step-divider {
+    background: var(--success, #2E7D32);
+}
+
+/* Company summary in step 2 */
+.company-summary {
+    text-align: center;
+    padding: 0.625rem 1rem;
+    margin-bottom: var(--space-md);
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+/* Step 2 dual buttons */
+.step2-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.step2-buttons .login-btn {
+    flex: 1;
+}
+
+.required {
+    color: #C62828;
+}
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 767px) {
     .login-wrapper {
@@ -329,6 +427,10 @@
         padding: 2rem 1.5rem;
     }
 
+    .login-card-wide {
+        max-width: 100%;
+    }
+
     .login-icon {
         width: 56px;
         height: 56px;
@@ -336,5 +438,13 @@
 
     .login-title h2 {
         font-size: 1.25rem;
+    }
+
+    .step-label {
+        display: none;
+    }
+
+    .step-divider {
+        width: 24px;
     }
 }

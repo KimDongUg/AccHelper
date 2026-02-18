@@ -502,7 +502,6 @@ function openAdminModal() {
     document.getElementById('adminPhone').value = '';
     document.getElementById('adminDepartment').value = '';
     document.getElementById('adminPosition').value = '';
-    document.getElementById('adminRole').value = 'admin';
     document.getElementById('adminPasswordGroup').style.display = '';
     document.getElementById('adminModal').classList.add('show');
 }
@@ -518,7 +517,6 @@ async function openEditAdminModal(userId) {
         document.getElementById('adminPhone').value = admin.phone || '';
         document.getElementById('adminDepartment').value = admin.department || '';
         document.getElementById('adminPosition').value = admin.position || '';
-        document.getElementById('adminRole').value = admin.role;
         document.getElementById('adminPasswordGroup').style.display = 'none';
         document.getElementById('adminModal').classList.add('show');
     } catch (e) {
@@ -544,7 +542,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
-                role: document.getElementById('adminRole').value,
+                role: 'admin',
             };
             await apiPut(`/admins/${adminId}`, data);
             showToast('관리자가 수정되었습니다.', 'success');
@@ -559,7 +557,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
-                role: document.getElementById('adminRole').value,
+                role: 'admin',
             };
             await apiPost('/admins', data);
             showToast('관리자가 추가되었습니다.', 'success');
