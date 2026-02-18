@@ -650,19 +650,26 @@ table tr:hover td {
 /* Mobile */
 @media (max-width: 767px) {
     .header {
-        padding: 0 1rem;
+        padding: 0.25rem;
         height: auto;
+        justify-content: center;
+    }
+
+    .header-left {
+        justify-content: center;
     }
 
     .header-logo img {
-        height: 180px;
-        margin: -45px 0 -45px -15px;
+        height: 150px;
+        margin: -35px 0 -35px -15px;
     }
 
     .header-logo span {
-        font-size: 0.6rem;
-        margin-top: -35px;
-        margin-left: 100px;
+        display: none;
+    }
+
+    .header-right {
+        display: none;
     }
 
     .header-nav a,
