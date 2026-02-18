@@ -186,7 +186,7 @@ select:focus-visible {
 .header {
     background: var(--white);
     border-bottom: 1px solid var(--gray-300);
-    padding: 0 1.5rem;
+    padding: 10px 1.5rem;
     height: auto;
     display: flex;
     align-items: center;
@@ -218,7 +218,7 @@ select:focus-visible {
     font-weight: var(--font-bold);
     color: var(--primary);
     white-space: nowrap;
-    margin-top: -50px;
+    margin-top: -80px;
     margin-left: 150px;
     position: relative;
     z-index: 102;
@@ -233,7 +233,7 @@ select:focus-visible {
     height: 270px;
     width: auto;
     flex-shrink: 0;
-    margin: -70px 0 -70px -20px;
+    margin: -55px 0 -40px -20px;
 }
 
 .header-nav {
