@@ -91,23 +91,9 @@ async function loadSubscriptionStatus() {
         loadingEl.style.display = 'none';
 
         if (data.active) {
-            // Show subscription status
-            statusSection.style.display = '';
-            planSection.style.display = 'none';
-            if (promoSection) promoSection.style.display = 'none';
-
-            document.getElementById('planName').textContent = data.planName || '베이직';
-            document.getElementById('cardInfo').textContent = data.cardInfo || '-';
-            document.getElementById('nextPayDate').textContent = data.nextPayDate || '-';
-
-            const badge = document.getElementById('statusBadge');
-            if (data.trial) {
-                badge.textContent = '무료체험중';
-                badge.className = 'badge badge-trial';
-            } else {
-                badge.textContent = '구독중';
-                badge.className = 'badge badge-active';
-            }
+            // Subscribed — redirect to admin dashboard
+            window.location.href = '/admin.html';
+            return;
         } else {
             showPlanSelection();
         }

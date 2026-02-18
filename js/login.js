@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
-                window.location.href = '/admin.html';
+                window.location.href = '/billing.html';
                 return;
             }
             // Server says no — clear stale client session
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 AuthSession.save(result.session, remember);
                 loginCard.classList.add('success');
                 setTimeout(() => {
-                    window.location.href = '/admin.html';
+                    window.location.href = '/billing.html';
                 }, 300);
             } else {
                 setLoading(false);
