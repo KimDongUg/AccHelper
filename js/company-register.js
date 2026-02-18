@@ -17,6 +17,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let createdCompanyId = null;
     let createdCompanyName = '';
+    let autoCompanyCode = '';
+
+    // Auto-generate company code from latest company_id + 1
+    (async function loadNextCode() {
+        try {
+            const result = await apiGet('/companies/public');
+            const companies = result.companies || result;
+            let maxId = 0;
+            if (companies && companies.length > 0) {
+                companies.forEach(c => {
+                    if (c.company_id > maxId) maxId = c.company_id;
+                });
+            }
+            autoCompanyCode = String(maxId + 1);
+            document.getElementById('companyCode').value = autoCompanyCode;
+        } catch {
+            autoCompanyCode = '1';
+            document.getElementById('companyCode').value = '1';
+        }
+    })();
 
     function showError(msg) {
         successDiv.classList.remove('show');
@@ -65,12 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
         hideError();
 
         const companyName = document.getElementById('companyName').value.trim();
-        const companyCode = document.getElementById('companyCode').value.trim();
+        const companyCode = autoCompanyCode || document.getElementById('companyCode').value.trim();
         const businessNumber = document.getElementById('businessNumber').value.trim();
         const companyPhone = document.getElementById('companyPhone').value.trim();
 
         if (!companyName) { showError('회사명을 입력해 주세요.'); return; }
-        if (!companyCode) { showError('회사 코드를 입력해 주세요.'); return; }
+        if (!companyCode) { showError('회사 코드를 불러오지 못했습니다. 새로고침 해주세요.'); return; }
 
         setLoading(nextBtn, true);
 
