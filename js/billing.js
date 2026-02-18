@@ -141,7 +141,8 @@ async function executeBillingPay() {
             window.location.href = '/admin.html';
         }, 2000);
     } catch (err) {
-        showAlert(err.message || '결제 처리에 실패했습니다.', 'error');
+        var msg = (err && typeof err.message === 'string') ? err.message : '결제 API 연동 대기 중입니다. (백엔드 구현 필요)';
+        showAlert(msg, 'error');
     }
 }
 
