@@ -129,7 +129,8 @@ function renderSubscribers(items) {
     empty.style.display = 'none';
     tbody.innerHTML = items.map(s => `
         <tr>
-            <td><span style="color:var(--gray-400);font-size:var(--text-xs)">${s.company_id ?? ''}</span> ${escapeHtml(s.company_name || '-')}</td>
+            <td>${s.company_id ?? '-'}</td>
+            <td>${escapeHtml(s.company_name || '-')}</td>
             <td>${escapeHtml(s.plan || s.subscription_plan || '-')}</td>
             <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'))}</td>
             <td class="col-card">${escapeHtml(s.card_info || (s.card_company && s.card_number ? s.card_company + ' ' + s.card_number : '-'))}</td>
@@ -181,7 +182,8 @@ function renderPayments(items) {
     empty.style.display = 'none';
     tbody.innerHTML = items.map(p => `
         <tr>
-            <td><span style="color:var(--gray-400);font-size:var(--text-xs)">${p.company_id ?? ''}</span> ${escapeHtml(p.company_name || '-')}</td>
+            <td>${p.company_id ?? '-'}</td>
+            <td>${escapeHtml(p.company_name || '-')}</td>
             <td>${escapeHtml(p.admin_email || '-')}</td>
             <td>${escapeHtml(p.order_id || p.order_no || '-')}</td>
             <td>${p.amount != null ? formatMoney(p.amount) : '-'}</td>
