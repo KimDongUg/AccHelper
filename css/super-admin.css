@@ -3,9 +3,11 @@
  * ═══════════════════════════════════════════════ */
 
 .sa-container {
+    width: 100%;
     max-width: 100%;
     margin: 0 auto;
     padding: var(--space-lg) var(--space-xl);
+    box-sizing: border-box;
 }
 
 .sa-title {
