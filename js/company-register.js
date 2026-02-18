@@ -86,11 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const companyName = document.getElementById('companyName').value.trim();
         const companyCode = autoCompanyCode || document.getElementById('companyCode').value.trim();
-        const businessNumber = document.getElementById('businessNumber').value.trim();
+        const companyAddress = document.getElementById('companyAddress').value.trim();
         const companyPhone = document.getElementById('companyPhone').value.trim();
 
         if (!companyName) { showError('회사명을 입력해 주세요.'); return; }
         if (!companyCode) { showError('회사 코드를 불러오지 못했습니다. 새로고침 해주세요.'); return; }
+        if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
+        if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
         setLoading(nextBtn, true);
 
@@ -98,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await apiPost('/companies', {
                 company_name: companyName,
                 company_code: companyCode,
-                business_number: businessNumber || null,
-                phone: companyPhone || null,
+                address: companyAddress,
+                phone: companyPhone,
             });
 
             createdCompanyId = result.company_id;
