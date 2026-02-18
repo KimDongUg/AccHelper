@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
-                window.location.href = '/billing.html';
+                const billingActive = (res.session && res.session.billing_active);
+                window.location.href = billingActive ? '/admin.html' : '/billing.html';
                 return;
             }
             // Server says no — clear stale client session
@@ -70,8 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Persist session client-side
                 AuthSession.save(result.session, remember);
                 loginCard.classList.add('success');
+                const billingActive = result.session.billing_active;
                 setTimeout(() => {
-                    window.location.href = '/billing.html';
+                    window.location.href = billingActive ? '/admin.html' : '/billing.html';
                 }, 300);
             } else {
                 setLoading(false);

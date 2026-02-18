@@ -27,6 +27,8 @@ const AuthSession = {
             permissions: session.permissions,
             loginTime: session.login_time,
             expiryTime: session.expiry_time,
+            billingActive: session.billing_active || false,
+            subscriptionPlan: session.subscription_plan || null,
         };
         const store = persist ? localStorage : sessionStorage;
         // Clear the other store to avoid stale data

@@ -58,8 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelSubBtn.addEventListener('click', cancelSubscription);
     }
 
+    // ── 세션에서 이미 구독 활성이면 바로 admin 이동 ──
+    if (sess.billingActive) {
+        window.location.href = '/admin.html';
+        return;
+    }
+
     // ── Load subscription status ──
-    loadSubscriptionStatus();
+    loadSubscriptionStatus(sess.companyId);
 });
 
 /* ──────────────────────────────────────────────
@@ -90,7 +96,7 @@ function requestBillingAuth(customerKey) {
 /* ──────────────────────────────────────────────
  *  Load subscription status
  * ────────────────────────────────────────────── */
-async function loadSubscriptionStatus() {
+async function loadSubscriptionStatus(companyId) {
     const loadingEl = document.getElementById('billingLoading');
     const statusSection = document.getElementById('subscriptionStatus');
     const planSection = document.getElementById('planSection');
@@ -114,7 +120,7 @@ async function loadSubscriptionStatus() {
     }
 
     try {
-        const data = await apiGet('/billing/status');
+        const data = await apiGet('/billing/status?company_id=' + companyId);
 
         loadingEl.style.display = 'none';
 
