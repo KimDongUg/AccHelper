@@ -314,7 +314,7 @@
 
 @keyframes successPulse {
     0%  { box-shadow: var(--shadow-lg); }
-    50% { box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.3), var(--shadow-lg); }
+    50% { box-shadow: 0 0 0 4px rgba(125, 194, 66, 0.3), var(--shadow-lg); }
     100% { box-shadow: var(--shadow-lg); }
 }
 
