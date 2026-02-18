@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState({}, '', '/billing.html');
     }
 
-    // ── Init Toss SDK ──
+    // ── Init Toss SDK (v2) ──
     let tossPayments;
     try {
         tossPayments = TossPayments(TOSS_CLIENT_KEY);
@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showAlert('결제 모듈 초기화에 실패했습니다: ' + err.message, 'error');
         return;
     }
+
+    const customerKey = `user_${sess.userId}_${sess.companyId}`;
 
     // ── Bind events ──
     const trialBtn = document.getElementById('trialBtn');
@@ -52,12 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const subscribeBtn = document.getElementById('subscribeBtn');
     if (subscribeBtn) {
-        subscribeBtn.addEventListener('click', () => requestBillingAuth(tossPayments, sess));
+        subscribeBtn.addEventListener('click', () => requestBillingAuth(tossPayments, customerKey));
     }
 
     const changeCardBtn = document.getElementById('changeCardBtn');
     if (changeCardBtn) {
-        changeCardBtn.addEventListener('click', () => requestBillingAuth(tossPayments, sess));
+        changeCardBtn.addEventListener('click', () => requestBillingAuth(tossPayments, customerKey));
     }
 
     const cancelSubBtn = document.getElementById('cancelSubBtn');
@@ -72,11 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ──────────────────────────────────────────────
  *  Request Billing Auth (card registration)
  * ────────────────────────────────────────────── */
-function requestBillingAuth(tossPayments, sess) {
-    const customerKey = `user_${sess.userId}_${sess.companyId}`;
+function requestBillingAuth(tossPayments, customerKey) {
+    const billing = tossPayments.billing({ customerKey });
 
-    tossPayments.requestBillingAuth('카드', {
-        customerKey,
+    billing.requestAuth({
+        method: 'CARD',
         successUrl: window.location.origin + '/api/billing/success',
         failUrl: window.location.origin + '/billing.html?status=fail',
     }).catch(function (err) {
