@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(nextBtn, true);
 
         try {
-            const result = await apiPost('/companies', {
+            const result = await apiPost('/companies/register', {
                 company_name: companyName,
                 company_code: companyCode,
                 address: companyAddress,
