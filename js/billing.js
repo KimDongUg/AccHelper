@@ -147,7 +147,8 @@ async function loadSubscriptionStatus(companyId) {
  * ────────────────────────────────────────────── */
 async function executeBillingPay() {
     try {
-        const data = await apiPost('/billing/pay');
+        const sess = AuthSession.get();
+        const data = await apiPost('/billing/pay', { company_id: sess.companyId });
         showAlert('구독 결제가 완료되었습니다!', 'success');
         setTimeout(() => {
             window.location.href = '/admin.html';
@@ -166,7 +167,8 @@ async function startTrial() {
     trialBtn.disabled = true;
 
     try {
-        await apiPost('/billing/trial');
+        const sess = AuthSession.get();
+        await apiPost('/billing/trial?company_id=' + sess.companyId);
         showAlert('14일 무료체험이 시작되었습니다!', 'success');
         setTimeout(() => {
             window.location.href = '/admin.html';
@@ -189,7 +191,8 @@ async function cancelSubscription() {
     cancelBtn.disabled = true;
 
     try {
-        await apiPost('/billing/cancel');
+        const sess = AuthSession.get();
+        await apiPost('/billing/cancel?company_id=' + sess.companyId);
         showAlert('구독이 해지되었습니다.', 'success');
         loadSubscriptionStatus();
     } catch (err) {
