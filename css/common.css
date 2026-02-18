@@ -650,8 +650,13 @@ table tr:hover td {
 /* Mobile */
 @media (max-width: 767px) {
     .header {
-        padding: 0 1.25rem;
-        height: 56px;
+        padding: 0 1rem;
+        height: auto;
+    }
+
+    .header-logo img {
+        height: 180px;
+        margin: -45px 0 -45px -15px;
     }
 
     .header-logo span {
