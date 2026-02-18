@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구독 관리 - 보태미 경리도우미</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/billing.css">
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
+
+    <header class="header" role="banner">
+        <div class="header-left">
+            <div class="header-logo" aria-label="보태미 경리도우미 홈">
+                <img src="/assets/images/logo.png" alt="보태미 로고" aria-hidden="true">
+                <span>경리언니들 제가 도와드릴께요~ 힘내세요!</span>
+            </div>
+            <nav class="header-nav" aria-label="메인 내비게이션">
+                <a href="/">AI 챗봇</a>
+                <a href="/billing.html" class="active" aria-current="page">부과내역서</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <span id="companyLabel" class="company-label" style="display:none;"></span>
+            <a href="/admin.html" class="btn btn-outline btn-sm" id="adminLink">관리자</a>
+        </div>
+    </header>
+
+    <main id="main-content" class="billing-container">
+        <h1 class="billing-title">구독 관리</h1>
+
+        <!-- 알림 메시지 -->
+        <div id="billingAlert" class="billing-alert" role="alert" aria-live="polite" style="display:none;">
+            <span id="billingAlertMsg"></span>
+        </div>
+
+        <!-- 로딩 -->
+        <div id="billingLoading" class="billing-loading">
+            <div class="billing-spinner"></div>
+            <p>구독 정보를 불러오는 중...</p>
+        </div>
+
+        <!-- 구독 상태 카드 -->
+        <section id="subscriptionStatus" class="billing-section" style="display:none;">
+            <div class="status-card">
+                <div class="status-header">
+                    <h2>현재 구독</h2>
+                    <span id="statusBadge" class="badge"></span>
+                </div>
+                <div class="status-body">
+                    <div class="status-row">
+                        <span class="status-label">플랜</span>
+                        <span id="planName" class="status-value">-</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">등록 카드</span>
+                        <span id="cardInfo" class="status-value">-</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">다음 결제일</span>
+                        <span id="nextPayDate" class="status-value">-</span>
+                    </div>
+                </div>
+                <div class="status-actions">
+                    <button id="changeCardBtn" class="btn btn-outline btn-sm">카드 변경</button>
+                    <button id="cancelSubBtn" class="btn btn-danger btn-sm">구독 해지</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 플랜 선택 -->
+        <section id="planSection" class="billing-section" style="display:none;">
+            <h2 class="section-title">플랜 선택</h2>
+            <div class="plan-grid">
+                <div class="plan-card" data-plan="monthly">
+                    <div class="plan-badge">월간</div>
+                    <div class="plan-price">
+                        <span class="price-amount">9,900</span>
+                        <span class="price-unit">원/월</span>
+                    </div>
+                    <ul class="plan-features">
+                        <li>AI 경리 챗봇 무제한</li>
+                        <li>부과내역서 조회</li>
+                        <li>관리비 분석 리포트</li>
+                    </ul>
+                    <button class="btn btn-primary plan-select-btn" data-plan="monthly">구독 시작</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-inner">
+            <nav class="footer-links" aria-label="정책 링크">
+                <a href="/privacy.html">개인정보처리방침</a>
+                <a href="/terms.html">이용약관</a>
+                <a href="/copyright.html">저작권 정책</a>
+                <a href="/contact.html">문의하기</a>
+            </nav>
+            <p class="footer-copyright">&copy; 2026 보태미 - 경리도우미(Accounting Helper). All rights reserved.</p>
+            <p class="footer-contact">운영자 이메일: <a href="mailto:kduaro124@naver.com">kduaro124@naver.com</a></p>
+        </div>
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/billing.js"></script>
+</body>
+</html>
