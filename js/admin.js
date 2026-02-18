@@ -664,21 +664,15 @@ async function openProfileModal() {
         document.getElementById('profileNewPw').value = '';
         document.getElementById('profileNewPwConfirm').value = '';
 
-        // Load company info
-        const sess = AuthSession.get();
-        // 세션에서 회사명 우선 표시
-        document.getElementById('profileCompanyName').value = sess?.companyName || '';
-        document.getElementById('profileCompanyAddress').value = '';
-
-        // API에서 상세 정보(주소 포함) 가져오기
-        if (sess && sess.companyId) {
-            try {
-                const company = await apiGet(`/companies/${sess.companyId}`);
-                document.getElementById('profileCompanyName').value = company.company_name || sess.companyName || '';
-                document.getElementById('profileCompanyAddress').value = company.address || '';
-            } catch (e) {
-                console.warn('회사 정보 로드 실패:', e.message);
-            }
+        // Load company info via /companies/me
+        try {
+            const company = await apiGet('/companies/me');
+            document.getElementById('profileCompanyName').value = company.company_name || '';
+            document.getElementById('profileCompanyAddress').value = company.address || '';
+        } catch (e) {
+            const sess = AuthSession.get();
+            document.getElementById('profileCompanyName').value = sess?.companyName || '';
+            document.getElementById('profileCompanyAddress').value = '';
         }
 
         document.getElementById('profileModal').classList.add('show');
@@ -704,17 +698,13 @@ async function saveProfile() {
     saveBtn.disabled = true;
 
     try {
-        // Update company info
-        const sess = AuthSession.get();
-        if (sess && sess.companyId) {
-            await apiPut(`/companies/${sess.companyId}`, {
-                company_name: companyName || null,
-                address: companyAddress || null,
-            });
-            // Update header company name
-            if (companyName) {
-                document.getElementById('headerCompanyName').textContent = companyName;
-            }
+        // Update company info via /companies/me
+        await apiPut('/companies/me', {
+            company_name: companyName || null,
+            address: companyAddress || null,
+        });
+        if (companyName) {
+            document.getElementById('headerCompanyName').textContent = companyName;
         }
 
         // Update profile info (name, phone)
