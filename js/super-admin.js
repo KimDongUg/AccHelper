@@ -135,7 +135,7 @@ function renderSubscribers(items) {
             <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'))}</td>
             <td class="col-card">${escapeHtml(s.card_info || (s.card_company && s.card_number ? s.card_company + ' ' + s.card_number : '-'))}</td>
             <td>${s.total_paid != null ? formatMoney(s.total_paid) : '-'}</td>
-            <td class="col-date">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
+            <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
         </tr>
     `).join('');
 }
