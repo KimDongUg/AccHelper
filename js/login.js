@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
+                if (res.session && res.session.role === 'super_admin') {
+                    window.location.href = '/super-admin.html';
+                    return;
+                }
                 const billingActive = (res.session && res.session.billing_active);
                 window.location.href = billingActive ? '/admin.html' : '/billing.html';
                 return;
@@ -71,9 +75,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Persist session client-side
                 AuthSession.save(result.session, remember);
                 loginCard.classList.add('success');
+                const role = result.session.role;
                 const billingActive = result.session.billing_active;
                 setTimeout(() => {
-                    window.location.href = billingActive ? '/admin.html' : '/billing.html';
+                    if (role === 'super_admin') {
+                        window.location.href = '/super-admin.html';
+                    } else {
+                        window.location.href = billingActive ? '/admin.html' : '/billing.html';
+                    }
                 }, 300);
             } else {
                 setLoading(false);
