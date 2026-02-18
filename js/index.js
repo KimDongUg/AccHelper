@@ -311,6 +311,8 @@ function showChat() {
             if (auth.authenticated && auth.session) {
                 const label = auth.session.full_name || auth.session.username || '';
                 document.getElementById('adminLink').textContent = `관리자 (${label})`;
+                const billingLink = document.getElementById('billingLink');
+                if (billingLink) billingLink.style.display = '';
             }
         } catch (e) { /* not logged in */ }
     }

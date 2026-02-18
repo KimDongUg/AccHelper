@@ -660,7 +660,9 @@ table tr:hover td {
     }
 
     .header-logo span {
-        display: none;
+        font-size: 0.6rem;
+        margin-top: -35px;
+        margin-left: 100px;
     }
 
     .header-nav a,
