@@ -181,7 +181,7 @@ function renderPayments(items) {
     empty.style.display = 'none';
     tbody.innerHTML = items.map(p => `
         <tr>
-            <td>${escapeHtml(p.company_name || '-')}</td>
+            <td>${escapeHtml(p.company_name || '-')}${p.admin_email ? '<br><span style="font-size:var(--text-xs);color:var(--gray-500)">' + escapeHtml(p.admin_email) + '</span>' : ''}</td>
             <td>${escapeHtml(p.order_id || p.order_no || '-')}</td>
             <td>${p.amount != null ? formatMoney(p.amount) : '-'}</td>
             <td>${renderPaymentBadge(p.status)}</td>
