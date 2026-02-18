@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const sess = AuthSession.get();
+    const customerKey = `user_${sess.userId}_${sess.companyId}`;
 
     // Show company label
     const companyLabel = document.getElementById('companyLabel');
@@ -27,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const status = params.get('status');
     if (status === 'success') {
         showAlert('카드 등록이 완료되었습니다.', 'success');
-        // Clean URL
         window.history.replaceState({}, '', '/billing.html');
     } else if (status === 'fail') {
         const msg = params.get('message') || '카드 등록에 실패했습니다. 다시 시도해 주세요.';
@@ -35,18 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState({}, '', '/billing.html');
     }
 
-    // ── Init Toss SDK (v2) ──
-    let tossPayments;
-    try {
-        tossPayments = TossPayments(TOSS_CLIENT_KEY);
-    } catch (err) {
-        showAlert('결제 모듈 초기화에 실패했습니다: ' + err.message, 'error');
-        return;
-    }
-
-    const customerKey = `user_${sess.userId}_${sess.companyId}`;
-
-    // ── Bind events ──
+    // ── Bind events (SDK 초기화는 클릭 시점에) ──
     const trialBtn = document.getElementById('trialBtn');
     if (trialBtn) {
         trialBtn.addEventListener('click', startTrial);
@@ -54,12 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const subscribeBtn = document.getElementById('subscribeBtn');
     if (subscribeBtn) {
-        subscribeBtn.addEventListener('click', () => requestBillingAuth(tossPayments, customerKey));
+        subscribeBtn.addEventListener('click', () => requestBillingAuth(customerKey));
     }
 
     const changeCardBtn = document.getElementById('changeCardBtn');
     if (changeCardBtn) {
-        changeCardBtn.addEventListener('click', () => requestBillingAuth(tossPayments, customerKey));
+        changeCardBtn.addEventListener('click', () => requestBillingAuth(customerKey));
     }
 
     const cancelSubBtn = document.getElementById('cancelSubBtn');
@@ -73,17 +62,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ──────────────────────────────────────────────
  *  Request Billing Auth (card registration)
+ *  SDK를 클릭 시점에 초기화하여 로드 실패를 잡음
  * ────────────────────────────────────────────── */
-function requestBillingAuth(tossPayments, customerKey) {
-    const billing = tossPayments.billing({ customerKey });
+function requestBillingAuth(customerKey) {
+    try {
+        if (typeof TossPayments === 'undefined') {
+            showAlert('결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해 주세요.', 'error');
+            return;
+        }
 
-    billing.requestAuth({
-        method: 'CARD',
-        successUrl: window.location.origin + '/api/billing/success',
-        failUrl: window.location.origin + '/billing.html?status=fail',
-    }).catch(function (err) {
-        showAlert('결제 요청 실패: ' + err.message, 'error');
-    });
+        var tossPayments = TossPayments(TOSS_CLIENT_KEY);
+        var billing = tossPayments.billing({ customerKey: customerKey });
+
+        billing.requestAuth({
+            method: 'CARD',
+            successUrl: window.location.origin + '/api/billing/success',
+            failUrl: window.location.origin + '/billing.html?status=fail',
+        }).catch(function (err) {
+            showAlert('결제 요청 실패: ' + err.message, 'error');
+        });
+    } catch (err) {
+        showAlert('결제 처리 중 오류: ' + err.message, 'error');
+    }
 }
 
 /* ──────────────────────────────────────────────
@@ -118,7 +118,6 @@ async function loadSubscriptionStatus() {
         loadingEl.style.display = 'none';
 
         if (data.active) {
-            // Subscribed — redirect to admin dashboard
             window.location.href = '/admin.html';
             return;
         } else {
