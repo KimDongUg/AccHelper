@@ -75,8 +75,8 @@ async function loadOverview() {
     try {
         const data = await apiGet('/admin-dashboard/overview');
         document.getElementById('statTotalCompanies').textContent = data.total_companies ?? 0;
-        document.getElementById('statPaidSubscribers').textContent = data.paid_subscribers ?? 0;
-        document.getElementById('statTrialCompanies').textContent = data.trial_companies ?? 0;
+        document.getElementById('statActiveSubscribers').textContent = data.active_subscribers ?? 0;
+        document.getElementById('statTrialSubscribers').textContent = data.trial_subscribers ?? 0;
         document.getElementById('statFreeCompanies').textContent = data.free_companies ?? 0;
         document.getElementById('statTotalRevenue').textContent = formatMoney(data.total_revenue ?? 0);
         document.getElementById('statTotalPayments').textContent = data.total_payments ?? 0;

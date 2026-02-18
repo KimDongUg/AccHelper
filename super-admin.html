@@ -54,7 +54,7 @@
                 </div>
                 <div class="stat-info">
                     <h4>유료 구독</h4>
-                    <div class="stat-value" id="statPaidSubscribers" aria-live="polite">
+                    <div class="stat-value" id="statActiveSubscribers" aria-live="polite">
                         <span class="stat-loading" aria-label="로딩 중"></span>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                 </div>
                 <div class="stat-info">
                     <h4>체험 중</h4>
-                    <div class="stat-value" id="statTrialCompanies" aria-live="polite">
+                    <div class="stat-value" id="statTrialSubscribers" aria-live="polite">
                         <span class="stat-loading" aria-label="로딩 중"></span>
                     </div>
                 </div>
@@ -146,9 +146,9 @@
                 <label for="paymentStatusFilter" class="sr-only">상태 필터</label>
                 <select id="paymentStatusFilter" class="form-control" aria-label="상태 필터">
                     <option value="">전체 상태</option>
-                    <option value="DONE">성공</option>
-                    <option value="FAILED">실패</option>
-                    <option value="CANCELED">취소</option>
+                    <option value="success">성공</option>
+                    <option value="failed">실패</option>
+                    <option value="cancelled">취소</option>
                 </select>
             </div>
             <div class="sa-table-wrap">
