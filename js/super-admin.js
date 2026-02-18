@@ -139,7 +139,7 @@ function renderSubscribers(items) {
             <td>${s.company_id ?? '-'}</td>
             <td><a href="#" class="cell-link" onclick="openCompanyModal(${s.company_id});return false">${escapeHtml(s.company_name || '-')}</a></td>
             <td>${escapeHtml(s.plan || s.subscription_plan || '-')}</td>
-            <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'), s.trial_ends_at)}</td>
+            <td>${renderStatusBadge(s.subscription_status || s.status || (s.subscription_plan === 'trial' && s.billing_active ? 'trial' : (s.billing_active ? 'active' : 'free')), s.trial_ends_at)}</td>
             <td class="col-card">${escapeHtml(s.card_number ? (s.card_company ? s.card_company + ' ' : '') + s.card_number : (s.has_billing_key ? '카드 등록됨' : '-'))}</td>
             <td>${s.total_paid != null ? formatMoney(s.total_paid) : '-'}</td>
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
