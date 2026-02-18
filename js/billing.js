@@ -27,8 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     if (status === 'success') {
-        showAlert('카드 등록이 완료되었습니다.', 'success');
+        showAlert('카드 등록 완료! 결제를 진행합니다...', 'success');
         window.history.replaceState({}, '', '/billing.html');
+        // 카드 등록 후 즉시 결제 실행
+        executeBillingPay();
     } else if (status === 'fail') {
         const msg = params.get('message') || '카드 등록에 실패했습니다. 다시 시도해 주세요.';
         showAlert(msg, 'error');
@@ -125,6 +127,21 @@ async function loadSubscriptionStatus() {
     } catch (err) {
         loadingEl.style.display = 'none';
         showPlanSelection(false);
+    }
+}
+
+/* ──────────────────────────────────────────────
+ *  Execute billing payment (카드 등록 후 실제 결제)
+ * ────────────────────────────────────────────── */
+async function executeBillingPay() {
+    try {
+        const data = await apiPost('/billing/pay');
+        showAlert('구독 결제가 완료되었습니다!', 'success');
+        setTimeout(() => {
+            window.location.href = '/admin.html';
+        }, 2000);
+    } catch (err) {
+        showAlert(err.message || '결제 처리에 실패했습니다.', 'error');
     }
 }
 
