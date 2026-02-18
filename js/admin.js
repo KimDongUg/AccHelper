@@ -666,12 +666,19 @@ async function openProfileModal() {
 
         // Load company info
         const sess = AuthSession.get();
+        // 세션에서 회사명 우선 표시
+        document.getElementById('profileCompanyName').value = sess?.companyName || '';
+        document.getElementById('profileCompanyAddress').value = '';
+
+        // API에서 상세 정보(주소 포함) 가져오기
         if (sess && sess.companyId) {
             try {
                 const company = await apiGet(`/companies/${sess.companyId}`);
-                document.getElementById('profileCompanyName').value = company.company_name || '';
+                document.getElementById('profileCompanyName').value = company.company_name || sess.companyName || '';
                 document.getElementById('profileCompanyAddress').value = company.address || '';
-            } catch {}
+            } catch (e) {
+                console.warn('회사 정보 로드 실패:', e.message);
+            }
         }
 
         document.getElementById('profileModal').classList.add('show');
