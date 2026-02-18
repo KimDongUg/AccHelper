@@ -71,23 +71,51 @@
             </div>
         </section>
 
+        <!-- 프로모션 배너 -->
+        <section id="promoSection" class="billing-section" style="display:none;">
+            <div class="promo-banner">
+                <div class="promo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="promo-content">
+                    <strong>선착순 10개 업체 50% 할인</strong>
+                    <p>지금 가입하면 월 <b>24,500원</b>에 평생 이용! (정가 49,000원)</p>
+                </div>
+            </div>
+        </section>
+
         <!-- 플랜 선택 -->
         <section id="planSection" class="billing-section" style="display:none;">
-            <h2 class="section-title">플랜 선택</h2>
+            <h2 class="section-title">요금제</h2>
             <div class="plan-grid">
-                <div class="plan-card" data-plan="monthly">
-                    <div class="plan-badge">월간</div>
+                <div class="plan-card" data-plan="basic">
+                    <div class="plan-badge">베이직</div>
+                    <div class="plan-trial-badge">14일 무료체험</div>
                     <div class="plan-price">
-                        <span class="price-amount">9,900</span>
+                        <span class="price-original">49,000원</span>
+                        <span class="price-amount">24,500</span>
                         <span class="price-unit">원/월</span>
                     </div>
+                    <p class="plan-price-note">얼리버드 50% 할인 (평생 유지)</p>
                     <ul class="plan-features">
-                        <li>AI 경리 챗봇 무제한</li>
-                        <li>부과내역서 조회</li>
-                        <li>관리비 분석 리포트</li>
+                        <li>AI 경리 고객응대 무제한</li>
+                        <li>Q&A 등록 및 관리</li>
+                        <li>기본 관리비 안내</li>
+                        <li>14일 무료체험 후 자동 결제</li>
                     </ul>
-                    <button class="btn btn-primary plan-select-btn" data-plan="monthly">구독 시작</button>
+                    <button class="btn btn-primary plan-select-btn" data-plan="basic">14일 무료체험 시작</button>
                 </div>
+            </div>
+
+            <!-- 정책 안내 -->
+            <div class="billing-policy">
+                <h3>이용 안내</h3>
+                <ul>
+                    <li>14일 무료체험 기간 중 언제든 해지 가능합니다.</li>
+                    <li>무료체험 종료 후 월 자동결제가 시작됩니다.</li>
+                    <li>첫 결제 후 7일 이내 전액 환불 가능합니다.</li>
+                    <li>언제든 다음 달부터 구독 해지가 가능합니다.</li>
+                </ul>
             </div>
         </section>
     </main>

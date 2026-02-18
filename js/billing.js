@@ -77,6 +77,13 @@ async function loadSubscriptionStatus() {
     const loadingEl = document.getElementById('billingLoading');
     const statusSection = document.getElementById('subscriptionStatus');
     const planSection = document.getElementById('planSection');
+    const promoSection = document.getElementById('promoSection');
+
+    function showPlanSelection() {
+        statusSection.style.display = 'none';
+        planSection.style.display = '';
+        if (promoSection) promoSection.style.display = '';
+    }
 
     try {
         const data = await apiGet('/billing/status');
@@ -87,23 +94,26 @@ async function loadSubscriptionStatus() {
             // Show subscription status
             statusSection.style.display = '';
             planSection.style.display = 'none';
+            if (promoSection) promoSection.style.display = 'none';
 
-            document.getElementById('planName').textContent = data.planName || '월간 구독';
+            document.getElementById('planName').textContent = data.planName || '베이직';
             document.getElementById('cardInfo').textContent = data.cardInfo || '-';
             document.getElementById('nextPayDate').textContent = data.nextPayDate || '-';
 
             const badge = document.getElementById('statusBadge');
-            badge.textContent = '구독중';
-            badge.className = 'badge badge-active';
+            if (data.trial) {
+                badge.textContent = '무료체험중';
+                badge.className = 'badge badge-trial';
+            } else {
+                badge.textContent = '구독중';
+                badge.className = 'badge badge-active';
+            }
         } else {
-            // Show plan selection
-            statusSection.style.display = 'none';
-            planSection.style.display = '';
+            showPlanSelection();
         }
     } catch (err) {
         loadingEl.style.display = 'none';
-        // If API not ready yet, show plan selection as default
-        planSection.style.display = '';
+        showPlanSelection();
     }
 }
 
