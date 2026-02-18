@@ -150,7 +150,7 @@ function renderSubscribers(items) {
 /* ═══════════════════════════════════════════════
  *  COMPANY DETAIL MODAL
  * ═══════════════════════════════════════════════ */
-function openCompanyModal(companyId) {
+async function openCompanyModal(companyId) {
     const s = subscriberCache[companyId];
     if (!s) return;
 
@@ -168,23 +168,50 @@ function openCompanyModal(companyId) {
         cardInfo = '카드 등록됨';
     }
 
-    document.getElementById('companyModalBody').innerHTML = `
+    const body = document.getElementById('companyModalBody');
+    body.innerHTML = `
         <div class="detail-grid">
             <div class="detail-row"><span class="detail-label">회사번호</span><span class="detail-value">${s.company_id}</span></div>
             <div class="detail-row"><span class="detail-label">회사코드</span><span class="detail-value">${escapeHtml(s.company_code || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">플랜</span><span class="detail-value">${escapeHtml(planLabel)}</span></div>
             <div class="detail-row"><span class="detail-label">구독 상태</span><span class="detail-value">${statusLabel}</span></div>
             <div class="detail-row"><span class="detail-label">카드 정보</span><span class="detail-value">${escapeHtml(cardInfo)}</span></div>
-            <div class="detail-row"><span class="detail-label">관리자 수</span><span class="detail-value">${s.admin_count ?? 0}명</span></div>
             <div class="detail-row"><span class="detail-label">결제 합계</span><span class="detail-value">${formatMoney(s.total_paid)}</span></div>
             <div class="detail-row"><span class="detail-label">결제 건수</span><span class="detail-value">${s.payment_count ?? 0}건</span></div>
             <div class="detail-row"><span class="detail-label">최종 결제일</span><span class="detail-value">${s.last_paid_at ? formatDate(s.last_paid_at) : '-'}</span></div>
             <div class="detail-row"><span class="detail-label">체험 종료일</span><span class="detail-value">${s.trial_ends_at ? formatDate(s.trial_ends_at) : '-'}</span></div>
             <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">${s.created_at ? formatDate(s.created_at) : '-'}</span></div>
         </div>
+        <h4 class="admin-list-title">관리자 목록</h4>
+        <div id="adminListArea" class="admin-list-area"><span class="stat-loading"></span> 로딩 중...</div>
     `;
 
     document.getElementById('companyModal').classList.add('show');
+
+    // Fetch admin list
+    try {
+        const data = await apiGet('/admin-dashboard/companies/' + companyId + '/admins');
+        const admins = data.items || [];
+        const area = document.getElementById('adminListArea');
+        if (admins.length === 0) {
+            area.innerHTML = '<p style="color:var(--gray-500);font-size:var(--text-sm)">등록된 관리자가 없습니다.</p>';
+        } else {
+            const roleLabels = { super_admin: '최고관리자', admin: '관리자', viewer: '뷰어' };
+            area.innerHTML = `<table class="admin-list-table">
+                <thead><tr><th>이메일</th><th>이름</th><th>역할</th><th>상태</th><th>최근 로그인</th></tr></thead>
+                <tbody>${admins.map(a => `<tr>
+                    <td>${escapeHtml(a.email)}</td>
+                    <td>${escapeHtml(a.full_name || '-')}</td>
+                    <td>${escapeHtml(roleLabels[a.role] || a.role)}</td>
+                    <td>${a.is_active ? '<span style="color:var(--success)">활성</span>' : '<span style="color:var(--gray-400)">비활성</span>'}</td>
+                    <td style="white-space:nowrap">${a.last_login ? formatDate(a.last_login) : '-'}</td>
+                </tr>`).join('')}</tbody>
+            </table>`;
+        }
+    } catch (e) {
+        const area = document.getElementById('adminListArea');
+        if (area) area.innerHTML = '<p style="color:var(--danger);font-size:var(--text-sm)">관리자 목록을 불러올 수 없습니다.</p>';
+    }
 }
 
 function closeCompanyModal() {

@@ -188,6 +188,41 @@
     color: var(--gray-900);
 }
 
+/* Admin list in modal */
+.admin-list-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--gray-200);
+}
+
+.admin-list-area {
+    font-size: var(--text-sm);
+}
+
+.admin-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+
+.admin-list-table th,
+.admin-list-table td {
+    padding: 0.5rem 0.625rem;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.admin-list-table th {
+    font-weight: 600;
+    color: var(--gray-600);
+    background: var(--gray-50);
+    white-space: nowrap;
+    font-size: var(--text-xs);
+}
+
 /* Empty state */
 .empty-state {
     text-align: center;
