@@ -1,4 +1,4 @@
-const TOSS_CLIENT_KEY = 'test_ck_24xLea5zVAm4l9Mo1XgIVQAMYNwW';
+const TOSS_CLIENT_KEY = 'test_ck_24xLea5zVAm4l9Mo1XglVQAMYNwW';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Auth check ──
