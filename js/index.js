@@ -313,6 +313,10 @@ function showChat() {
                 document.getElementById('adminLink').textContent = `관리자 (${label})`;
                 const billingLink = document.getElementById('billingLink');
                 if (billingLink) billingLink.style.display = '';
+                if (auth.session.role === 'super_admin') {
+                    const saLink = document.getElementById('superAdminLink');
+                    if (saLink) saLink.style.display = '';
+                }
             }
         } catch (e) { /* not logged in */ }
     }

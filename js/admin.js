@@ -43,6 +43,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('tabAdmins').style.display = '';
         }
 
+        // Show super admin link for super_admin
+        if (currentRole === 'super_admin') {
+            const saLink = document.getElementById('superAdminLink');
+            if (saLink) saLink.style.display = '';
+        }
+
         // super_admin: load companies for filter & modal
         if (currentRole === 'super_admin') {
             try {

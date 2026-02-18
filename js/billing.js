@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         adminLink.textContent = `관리자 (${sess.fullName || sess.username})`;
     }
 
+    // Show super admin link
+    if (sess.role === 'super_admin') {
+        const saLink = document.getElementById('superAdminLink');
+        if (saLink) saLink.style.display = '';
+    }
+
     // ── Handle URL params (success/fail callback) ──
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
