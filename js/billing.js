@@ -36,7 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Init Toss SDK ──
-    const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+    let tossPayments;
+    try {
+        tossPayments = TossPayments(TOSS_CLIENT_KEY);
+    } catch (err) {
+        showAlert('결제 모듈 초기화에 실패했습니다: ' + err.message, 'error');
+        return;
+    }
 
     // ── Bind events ──
     const trialBtn = document.getElementById('trialBtn');
@@ -73,6 +79,8 @@ function requestBillingAuth(tossPayments, sess) {
         customerKey,
         successUrl: window.location.origin + '/api/billing/success',
         failUrl: window.location.origin + '/billing.html?status=fail',
+    }).catch(function (err) {
+        showAlert('결제 요청 실패: ' + err.message, 'error');
     });
 }
 
