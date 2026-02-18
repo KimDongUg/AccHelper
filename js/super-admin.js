@@ -3,6 +3,7 @@
  * ═══════════════════════════════════════════════ */
 
 let sessionCheckTimer = null;
+let subscriberCache = {}; // company_id → SubscriberItem
 
 /* ═══════════════════════════════════════════════
  *  INIT
@@ -96,7 +97,13 @@ async function loadSubscribers() {
     try {
         const data = await apiGet('/admin-dashboard/subscribers');
         const items = data.subscribers || data.items || data;
-        renderSubscribers(Array.isArray(items) ? items : []);
+        const list = Array.isArray(items) ? items : [];
+
+        // Build cache for modal lookup
+        subscriberCache = {};
+        list.forEach(s => { subscriberCache[s.company_id] = s; });
+
+        renderSubscribers(list);
 
         // Populate company filter for payments
         if (Array.isArray(items) && items.length > 0) {
@@ -130,7 +137,7 @@ function renderSubscribers(items) {
     tbody.innerHTML = items.map(s => `
         <tr>
             <td>${s.company_id ?? '-'}</td>
-            <td>${escapeHtml(s.company_name || '-')}</td>
+            <td><a href="#" class="cell-link" onclick="openCompanyModal(${s.company_id});return false">${escapeHtml(s.company_name || '-')}</a></td>
             <td>${escapeHtml(s.plan || s.subscription_plan || '-')}</td>
             <td>${renderStatusBadge(s.subscription_status || s.status || (s.billing_active ? 'active' : 'free'))}</td>
             <td class="col-card">${escapeHtml(s.card_number ? (s.card_company ? s.card_company + ' ' : '') + s.card_number : (s.has_billing_key ? '카드 등록됨' : '-'))}</td>
@@ -138,6 +145,50 @@ function renderSubscribers(items) {
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
         </tr>
     `).join('');
+}
+
+/* ═══════════════════════════════════════════════
+ *  COMPANY DETAIL MODAL
+ * ═══════════════════════════════════════════════ */
+function openCompanyModal(companyId) {
+    const s = subscriberCache[companyId];
+    if (!s) return;
+
+    document.getElementById('companyModalTitle').textContent = s.company_name;
+
+    const planLabel = { enterprise: '유료(Enterprise)', trial: '체험(Trial)', free: '무료' }[s.subscription_plan] || s.subscription_plan;
+    const statusLabel = s.billing_active
+        ? (s.subscription_plan === 'trial' ? '체험중' : '활성')
+        : '비활성';
+
+    let cardInfo = '-';
+    if (s.card_number) {
+        cardInfo = (s.card_company || '') + ' ' + s.card_number;
+    } else if (s.has_billing_key) {
+        cardInfo = '카드 등록됨';
+    }
+
+    document.getElementById('companyModalBody').innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-row"><span class="detail-label">회사번호</span><span class="detail-value">${s.company_id}</span></div>
+            <div class="detail-row"><span class="detail-label">회사코드</span><span class="detail-value">${escapeHtml(s.company_code || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">플랜</span><span class="detail-value">${escapeHtml(planLabel)}</span></div>
+            <div class="detail-row"><span class="detail-label">구독 상태</span><span class="detail-value">${statusLabel}</span></div>
+            <div class="detail-row"><span class="detail-label">카드 정보</span><span class="detail-value">${escapeHtml(cardInfo)}</span></div>
+            <div class="detail-row"><span class="detail-label">관리자 수</span><span class="detail-value">${s.admin_count ?? 0}명</span></div>
+            <div class="detail-row"><span class="detail-label">결제 합계</span><span class="detail-value">${formatMoney(s.total_paid)}</span></div>
+            <div class="detail-row"><span class="detail-label">결제 건수</span><span class="detail-value">${s.payment_count ?? 0}건</span></div>
+            <div class="detail-row"><span class="detail-label">최종 결제일</span><span class="detail-value">${s.last_paid_at ? formatDate(s.last_paid_at) : '-'}</span></div>
+            <div class="detail-row"><span class="detail-label">체험 종료일</span><span class="detail-value">${s.trial_ends_at ? formatDate(s.trial_ends_at) : '-'}</span></div>
+            <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">${s.created_at ? formatDate(s.created_at) : '-'}</span></div>
+        </div>
+    `;
+
+    document.getElementById('companyModal').classList.add('show');
+}
+
+function closeCompanyModal() {
+    document.getElementById('companyModal').classList.remove('show');
 }
 
 /* ═══════════════════════════════════════════════

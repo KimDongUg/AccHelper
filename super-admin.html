@@ -179,6 +179,21 @@
         </section>
     </main>
 
+    <!-- Company Detail Modal -->
+    <div class="modal-overlay" id="companyModal" role="dialog" aria-modal="true" aria-labelledby="companyModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="companyModalTitle">회사 상세 정보</h3>
+                <button class="modal-close" onclick="closeCompanyModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body" id="companyModalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeCompanyModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
