@@ -149,7 +149,7 @@ async function apiFetch(path, options = {}) {
                 message = data.message;
             }
 
-            if (response.status === 401) {
+            if (response.status === 401 && !path.startsWith('/auth/')) {
                 AuthSession.redirectToLogin();
             }
 

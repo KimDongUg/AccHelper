@@ -619,7 +619,9 @@ function showChat() {
         } catch (e) { /* not logged in */ }
     }
 
-    loadHistory();
+    if (AuthSession.isValid()) {
+        loadHistory();
+    }
     checkAdmin();
     chatInput.focus();
 }
