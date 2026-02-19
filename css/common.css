@@ -993,6 +993,19 @@ table tr:hover td {
     50% { opacity: 0.6; }
 }
 
+.promo-popup-pc-notice {
+    display: none;
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 1023px) {
+    .promo-popup-pc-notice {
+        display: block;
+    }
+}
+
 .promo-popup-footer {
     display: flex;
     align-items: center;
