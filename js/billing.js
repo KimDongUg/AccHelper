@@ -136,7 +136,7 @@ async function loadSubscriptionStatus(companyId) {
             window.location.href = '/admin.html';
             return;
         } else {
-            showPlanSelection(data.subscription_plan === 'trial' && data.active);
+            showPlanSelection(data.subscription_plan === 'trial' && !data.active);
         }
     } catch (err) {
         loadingEl.style.display = 'none';
