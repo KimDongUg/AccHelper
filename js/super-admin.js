@@ -177,6 +177,7 @@ async function openCompanyModal(companyId) {
         <div class="detail-grid">
             <div class="detail-row"><span class="detail-label">회사번호</span><span class="detail-value">${s.company_id}</span></div>
             <div class="detail-row"><span class="detail-label">회사코드</span><span class="detail-value">${escapeHtml(s.company_code || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">사업자등록번호</span><span class="detail-value">${escapeHtml(s.business_number || '-')}</span></div>
             <div class="detail-row"><span class="detail-label">플랜</span><span class="detail-value">${escapeHtml(planLabel)}</span></div>
             <div class="detail-row"><span class="detail-label">구독 상태</span><span class="detail-value">${statusLabel}</span></div>
             <div class="detail-row"><span class="detail-label">카드 정보</span><span class="detail-value">${escapeHtml(cardInfo)}</span></div>
