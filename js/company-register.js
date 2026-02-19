@@ -121,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             building_type: buildingTypeEl.value,
             company_name: companyName,
             business_number: businessNumber,
-            company_code: companyCode,
             address: companyAddress,
             phone: companyPhone,
         };

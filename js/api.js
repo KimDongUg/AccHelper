@@ -99,7 +99,16 @@ async function apiFetch(path, options = {}) {
 
     try {
         const response = await fetch(url, config);
-        const data = await response.json();
+
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            if (!response.ok) {
+                throw new Error('서버 오류가 발생했습니다. (HTTP ' + response.status + ')');
+            }
+            throw new Error('서버 응답을 처리할 수 없습니다.');
+        }
 
         if (!response.ok) {
             if (response.status === 401) {
