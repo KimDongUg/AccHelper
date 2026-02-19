@@ -201,6 +201,22 @@ async function loadStats() {
     } catch (e) {
         console.error('Stats load error:', e);
     }
+    // 구독 상태 로드
+    try {
+        const sess = AuthSession.get();
+        const data = await apiGet('/billing/status?company_id=' + sess.companyId);
+        const el = document.getElementById('statSubscription');
+        if (data.plan === 'enterprise' && data.active) {
+            el.innerHTML = '<span style="color:var(--success)">유료 구독중</span>';
+        } else if (data.plan === 'trial' && data.active) {
+            const days = data.trialDaysLeft ?? '';
+            el.innerHTML = '<span style="color:#FF9800">체험중' + (days ? ' (' + days + '일)' : '') + '</span>';
+        } else {
+            el.innerHTML = '<span style="color:var(--gray-500)">미구독</span>';
+        }
+    } catch (e) {
+        document.getElementById('statSubscription').innerHTML = '<span style="color:var(--gray-500)">미구독</span>';
+    }
 }
 
 /* ═══════════════════════════════════════════════
