@@ -497,7 +497,7 @@ select.form-control {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     width: 90%;
-    max-width: 600px;
+    max-width: 860px;
     max-height: 90vh;
     overflow-y: auto;
     transform: translateY(20px);
