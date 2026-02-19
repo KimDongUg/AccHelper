@@ -78,7 +78,12 @@ const AuthSession = {
     isValid() {
         const s = this.get();
         if (!s || !s.isLoggedIn) return false;
-        if (new Date(s.expiryTime) <= new Date()) {
+        // Handle both ISO string and Unix timestamp (seconds)
+        let expiry = s.expiryTime;
+        if (typeof expiry === 'number' && expiry < 4102444800) {
+            expiry = expiry * 1000; // seconds → milliseconds
+        }
+        if (new Date(expiry) <= new Date()) {
             this.clear();
             return false;
         }
@@ -102,7 +107,9 @@ async function apiFetch(path, options = {}) {
     // Client-side expiry guard (skip for auth endpoints)
     if (!path.startsWith('/auth/')) {
         const sess = AuthSession.get();
-        if (sess && sess.expiryTime && new Date(sess.expiryTime) <= new Date()) {
+        let _exp = sess && sess.expiryTime;
+        if (typeof _exp === 'number' && _exp < 4102444800) _exp = _exp * 1000;
+        if (_exp && new Date(_exp) <= new Date()) {
             AuthSession.clear();
             if (!window.location.pathname.includes('login')) {
                 window.location.href = '/login.html';
