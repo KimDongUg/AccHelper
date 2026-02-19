@@ -1,4 +1,4 @@
-const TOSS_CLIENT_KEY = 'test_ck_24xLea5zVAm4l9Mo1XglVQAMYNwW';
+let TOSS_CLIENT_KEY = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     // ── Auth check ──
@@ -66,6 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelSubBtn.addEventListener('click', cancelSubscription);
     }
 
+    // ── 토스 Client Key 로드 ──
+    apiGet('/billing/client-key').then(function (data) {
+        if (data && data.clientKey) TOSS_CLIENT_KEY = data.clientKey;
+    }).catch(function () {});
+
     // ── 유료 구독(enterprise) 활성이면 바로 admin 이동 (체험중은 구독 페이지 접근 허용) ──
     if (sess.billingActive && sess.subscriptionPlan === 'enterprise') {
         window.location.href = '/admin.html';
@@ -84,6 +89,11 @@ function requestBillingAuth(customerKey) {
     try {
         if (typeof TossPayments === 'undefined') {
             showAlert('결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해 주세요.', 'error');
+            return;
+        }
+
+        if (!TOSS_CLIENT_KEY) {
+            showAlert('결제 설정을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
             return;
         }
 
