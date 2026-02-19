@@ -217,10 +217,10 @@ async function loadStats() {
             }
             el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span>';
         } else {
-            el.innerHTML = '<span style="color:var(--gray-500)">미구독</span>';
+            el.innerHTML = '<a href="/billing.html" style="color:var(--primary);font-weight:600;text-decoration:underline">구독하기</a>';
         }
     } catch (e) {
-        document.getElementById('statSubscription').innerHTML = '<span style="color:var(--gray-500)">미구독</span>';
+        document.getElementById('statSubscription').innerHTML = '<a href="/billing.html" style="color:var(--primary);font-weight:600;text-decoration:underline">구독하기</a>';
     }
 }
 
