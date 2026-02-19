@@ -32,11 +32,16 @@
             }
             overlay.classList.remove('show');
             document.body.style.overflow = '';
+            // 팝업 닫힘 알림 (도입글 등 대기 중인 요소에 전달)
+            document.dispatchEvent(new Event('promoPopupClosed'));
         }
 
         // "오늘 안보기" 확인 후 자동 표시
         if (localStorage.getItem(STORAGE_KEY) !== today) {
             openPopup();
+        } else {
+            // 팝업 안 뜨면 즉시 알림
+            document.dispatchEvent(new Event('promoPopupClosed'));
         }
 
         // 닫기 버튼

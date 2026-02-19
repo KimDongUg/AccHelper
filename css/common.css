@@ -660,8 +660,7 @@ table tr:hover td {
     }
 
     .header-logo img {
-        height: 150px;
-        margin: -35px 0 -35px -15px;
+        display: none;
     }
 
     .header-logo span {
@@ -697,9 +696,13 @@ table tr:hover td {
 }
 
 /* Tablet */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1023px) {
     :root {
         --header-height: 64px;
+    }
+
+    .header-logo img {
+        display: none;
     }
 }
 

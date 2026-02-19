@@ -1,4 +1,4 @@
-/* ── Site Intro (처음 방문 시에만 표시) ────────── */
+/* ── Site Intro (처음 방문 시에만 표시, 팝업 닫힌 후 시작) ── */
 (function () {
     const intro = document.querySelector('.site-intro');
     if (!intro) return;
@@ -9,33 +9,47 @@
         return;
     }
 
-    // 처음 방문 — 플래그 저장 후 애니메이션 표시
-    sessionStorage.setItem('introSeen', '1');
-
-    const isMobile = window.innerWidth <= 400 && window.innerHeight <= 900;
-
-    if (isMobile) {
-        // 모바일: 15초 후 3초간 fade out
-        setTimeout(() => {
-            intro.style.transition = 'opacity 3s ease';
-            intro.style.opacity = '0';
-            setTimeout(() => { intro.remove(); }, 3000);
-        }, 15000);
+    // 팝업이 열려있으면 숨겨두고, 닫힌 후 표시
+    var promoOverlay = document.getElementById('promoPopup');
+    if (promoOverlay && promoOverlay.classList.contains('show')) {
+        intro.style.display = 'none';
+        document.addEventListener('promoPopupClosed', function onClose() {
+            intro.style.display = '';
+            startIntroAnimation();
+            document.removeEventListener('promoPopupClosed', onClose);
+        });
     } else {
-        // 태블릿/데스크탑: 5초 후 슬라이드업
-        setTimeout(() => {
-            const inner = intro.querySelector('.site-intro-inner');
-            const totalH = intro.offsetHeight;
+        startIntroAnimation();
+    }
 
-            intro.style.height = totalH + 'px';
-            requestAnimationFrame(() => {
-                inner.style.transform = 'translateY(-' + totalH + 'px)';
-            });
+    function startIntroAnimation() {
+        sessionStorage.setItem('introSeen', '1');
 
-            setTimeout(() => {
-                inner.classList.add('fade');
-            }, 24000);
-        }, 5000);
+        var isMobile = window.innerWidth <= 400 && window.innerHeight <= 900;
+
+        if (isMobile) {
+            // 모바일: 15초 후 3초간 fade out
+            setTimeout(function () {
+                intro.style.transition = 'opacity 3s ease';
+                intro.style.opacity = '0';
+                setTimeout(function () { intro.remove(); }, 3000);
+            }, 15000);
+        } else {
+            // 태블릿/데스크탑: 5초 후 슬라이드업
+            setTimeout(function () {
+                var inner = intro.querySelector('.site-intro-inner');
+                var totalH = intro.offsetHeight;
+
+                intro.style.height = totalH + 'px';
+                requestAnimationFrame(function () {
+                    inner.style.transform = 'translateY(-' + totalH + 'px)';
+                });
+
+                setTimeout(function () {
+                    inner.classList.add('fade');
+                }, 24000);
+            }, 5000);
+        }
     }
 })();
 
