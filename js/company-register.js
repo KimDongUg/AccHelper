@@ -100,20 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
         // 사업자등록번호 중복 체크
+        const normalize = (v) => (v || '').replace(/[^0-9]/g, '');
         setLoading(nextBtn, true);
         try {
             const result = await apiGet('/companies/public');
             const companies = result.companies || result;
             if (companies && companies.length > 0) {
-                const duplicate = companies.find(c => c.business_number === businessNumber);
+                const inputNum = normalize(businessNumber);
+                const duplicate = companies.find(c => normalize(c.business_number) === inputNum);
                 if (duplicate) {
-                    showError('이미 등록된 회사입니다.');
                     setLoading(nextBtn, false);
+                    alert('이미 등록된 회사입니다.\n\n사업자등록번호 [' + businessNumber + ']는 이미 등록되어 있습니다.\n기존 회사로 로그인하시거나, 다른 사업자등록번호를 입력해 주세요.');
                     return;
                 }
             }
         } catch (err) {
-            // 조회 실패 시에도 진행 허용 (서버 오류 등)
             console.error('사업자등록번호 중복 체크 실패:', err);
         }
         setLoading(nextBtn, false);
