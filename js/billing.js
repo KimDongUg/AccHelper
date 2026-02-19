@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelSubBtn.addEventListener('click', cancelSubscription);
     }
 
-    // ── 세션에서 이미 구독 활성이면 바로 admin 이동 ──
-    if (sess.billingActive) {
+    // ── 유료 구독(enterprise) 활성이면 바로 admin 이동 (체험중은 구독 페이지 접근 허용) ──
+    if (sess.billingActive && sess.subscriptionPlan === 'enterprise') {
         window.location.href = '/admin.html';
         return;
     }
@@ -132,11 +132,11 @@ async function loadSubscriptionStatus(companyId) {
 
         loadingEl.style.display = 'none';
 
-        if (data.active) {
+        if (data.active && data.subscription_plan === 'enterprise') {
             window.location.href = '/admin.html';
             return;
         } else {
-            showPlanSelection(data.trialExpired);
+            showPlanSelection(data.subscription_plan === 'trial' && data.active);
         }
     } catch (err) {
         loadingEl.style.display = 'none';
