@@ -33,10 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     if (status === 'success') {
-        showAlert('카드 등록 완료! 결제를 진행합니다...', 'success');
+        showAlert('카드 등록 및 결제가 완료되었습니다!', 'success');
         window.history.replaceState({}, '', '/billing.html');
-        // 카드 등록 후 즉시 결제 실행
-        executeBillingPay();
+        // 백엔드 /api/billing/success 에서 이미 첫 결제를 처리하므로 추가 호출 불필요
+        setTimeout(() => {
+            window.location.href = '/admin.html';
+        }, 2000);
     } else if (status === 'fail') {
         const msg = params.get('message') || '카드 등록에 실패했습니다. 다시 시도해 주세요.';
         showAlert(msg, 'error');
