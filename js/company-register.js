@@ -16,21 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const companySummary = document.getElementById('companySummary');
 
     let autoCompanyCode = '';
+    let cachedCompanies = [];
 
     // Step 1에서 수집한 회사 정보 보관
     let companyData = {};
 
-    // Auto-generate company code from latest company_id + 1
+    // Auto-generate company code from latest company_id + 1 & cache companies
     (async function loadNextCode() {
         try {
             const result = await apiGet('/companies/public');
             const companies = result.companies || result;
+            cachedCompanies = Array.isArray(companies) ? companies : [];
+            console.log('[회사등록] /companies/public 응답:', cachedCompanies);
             let maxId = 0;
-            if (companies && companies.length > 0) {
-                companies.forEach(c => {
-                    if (c.company_id > maxId) maxId = c.company_id;
-                });
-            }
+            cachedCompanies.forEach(c => {
+                if (c.company_id > maxId) maxId = c.company_id;
+            });
             autoCompanyCode = String(maxId + 1);
             document.getElementById('companyCode').value = autoCompanyCode;
         } catch {
@@ -99,14 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
-        // 사업자등록번호 중복 체크
+        // 사업자등록번호 중복 체크 (캐시 우선, 없으면 재조회)
         const normalize = (v) => (v || '').replace(/[^0-9]/g, '');
+        const inputNum = normalize(businessNumber);
         setLoading(nextBtn, true);
         try {
-            const result = await apiGet('/companies/public');
-            const companies = result.companies || result;
+            let companies = cachedCompanies;
+            if (!companies || companies.length === 0) {
+                const result = await apiGet('/companies/public');
+                companies = result.companies || result;
+                cachedCompanies = Array.isArray(companies) ? companies : [];
+            }
+            console.log('[회사등록] 중복 체크 - 입력값:', businessNumber, '→', inputNum);
+            console.log('[회사등록] 등록된 사업자번호 목록:', companies.map(c => c.business_number));
             if (companies && companies.length > 0) {
-                const inputNum = normalize(businessNumber);
                 const duplicate = companies.find(c => normalize(c.business_number) === inputNum);
                 if (duplicate) {
                     setLoading(nextBtn, false);
