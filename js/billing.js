@@ -110,7 +110,7 @@ async function loadSubscriptionStatus(companyId) {
     const planSection = document.getElementById('planSection');
     const promoSection = document.getElementById('promoSection');
 
-    function showPlanSelection(trialExpired) {
+    function showPlanSelection(trialState) {
         statusSection.style.display = 'none';
         planSection.style.display = '';
         if (promoSection) promoSection.style.display = '';
@@ -118,11 +118,19 @@ async function loadSubscriptionStatus(companyId) {
         const trialBtn = document.getElementById('trialBtn');
         const trialExpiredBtn = document.getElementById('trialExpiredBtn');
 
-        if (trialExpired) {
+        if (trialState === 'active') {
+            // 체험 진행중 — 남은 일수 표시 + 비활성
+            if (trialBtn) {
+                trialBtn.disabled = true;
+                trialBtn.textContent = '체험중 (' + (trialState.days || '') + ')';
+                trialBtn.style.display = '';
+            }
+            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
+        } else if (trialState === 'expired') {
             if (trialBtn) trialBtn.style.display = 'none';
             if (trialExpiredBtn) trialExpiredBtn.style.display = '';
         } else {
-            if (trialBtn) trialBtn.style.display = '';
+            if (trialBtn) { trialBtn.style.display = ''; trialBtn.disabled = false; }
             if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
         }
     }
@@ -135,8 +143,31 @@ async function loadSubscriptionStatus(companyId) {
         if (data.active && data.subscription_plan === 'enterprise') {
             window.location.href = '/admin.html';
             return;
+        }
+
+        if (data.subscription_plan === 'trial' && data.active) {
+            // 체험중 — 남은 일수 계산
+            let daysLeft = '';
+            if (data.trial_ends_at) {
+                const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
+                daysLeft = (diff > 0 ? diff : 0) + '일 남음';
+            }
+            const trialBtn = document.getElementById('trialBtn');
+            const trialExpiredBtn = document.getElementById('trialExpiredBtn');
+            statusSection.style.display = 'none';
+            planSection.style.display = '';
+            if (promoSection) promoSection.style.display = '';
+            if (trialBtn) {
+                trialBtn.textContent = '체험중 (' + daysLeft + ')';
+                trialBtn.disabled = true;
+                trialBtn.style.opacity = '0.7';
+                trialBtn.style.display = '';
+            }
+            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
+        } else if (data.subscription_plan === 'trial' && !data.active) {
+            showPlanSelection('expired');
         } else {
-            showPlanSelection(data.subscription_plan === 'trial' && !data.active);
+            showPlanSelection('none');
         }
     } catch (err) {
         loadingEl.style.display = 'none';
