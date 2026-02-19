@@ -1019,24 +1019,60 @@ table tr:hover td {
     cursor: pointer;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
     .promo-popup {
         width: 95%;
-        max-width: none;
+        max-width: 420px;
     }
 
     .promo-popup-body {
-        padding: 1.5rem 1rem 0.75rem;
+        padding: 2rem 1.5rem 1rem;
     }
 
-    .promo-popup-logo img {
-        height: 180px;
+    .promo-popup-speech p {
+        font-size: var(--text-sm);
+    }
+
+    .promo-popup-speech p:first-child {
+        font-size: var(--text-base);
+    }
+
+    .promo-popup-badge {
+        font-size: var(--text-xs);
+        padding: 0.2rem 0.75rem;
+    }
+
+    .promo-popup-title {
+        font-size: var(--text-lg);
+    }
+
+    .promo-popup-original {
+        font-size: var(--text-sm);
     }
 
     .promo-popup-discount {
-        font-size: 1.75rem;
+        font-size: var(--text-xl);
     }
 
+    .promo-popup-note {
+        font-size: var(--text-sm);
+    }
+
+    .promo-popup-benefits li {
+        font-size: var(--text-xs);
+        padding-left: 1rem;
+    }
+
+    .promo-popup-cta {
+        font-size: var(--text-sm);
+    }
+
+    .promo-popup-today {
+        font-size: var(--text-xs);
+    }
+}
+
+@media (max-width: 767px) {
     .promo-popup-benefits {
         flex-direction: column;
         align-items: center;
