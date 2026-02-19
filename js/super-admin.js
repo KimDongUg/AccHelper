@@ -202,19 +202,30 @@ async function openCompanyModal(companyId) {
         } else {
             const roleLabels = { super_admin: '최고관리자', admin: '관리자', viewer: '뷰어' };
             area.innerHTML = `<table class="admin-list-table">
-                <thead><tr><th>이메일</th><th>이름</th><th>역할</th><th>상태</th><th>최근 로그인</th></tr></thead>
+                <thead><tr><th>이메일</th><th>이름</th><th>역할</th><th>상태</th><th>최근 로그인</th><th>관리</th></tr></thead>
                 <tbody>${admins.map(a => `<tr>
                     <td>${escapeHtml(a.email)}</td>
                     <td>${escapeHtml(a.full_name || '-')}</td>
                     <td>${escapeHtml(roleLabels[a.role] || a.role)}</td>
                     <td>${a.is_active ? '<span style="color:var(--success)">활성</span>' : '<span style="color:var(--gray-400)">비활성</span>'}</td>
                     <td style="white-space:nowrap">${a.last_login ? formatDate(a.last_login) : '-'}</td>
+                    <td><button class="btn btn-sm btn-outline" onclick="resetAdminPassword(${a.user_id}, '${escapeHtml(a.email)}')">비밀번호 초기화</button></td>
                 </tr>`).join('')}</tbody>
             </table>`;
         }
     } catch (e) {
         const area = document.getElementById('adminListArea');
         if (area) area.innerHTML = '<p style="color:var(--danger);font-size:var(--text-sm)">관리자 목록을 불러올 수 없습니다.</p>';
+    }
+}
+
+async function resetAdminPassword(userId, email) {
+    if (!confirm(`[${email}] 의 비밀번호를 "admin1234"로 초기화하시겠습니까?`)) return;
+    try {
+        await apiPatch('/admins/' + userId + '/reset-password', { new_password: 'admin1234' });
+        alert('비밀번호가 초기화되었습니다.\n새 비밀번호: admin1234');
+    } catch (err) {
+        alert('비밀번호 초기화 실패: ' + (err.message || '알 수 없는 오류'));
     }
 }
 
