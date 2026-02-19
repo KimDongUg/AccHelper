@@ -996,7 +996,8 @@ table tr:hover td {
 .promo-popup-pc-notice {
     display: none;
     font-size: var(--text-xs);
-    color: var(--gray-500);
+    color: var(--gray-900);
+    font-weight: var(--font-bold);
     margin-top: 0.5rem;
 }
 
