@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelSubBtn.addEventListener('click', cancelSubscription);
     }
 
+    // ── Promo popup ──
+    initPromoPopup();
+
     // ── 유료 구독(enterprise) 활성이면 바로 admin 이동 (체험중은 구독 페이지 접근 허용) ──
     if (sess.billingActive && sess.subscriptionPlan === 'enterprise') {
         window.location.href = '/admin.html';
@@ -75,6 +78,69 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Load subscription status ──
     loadSubscriptionStatus(sess.companyId);
 });
+
+/* ──────────────────────────────────────────────
+ *  Promo Event Popup (오늘 안보기 지원)
+ * ────────────────────────────────────────────── */
+function initPromoPopup() {
+    const overlay = document.getElementById('promoPopup');
+    const closeBtn = document.getElementById('promoPopupClose');
+    const confirmBtn = document.getElementById('promoPopupConfirm');
+    const todayCheck = document.getElementById('promoTodayCheck');
+    const bannerBtn = document.getElementById('promoBannerBtn');
+
+    if (!overlay) return;
+
+    // "오늘 안보기" 체크 확인
+    const STORAGE_KEY = 'promo_hide_date';
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    function shouldShow() {
+        const hideDate = localStorage.getItem(STORAGE_KEY);
+        return hideDate !== today;
+    }
+
+    function openPopup() {
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePopup() {
+        if (todayCheck && todayCheck.checked) {
+            localStorage.setItem(STORAGE_KEY, today);
+        }
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    // 페이지 로드 시 자동 표시
+    if (shouldShow()) {
+        setTimeout(openPopup, 500);
+    }
+
+    // 배너 클릭 시 수동 표시
+    if (bannerBtn) {
+        bannerBtn.addEventListener('click', openPopup);
+        bannerBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopup(); }
+        });
+    }
+
+    // 닫기 버튼
+    if (closeBtn) closeBtn.addEventListener('click', closePopup);
+    if (confirmBtn) confirmBtn.addEventListener('click', closePopup);
+
+    // 오버레이 배경 클릭 시 닫기
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+    });
+
+    // ESC 키 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) closePopup();
+    });
+}
+
 
 /* ──────────────────────────────────────────────
  *  Request Billing Auth (card registration)
