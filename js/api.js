@@ -49,6 +49,9 @@ const AuthSession = {
         localStorage.removeItem(AUTH_KEY);
         sessionStorage.removeItem(AUTH_KEY);
         store.setItem(AUTH_KEY, JSON.stringify(data));
+        console.log('[AUTH] save → store:', persist ? 'localStorage' : 'sessionStorage',
+            'expiryTime:', data.expiryTime, '(type:', typeof data.expiryTime + ')',
+            'token:', data.token ? data.token.substring(0, 20) + '...' : 'null');
     },
 
     /** Return parsed session object or null. */
@@ -77,13 +80,24 @@ const AuthSession = {
     /** True if a session exists and has not expired client-side. */
     isValid() {
         const s = this.get();
-        if (!s || !s.isLoggedIn) return false;
+        if (!s || !s.isLoggedIn) {
+            console.log('[AUTH] isValid → false (no session or not logged in)');
+            return false;
+        }
         // Handle both ISO string and Unix timestamp (seconds)
         let expiry = s.expiryTime;
+        const rawExpiry = expiry;
         if (typeof expiry === 'number' && expiry < 4102444800) {
             expiry = expiry * 1000; // seconds → milliseconds
         }
-        if (new Date(expiry) <= new Date()) {
+        const expiryDate = new Date(expiry);
+        const now = new Date();
+        const valid = expiryDate > now;
+        console.log('[AUTH] isValid → ' + valid,
+            '| raw:', rawExpiry, '(type:', typeof rawExpiry + ')',
+            '| parsed:', expiryDate.toISOString(),
+            '| now:', now.toISOString());
+        if (!valid) {
             this.clear();
             return false;
         }
@@ -92,6 +106,7 @@ const AuthSession = {
 
     /** Redirect to login and clear session. */
     redirectToLogin(returnUrl) {
+        console.log('[AUTH] redirectToLogin called from:', new Error().stack);
         this.clear();
         if (!window.location.pathname.includes('login')) {
             const url = returnUrl || '/login.html';

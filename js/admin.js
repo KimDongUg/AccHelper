@@ -14,11 +14,17 @@ let companyMap = {};  // id → name
  * ═══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     // Auth guard
-    if (!AuthSession.isValid()) { AuthSession.redirectToLogin(); return; }
+    console.log('[ADMIN] page loaded, checking isValid...');
+    if (!AuthSession.isValid()) { console.log('[ADMIN] isValid=false → redirect'); AuthSession.redirectToLogin(); return; }
+    console.log('[ADMIN] isValid=true, calling /auth/check...');
     try {
         const auth = await apiGet('/auth/check');
-        if (!auth.authenticated) { AuthSession.redirectToLogin(); return; }
+        console.log('[ADMIN] auth/check response:', JSON.stringify(auth).substring(0, 300));
+        if (!auth.authenticated) { console.log('[ADMIN] not authenticated → redirect'); AuthSession.redirectToLogin(); return; }
         if (auth.session) {
+            console.log('[ADMIN] re-saving session, auth.session.expiry_time:', auth.session.expiry_time,
+                '(type:', typeof auth.session.expiry_time + ')',
+                '| existing token:', AuthSession.getToken() ? 'exists' : 'null');
             const persist = !!localStorage.getItem('acc_auth_session');
             AuthSession.save(auth.session, persist, AuthSession.getToken());
         }
