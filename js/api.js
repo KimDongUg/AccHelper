@@ -1,6 +1,18 @@
 const API_BASE = '/api';
 
 /* ──────────────────────────────────────────────
+ *  ApiError — structured error with HTTP status
+ * ────────────────────────────────────────────── */
+class ApiError extends Error {
+    constructor(message, status, data) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.data = data;
+    }
+}
+
+/* ──────────────────────────────────────────────
  *  AuthSession — client-side session manager
  *  Stores session data in sessionStorage (default)
  *  or localStorage ("로그인 유지" checked).
@@ -12,8 +24,9 @@ const AuthSession = {
      * Save session data returned from server.
      * @param {object} session  - {user_id, company_id, company_name, email, full_name, role, ...}
      * @param {boolean} persist - true = localStorage (remember me)
+     * @param {string} [token]  - JWT token string
      */
-    save(session, persist) {
+    save(session, persist, token) {
         const data = {
             isLoggedIn: true,
             userId: session.user_id,
@@ -29,6 +42,7 @@ const AuthSession = {
             expiryTime: session.expiry_time,
             billingActive: session.billing_active || false,
             subscriptionPlan: session.subscription_plan || null,
+            token: token || session.token || null,
         };
         const store = persist ? localStorage : sessionStorage;
         // Clear the other store to avoid stale data
@@ -46,6 +60,12 @@ const AuthSession = {
         } catch {
             return null;
         }
+    },
+
+    /** Return JWT token string or null. */
+    getToken() {
+        const s = this.get();
+        return s ? s.token : null;
     },
 
     /** Remove session from both stores. */
@@ -66,10 +86,11 @@ const AuthSession = {
     },
 
     /** Redirect to login and clear session. */
-    redirectToLogin() {
+    redirectToLogin(returnUrl) {
         this.clear();
         if (!window.location.pathname.includes('login')) {
-            window.location.href = '/login.html';
+            const url = returnUrl || '/login.html';
+            window.location.href = url;
         }
     },
 };
@@ -86,15 +107,23 @@ async function apiFetch(path, options = {}) {
             if (!window.location.pathname.includes('login')) {
                 window.location.href = '/login.html';
             }
-            throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.');
+            throw new ApiError('세션이 만료되었습니다. 다시 로그인해 주세요.', 401);
         }
     }
 
     const url = `${API_BASE}${path}`;
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+
+    // Attach JWT Authorization header if available
+    const token = AuthSession.getToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const config = {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
         ...options,
+        headers,
+        credentials: 'same-origin',
     };
 
     try {
@@ -105,27 +134,32 @@ async function apiFetch(path, options = {}) {
             data = await response.json();
         } catch {
             if (!response.ok) {
-                throw new Error('서버 오류가 발생했습니다. (HTTP ' + response.status + ')');
+                throw new ApiError('서버 오류가 발생했습니다. (HTTP ' + response.status + ')', response.status);
             }
-            throw new Error('서버 응답을 처리할 수 없습니다.');
+            throw new ApiError('서버 응답을 처리할 수 없습니다.', response.status);
         }
 
         if (!response.ok) {
-            if (response.status === 401) {
-                AuthSession.redirectToLogin();
-            }
             let message = '요청 처리 중 오류가 발생했습니다.';
             if (typeof data.detail === 'string') {
                 message = data.detail;
             } else if (Array.isArray(data.detail)) {
                 message = data.detail.map(e => e.msg || JSON.stringify(e)).join(', ');
+            } else if (typeof data.message === 'string') {
+                message = data.message;
             }
-            throw new Error(message);
+
+            if (response.status === 401) {
+                AuthSession.redirectToLogin();
+            }
+
+            throw new ApiError(message, response.status, data);
         }
         return data;
     } catch (err) {
+        if (err instanceof ApiError) throw err;
         if (err.message === 'Failed to fetch') {
-            throw new Error('서버에 연결할 수 없습니다.');
+            throw new ApiError('서버에 연결할 수 없습니다.', 0);
         }
         throw err;
     }

@@ -98,6 +98,7 @@
 
         <div class="typing-indicator" id="typingIndicator" role="status" aria-label="응답 작성 중">
             <span></span><span></span><span></span>
+            <span class="typing-text">답변 생성 중...</span>
         </div>
 
         <!-- Quick questions -->
@@ -161,6 +162,9 @@
         </div>
     </div>
 
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
     <footer class="site-footer" role="contentinfo">
         <div class="footer-inner">
             <nav class="footer-links" aria-label="정책 링크">
@@ -176,6 +180,7 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/promo-popup.js"></script>
     <script src="/js/index.js"></script>

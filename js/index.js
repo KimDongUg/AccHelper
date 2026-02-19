@@ -55,12 +55,14 @@
 
 /* ── State ──────────────────────────────────── */
 let currentCompanyId = null;
+let currentCompanyCode = null;
 let sessionId = sessionStorage.getItem('chatSessionId');
 if (!sessionId) {
     sessionId = generateSessionId();
     sessionStorage.setItem('chatSessionId', sessionId);
 }
 let selectedCategory = '전체';
+let quotaRemaining = null;
 
 /* ── DOM refs (chat section — may not exist until shown) ── */
 const chatSection     = document.getElementById('chatSection');
@@ -71,16 +73,33 @@ const companyError    = document.getElementById('companyError');
 const companyErrorMsg = document.getElementById('companyErrorMsg');
 const companyLabel    = document.getElementById('companyLabel');
 
+/* ── Toast notification ────────────────────── */
+function showToast(message, duration) {
+    if (duration === undefined) duration = 3000;
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    container.appendChild(toast);
+    // Trigger animation
+    requestAnimationFrame(function () {
+        toast.classList.add('show');
+    });
+    setTimeout(function () {
+        toast.classList.remove('show');
+        setTimeout(function () { toast.remove(); }, 300);
+    }, duration);
+}
+
 /* ── Initialization ────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('company');
+document.addEventListener('DOMContentLoaded', function () {
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('company');
 
     if (code) {
-        // Validate company code and start chat
         validateAndStartChat(code);
     } else {
-        // Show company selection
         showCompanySelection();
     }
 });
@@ -154,7 +173,7 @@ async function loadCompanies() {
     }
 }
 
-/* ── Validate company & start chat ─────────── */
+/* ── Validate company & start chat (with login gate) ── */
 async function validateAndStartChat(code) {
     companySelection.style.display = 'none';
     chatSection.style.display = 'none';
@@ -162,10 +181,17 @@ async function validateAndStartChat(code) {
     try {
         const company = await apiGet(`/companies/public/${encodeURIComponent(code)}`);
         currentCompanyId = company.company_id;
+        currentCompanyCode = code;
 
         // Show company name in header
         companyLabel.textContent = company.company_name;
         companyLabel.style.display = '';
+
+        // Login gate: check if user is authenticated
+        if (!AuthSession.isValid()) {
+            AuthSession.redirectToLogin(`/login.html?redirect=chat&company=${encodeURIComponent(code)}`);
+            return;
+        }
 
         // Show chat
         showChat();
@@ -224,11 +250,18 @@ function showChat() {
         }
     });
 
+    // Track last question for feedback
+    let lastQuestion = null;
+
     async function sendMessage(text) {
         appendMessage('user', text);
         chatInput.value = '';
         chatInput.disabled = true;
         sendBtn.disabled = true;
+        lastQuestion = text;
+
+        // Hide quick questions after first message
+        if (quickQuestions) quickQuestions.style.display = 'none';
 
         typingIndicator.classList.add('show');
         scrollToBottom();
@@ -236,19 +269,56 @@ function showChat() {
         try {
             const body = {
                 question: text,
-                session_id: sessionId,
                 category: selectedCategory === '전체' ? null : selectedCategory,
             };
-            if (currentCompanyId) {
-                body.company_id = currentCompanyId;
-            }
 
             const result = await apiPost('/chat', body);
             typingIndicator.classList.remove('show');
-            appendMessage('bot', result.answer, result.category);
+
+            // Store quota if provided
+            if (result.quota_remaining !== undefined) {
+                quotaRemaining = result.quota_remaining;
+            }
+
+            // Render bot answer with RAG data
+            appendBotMessage(result, text);
         } catch (err) {
             typingIndicator.classList.remove('show');
-            appendMessage('bot', '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+
+            if (err instanceof ApiError) {
+                if (err.status === 429) {
+                    appendSystemMessage(
+                        '이번 달 질문 횟수를 모두 사용했습니다.',
+                        { label: '요금제 업그레이드', href: '/billing.html' }
+                    );
+                } else if (err.status === 403) {
+                    var detail = (err.data && err.data.reason) || '';
+                    if (detail === 'trial_expired') {
+                        appendSystemMessage(
+                            '무료체험이 종료되었습니다.',
+                            { label: '요금제 확인', href: '/billing.html' }
+                        );
+                    } else {
+                        appendSystemMessage(
+                            '서비스가 일시 정지되었습니다. 관리자에게 문의해 주세요.'
+                        );
+                    }
+                } else if (err.status >= 500) {
+                    appendSystemMessage(
+                        '일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+                        null,
+                        function () { sendMessage(text); }
+                    );
+                } else {
+                    appendMessage('bot', '죄송합니다. 오류가 발생했습니다: ' + err.message);
+                }
+            } else {
+                appendSystemMessage(
+                    '일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+                    null,
+                    function () { sendMessage(text); }
+                );
+            }
         }
 
         chatInput.disabled = false;
@@ -256,12 +326,219 @@ function showChat() {
         chatInput.focus();
     }
 
-    function appendMessage(type, text, category) {
-        const msg = document.createElement('div');
-        msg.className = `message ${type}`;
+    /* ── Render bot message with RAG response ── */
+    function appendBotMessage(result, question) {
+        var msg = document.createElement('div');
+        msg.className = 'message bot';
         msg.setAttribute('role', 'article');
 
-        const avatar = document.createElement('div');
+        var avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.setAttribute('aria-hidden', 'true');
+        avatar.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+        var bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+
+        // Category badge (from legacy format or evidences)
+        if (result.category) {
+            var catBadge = document.createElement('div');
+            catBadge.className = 'message-category';
+            catBadge.textContent = result.category;
+            bubble.appendChild(catBadge);
+        }
+
+        // RAG warning: used_rag === false
+        if (result.used_rag === false) {
+            var warning = document.createElement('div');
+            warning.className = 'rag-warning';
+            warning.textContent = '\u26A0 등록된 근거 없이 생성된 답변입니다. 확인이 필요합니다.';
+            bubble.appendChild(warning);
+        }
+
+        // Markdown-rendered answer
+        var answerDiv = document.createElement('div');
+        answerDiv.className = 'message-answer';
+        if (typeof marked !== 'undefined' && marked.parse) {
+            answerDiv.innerHTML = marked.parse(result.answer || '');
+        } else {
+            answerDiv.textContent = result.answer || '';
+        }
+        bubble.appendChild(answerDiv);
+
+        // Evidence section (if evidences exist in response)
+        if (result.evidences && result.evidences.length > 0) {
+            bubble.appendChild(buildEvidenceSection(result.evidences));
+        } else if (result.evidences && result.evidences.length === 0) {
+            var noEvidence = document.createElement('div');
+            noEvidence.className = 'evidence-empty';
+            noEvidence.textContent = '등록된 정보에서 답변을 찾지 못했습니다. 관리실에 문의해 주세요.';
+            bubble.appendChild(noEvidence);
+        }
+
+        // Feedback buttons
+        var qaIds = [];
+        if (result.evidences) {
+            result.evidences.forEach(function (e) {
+                if (e.qa_id) qaIds.push(e.qa_id);
+            });
+        }
+        bubble.appendChild(buildFeedbackButtons(question, result.answer, qaIds));
+
+        msg.appendChild(avatar);
+        msg.appendChild(bubble);
+        chatMessages.appendChild(msg);
+        scrollToBottom();
+    }
+
+    /* ── Build evidence collapse section ── */
+    function buildEvidenceSection(evidences) {
+        var section = document.createElement('div');
+        section.className = 'evidence-section';
+
+        var toggle = document.createElement('button');
+        toggle.className = 'evidence-toggle';
+        toggle.type = 'button';
+        toggle.innerHTML = '\uD83D\uDCCB 참고한 답변 (' + evidences.length + '건) \u25BC';
+
+        var list = document.createElement('div');
+        list.className = 'evidence-list';
+        list.style.display = 'none';
+
+        evidences.forEach(function (ev) {
+            var item = document.createElement('div');
+            item.className = 'evidence-item';
+
+            if (ev.category) {
+                var badge = document.createElement('span');
+                badge.className = 'badge-category';
+                badge.textContent = ev.category;
+                item.appendChild(badge);
+            }
+
+            if (ev.question) {
+                var q = document.createElement('strong');
+                q.textContent = ev.question;
+                item.appendChild(q);
+            }
+
+            if (ev.answer) {
+                var a = document.createElement('p');
+                // Show first 200 chars as summary
+                a.textContent = ev.answer.length > 200 ? ev.answer.substring(0, 200) + '...' : ev.answer;
+                item.appendChild(a);
+            }
+
+            list.appendChild(item);
+        });
+
+        toggle.addEventListener('click', function () {
+            var isHidden = list.style.display === 'none';
+            list.style.display = isHidden ? '' : 'none';
+            toggle.innerHTML = '\uD83D\uDCCB 참고한 답변 (' + evidences.length + '건) ' + (isHidden ? '\u25B2' : '\u25BC');
+        });
+
+        section.appendChild(toggle);
+        section.appendChild(list);
+        return section;
+    }
+
+    /* ── Build feedback buttons ── */
+    function buildFeedbackButtons(question, answer, qaIds) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'feedback-buttons';
+
+        var likeBtn = document.createElement('button');
+        likeBtn.className = 'feedback-btn';
+        likeBtn.type = 'button';
+        likeBtn.setAttribute('data-rating', 'like');
+        likeBtn.textContent = '\uD83D\uDC4D';
+
+        var dislikeBtn = document.createElement('button');
+        dislikeBtn.className = 'feedback-btn';
+        dislikeBtn.type = 'button';
+        dislikeBtn.setAttribute('data-rating', 'dislike');
+        dislikeBtn.textContent = '\uD83D\uDC4E';
+
+        function handleFeedback(rating) {
+            likeBtn.disabled = true;
+            dislikeBtn.disabled = true;
+
+            if (rating === 'like') {
+                likeBtn.classList.add('selected');
+            } else {
+                dislikeBtn.classList.add('selected');
+            }
+
+            apiPost('/feedback', {
+                question: question,
+                answer: answer,
+                qa_ids: qaIds,
+                rating: rating,
+            }).then(function () {
+                showToast('피드백 감사합니다');
+            }).catch(function () {
+                showToast('피드백 전송에 실패했습니다');
+                likeBtn.disabled = false;
+                dislikeBtn.disabled = false;
+                likeBtn.classList.remove('selected');
+                dislikeBtn.classList.remove('selected');
+            });
+        }
+
+        likeBtn.addEventListener('click', function () { handleFeedback('like'); });
+        dislikeBtn.addEventListener('click', function () { handleFeedback('dislike'); });
+
+        wrapper.appendChild(likeBtn);
+        wrapper.appendChild(dislikeBtn);
+        return wrapper;
+    }
+
+    /* ── System message (errors, quota, etc.) ── */
+    function appendSystemMessage(text, cta, retryFn) {
+        var msg = document.createElement('div');
+        msg.className = 'message system';
+        msg.setAttribute('role', 'alert');
+
+        var bubble = document.createElement('div');
+        bubble.className = 'system-message';
+
+        var textEl = document.createElement('p');
+        textEl.textContent = text;
+        bubble.appendChild(textEl);
+
+        if (cta) {
+            var ctaBtn = document.createElement('a');
+            ctaBtn.className = 'btn btn-primary btn-sm';
+            ctaBtn.href = cta.href;
+            ctaBtn.textContent = cta.label;
+            bubble.appendChild(ctaBtn);
+        }
+
+        if (retryFn) {
+            var retryBtn = document.createElement('button');
+            retryBtn.className = 'btn btn-outline btn-sm';
+            retryBtn.type = 'button';
+            retryBtn.textContent = '다시 시도';
+            retryBtn.addEventListener('click', function () {
+                msg.remove();
+                retryFn();
+            });
+            bubble.appendChild(retryBtn);
+        }
+
+        msg.appendChild(bubble);
+        chatMessages.appendChild(msg);
+        scrollToBottom();
+    }
+
+    /* ── Plain text message (user / simple bot) ── */
+    function appendMessage(type, text, category) {
+        var msg = document.createElement('div');
+        msg.className = 'message ' + type;
+        msg.setAttribute('role', 'article');
+
+        var avatar = document.createElement('div');
         avatar.className = 'message-avatar';
         avatar.setAttribute('aria-hidden', 'true');
 
@@ -271,18 +548,22 @@ function showChat() {
             avatar.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
         }
 
-        const bubble = document.createElement('div');
+        var bubble = document.createElement('div');
         bubble.className = 'message-bubble';
 
         if (type === 'bot' && category) {
-            const catBadge = document.createElement('div');
+            var catBadge = document.createElement('div');
             catBadge.className = 'message-category';
             catBadge.textContent = category;
             bubble.appendChild(catBadge);
         }
 
-        const textNode = document.createElement('div');
-        textNode.textContent = text;
+        var textNode = document.createElement('div');
+        if (type === 'bot' && typeof marked !== 'undefined' && marked.parse) {
+            textNode.innerHTML = marked.parse(text);
+        } else {
+            textNode.textContent = text;
+        }
         bubble.appendChild(textNode);
 
         msg.appendChild(avatar);
@@ -293,7 +574,7 @@ function showChat() {
     }
 
     function scrollToBottom() {
-        setTimeout(() => {
+        setTimeout(function () {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 50);
     }
@@ -301,14 +582,23 @@ function showChat() {
     // Load chat history
     async function loadHistory() {
         try {
-            let url = `/chat/history/${sessionId}`;
+            var url = `/chat/history/${sessionId}`;
             if (currentCompanyId) {
                 url += `?company_id=${currentCompanyId}`;
             }
-            const history = await apiGet(url);
-            history.forEach(item => {
+            var history = await apiGet(url);
+            history.forEach(function (item) {
                 appendMessage('user', item.user_question);
-                appendMessage('bot', item.bot_answer, item.category);
+                if (item.evidences !== undefined) {
+                    appendBotMessage({
+                        answer: item.bot_answer,
+                        category: item.category,
+                        evidences: item.evidences || [],
+                        used_rag: item.used_rag,
+                    }, item.user_question);
+                } else {
+                    appendMessage('bot', item.bot_answer, item.category);
+                }
             });
             if (history.length > 0) {
                 quickQuestions.style.display = 'none';
@@ -321,14 +611,14 @@ function showChat() {
     // Check admin status
     async function checkAdmin() {
         try {
-            const auth = await apiGet('/auth/check');
+            var auth = await apiGet('/auth/check');
             if (auth.authenticated && auth.session) {
-                const label = auth.session.full_name || auth.session.username || '';
-                document.getElementById('adminLink').textContent = `관리자 (${label})`;
-                const billingLink = document.getElementById('billingLink');
+                var label = auth.session.full_name || auth.session.username || '';
+                document.getElementById('adminLink').textContent = '관리자 (' + label + ')';
+                var billingLink = document.getElementById('billingLink');
                 if (billingLink) billingLink.style.display = '';
                 if (auth.session.role === 'super_admin') {
-                    const saLink = document.getElementById('superAdminLink');
+                    var saLink = document.getElementById('superAdminLink');
                     if (saLink) saLink.style.display = '';
                 }
             }

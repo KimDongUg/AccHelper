@@ -1,9 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Parse redirect params from URL (e.g., ?redirect=chat&company=X)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTarget = urlParams.get('redirect');
+    const redirectCompany = urlParams.get('company');
+
     // Already logged in? — check client-side first, then verify with server
     if (AuthSession.isValid()) {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
+                // If redirecting to chat, go there instead of admin
+                if (redirectTarget === 'chat') {
+                    const chatUrl = redirectCompany ? `/?company=${encodeURIComponent(redirectCompany)}` : '/';
+                    window.location.href = chatUrl;
+                    return;
+                }
                 if (res.session && res.session.role === 'super_admin') {
                     window.location.href = '/super-admin.html';
                     return;
@@ -72,12 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (result.success && result.session) {
-                // Persist session client-side
-                AuthSession.save(result.session, remember);
+                // Persist session client-side (with JWT token)
+                const jwtToken = result.token || result.session.token || null;
+                AuthSession.save(result.session, remember, jwtToken);
                 loginCard.classList.add('success');
                 const role = result.session.role;
                 const billingActive = result.session.billing_active;
                 setTimeout(() => {
+                    // Redirect to chat if requested via URL params
+                    if (redirectTarget === 'chat') {
+                        const chatUrl = redirectCompany ? `/?company=${encodeURIComponent(redirectCompany)}` : '/';
+                        window.location.href = chatUrl;
+                        return;
+                    }
                     if (role === 'super_admin') {
                         window.location.href = '/super-admin.html';
                     } else {
