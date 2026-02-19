@@ -80,23 +80,48 @@ document.addEventListener('DOMContentLoaded', () => {
         hideError();
     }
 
-    // Step 1: 회사 정보 수집 (API 호출 없음, Step 2로 이동)
-    companyForm.addEventListener('submit', (e) => {
+    // Step 1: 회사 정보 수집 + 사업자등록번호 중복 체크 → Step 2로 이동
+    companyForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         hideError();
 
+        const buildingTypeEl = document.querySelector('input[name="buildingType"]:checked');
         const companyName = document.getElementById('companyName').value.trim();
+        const businessNumber = document.getElementById('businessNumber').value.trim();
         const companyCode = autoCompanyCode || document.getElementById('companyCode').value.trim();
         const companyAddress = document.getElementById('companyAddress').value.trim();
         const companyPhone = document.getElementById('companyPhone').value.trim();
 
+        if (!buildingTypeEl) { showError('건물 유형을 선택해 주세요.'); return; }
         if (!companyName) { showError('회사명을 입력해 주세요.'); return; }
+        if (!businessNumber) { showError('사업자등록번호를 입력해 주세요.'); return; }
         if (!companyCode) { showError('회사 코드를 불러오지 못했습니다. 새로고침 해주세요.'); return; }
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
+        // 사업자등록번호 중복 체크
+        setLoading(nextBtn, true);
+        try {
+            const result = await apiGet('/companies/public');
+            const companies = result.companies || result;
+            if (companies && companies.length > 0) {
+                const duplicate = companies.find(c => c.business_number === businessNumber);
+                if (duplicate) {
+                    showError('이미 등록된 회사입니다.');
+                    setLoading(nextBtn, false);
+                    return;
+                }
+            }
+        } catch (err) {
+            // 조회 실패 시에도 진행 허용 (서버 오류 등)
+            console.error('사업자등록번호 중복 체크 실패:', err);
+        }
+        setLoading(nextBtn, false);
+
         companyData = {
+            building_type: buildingTypeEl.value,
             company_name: companyName,
+            business_number: businessNumber,
             company_code: companyCode,
             address: companyAddress,
             phone: companyPhone,
