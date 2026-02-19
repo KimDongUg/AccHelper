@@ -15,11 +15,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const step2Indicator = document.getElementById('step2Indicator');
     const companySummary = document.getElementById('companySummary');
 
+    let autoCompanyCode = '';
+
     // Step 1에서 수집한 회사 정보 보관
     let companyData = {};
 
-    // 회사번호는 등록 완료 후 서버에서 부여
-    document.getElementById('companyCode').value = '등록 후 자동 부여';
+    // Auto-generate company code from latest company_id + 1
+    (async function loadNextCode() {
+        try {
+            const result = await apiGet('/companies/public');
+            const companies = Array.isArray(result) ? result : (result.companies || []);
+            let maxId = 0;
+            companies.forEach(c => {
+                if (c.company_id > maxId) maxId = c.company_id;
+            });
+            autoCompanyCode = String(maxId + 1);
+            document.getElementById('companyCode').value = autoCompanyCode;
+        } catch {
+            autoCompanyCode = '1';
+            document.getElementById('companyCode').value = '1';
+        }
+    })();
 
     function showError(msg) {
         successDiv.classList.remove('show');
@@ -70,12 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const buildingTypeEl = document.querySelector('input[name="buildingType"]:checked');
         const companyName = document.getElementById('companyName').value.trim();
         const businessNumber = document.getElementById('businessNumber').value.trim();
+        const companyCode = autoCompanyCode || document.getElementById('companyCode').value.trim();
         const companyAddress = document.getElementById('companyAddress').value.trim();
         const companyPhone = document.getElementById('companyPhone').value.trim();
 
         if (!buildingTypeEl) { showError('건물 유형을 선택해 주세요.'); return; }
         if (!companyName) { showError('회사명을 입력해 주세요.'); return; }
         if (!businessNumber) { showError('사업자등록번호를 입력해 주세요.'); return; }
+        if (!companyCode) { showError('회사번호를 불러오지 못했습니다. 새로고침 해주세요.'); return; }
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
@@ -100,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(nextBtn, false);
 
         companyData = {
+            company_id: parseInt(companyCode, 10),
             building_type: buildingTypeEl.value,
             company_name: companyName,
             business_number: businessNumber,
