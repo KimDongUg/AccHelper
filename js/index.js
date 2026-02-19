@@ -173,7 +173,7 @@ async function loadCompanies() {
     }
 }
 
-/* ── Validate company & start chat (with login gate) ── */
+/* ── Validate company & start chat ─────────── */
 async function validateAndStartChat(code) {
     companySelection.style.display = 'none';
     chatSection.style.display = 'none';
@@ -187,13 +187,7 @@ async function validateAndStartChat(code) {
         companyLabel.textContent = company.company_name;
         companyLabel.style.display = '';
 
-        // Login gate: check if user is authenticated
-        if (!AuthSession.isValid()) {
-            AuthSession.redirectToLogin(`/login.html?redirect=chat&company=${encodeURIComponent(code)}`);
-            return;
-        }
-
-        // Show chat
+        // Show chat (로그인 없이 누구나 이용 가능)
         showChat();
     } catch (err) {
         // Invalid company code — show selection with error
