@@ -206,11 +206,16 @@ async function loadStats() {
         const sess = AuthSession.get();
         const data = await apiGet('/billing/status?company_id=' + sess.companyId);
         const el = document.getElementById('statSubscription');
-        if (data.plan === 'enterprise' && data.active) {
+        const plan = data.subscription_plan;
+        if (plan === 'enterprise' && data.active) {
             el.innerHTML = '<span style="color:var(--success)">유료 구독중</span>';
-        } else if (data.plan === 'trial' && data.active) {
-            const days = data.trialDaysLeft ?? '';
-            el.innerHTML = '<span style="color:#FF9800">체험중' + (days ? ' (' + days + '일)' : '') + '</span>';
+        } else if (plan === 'trial' && data.active) {
+            let daysText = '';
+            if (data.trial_ends_at) {
+                const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
+                daysText = ' (' + (diff > 0 ? diff : 0) + '일)';
+            }
+            el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span>';
         } else {
             el.innerHTML = '<span style="color:var(--gray-500)">미구독</span>';
         }
