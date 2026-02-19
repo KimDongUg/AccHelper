@@ -14,87 +14,106 @@ let companyMap = {};  // id → name
  * ═══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
     // Auth guard
-    console.log('[ADMIN] page loaded, checking isValid...');
-    if (!AuthSession.isValid()) { console.log('[ADMIN] isValid=false → redirect'); AuthSession.redirectToLogin(); return; }
-    console.log('[ADMIN] isValid=true, calling /auth/check...');
+    if (!AuthSession.isValid()) { AuthSession.redirectToLogin(); return; }
+
+    // Keep local session as fallback if server auth check fails
+    const localSess = AuthSession.get();
+    let sess = null;
+
     try {
         const auth = await apiGet('/auth/check');
-        console.log('[ADMIN] auth/check response:', JSON.stringify(auth).substring(0, 300));
-        if (!auth.authenticated) { console.log('[ADMIN] not authenticated → redirect'); AuthSession.redirectToLogin(); return; }
+        if (!auth.authenticated) { AuthSession.redirectToLogin(); return; }
         if (auth.session) {
-            console.log('[ADMIN] re-saving session, auth.session.expiry_time:', auth.session.expiry_time,
-                '(type:', typeof auth.session.expiry_time + ')',
-                '| existing token:', AuthSession.getToken() ? 'exists' : 'null');
+            sess = auth.session;
             const persist = !!localStorage.getItem('acc_auth_session');
             AuthSession.save(auth.session, persist, AuthSession.getToken());
         }
-
-        const sess = auth.session;
-        currentRole = sess.role || 'viewer';
-
-        // Header display
-        document.getElementById('headerCompanyName').textContent = sess.company_name || '';
-        const displayName = sess.full_name || sess.email || sess.username || '';
-        document.getElementById('adminUsername').textContent = displayName + '님';
-
-        // Role badge
-        const roleBadge = document.getElementById('roleBadge');
-        const roleLabels = { super_admin: '최고관리자', admin: '관리자', viewer: '뷰어' };
-        roleBadge.textContent = roleLabels[currentRole] || currentRole;
-        roleBadge.className = 'role-badge role-' + currentRole;
-        roleBadge.style.display = 'inline-block';
-
-        // Show admin tab for admin/super_admin
-        if (currentRole === 'admin' || currentRole === 'super_admin') {
-            document.getElementById('tabAdmins').style.display = '';
+    } catch (err) {
+        // 401/403 → token invalid, must re-login
+        if (err.status === 401 || err.status === 403) {
+            AuthSession.redirectToLogin();
+            return;
         }
+        // Other errors (500, network) → use local session as fallback
+        console.warn('[ADMIN] auth check failed:', err.message, '— using local session');
+    }
 
-        // Show super admin link for super_admin
-        if (currentRole === 'super_admin') {
-            const saLink = document.getElementById('superAdminLink');
-            if (saLink) saLink.style.display = '';
+    // Build session — prefer server data, fallback to local storage
+    if (!sess && localSess) {
+        sess = {
+            role: localSess.role,
+            company_name: localSess.companyName,
+            full_name: localSess.fullName,
+            email: localSess.email,
+            username: localSess.username,
+        };
+    }
+    if (!sess) { AuthSession.redirectToLogin(); return; }
+
+    currentRole = sess.role || 'viewer';
+
+    // Header display
+    document.getElementById('headerCompanyName').textContent = sess.company_name || '';
+    const displayName = sess.full_name || sess.email || sess.username || '';
+    document.getElementById('adminUsername').textContent = displayName + '님';
+
+    // Role badge
+    const roleBadge = document.getElementById('roleBadge');
+    const roleLabels = { super_admin: '최고관리자', admin: '관리자', viewer: '뷰어' };
+    roleBadge.textContent = roleLabels[currentRole] || currentRole;
+    roleBadge.className = 'role-badge role-' + currentRole;
+    roleBadge.style.display = 'inline-block';
+
+    // Show admin tab for admin/super_admin
+    if (currentRole === 'admin' || currentRole === 'super_admin') {
+        document.getElementById('tabAdmins').style.display = '';
+    }
+
+    // Show super admin link for super_admin
+    if (currentRole === 'super_admin') {
+        const saLink = document.getElementById('superAdminLink');
+        if (saLink) saLink.style.display = '';
+    }
+
+    // super_admin: load companies for filter & modal
+    if (currentRole === 'super_admin') {
+        try {
+            const companies = await apiGet('/companies/public');
+            companiesList = companies;
+            companyMap = {};
+            companies.forEach(c => { companyMap[c.company_id] = c.company_name; });
+
+            // Show company column header
+            document.getElementById('companyColHeader').style.display = '';
+
+            // Populate company filter dropdown
+            const companyFilter = document.getElementById('companyFilter');
+            companyFilter.style.display = '';
+            companies.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.company_id;
+                opt.textContent = c.company_name;
+                companyFilter.appendChild(opt);
+            });
+
+            // Populate modal company select
+            const modalCompany = document.getElementById('modalCompany');
+            companies.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.company_id;
+                opt.textContent = c.company_name;
+                modalCompany.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Companies load error:', e);
         }
+    }
 
-        // super_admin: load companies for filter & modal
-        if (currentRole === 'super_admin') {
-            try {
-                const companies = await apiGet('/companies/public');
-                companiesList = companies;
-                companyMap = {};
-                companies.forEach(c => { companyMap[c.company_id] = c.company_name; });
-
-                // Show company column header
-                document.getElementById('companyColHeader').style.display = '';
-
-                // Populate company filter dropdown
-                const companyFilter = document.getElementById('companyFilter');
-                companyFilter.style.display = '';
-                companies.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c.company_id;
-                    opt.textContent = c.company_name;
-                    companyFilter.appendChild(opt);
-                });
-
-                // Populate modal company select
-                const modalCompany = document.getElementById('modalCompany');
-                companies.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c.company_id;
-                    opt.textContent = c.company_name;
-                    modalCompany.appendChild(opt);
-                });
-            } catch (e) {
-                console.error('Companies load error:', e);
-            }
-        }
-
-        // Hide edit buttons for viewer
-        if (currentRole === 'viewer') {
-            const addQaBtn = document.getElementById('addQaBtn');
-            if (addQaBtn) addQaBtn.style.display = 'none';
-        }
-    } catch { AuthSession.redirectToLogin(); return; }
+    // Hide edit buttons for viewer
+    if (currentRole === 'viewer') {
+        const addQaBtn = document.getElementById('addQaBtn');
+        if (addQaBtn) addQaBtn.style.display = 'none';
+    }
 
     // Session watcher
     sessionCheckTimer = setInterval(() => {
