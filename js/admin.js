@@ -215,7 +215,7 @@ async function loadStats() {
                 const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
                 daysText = ' (' + (diff > 0 ? diff : 0) + '일)';
             }
-            el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span>';
+            el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span> <a href="/billing.html" style="color:var(--primary);font-size:var(--text-sm);text-decoration:underline">구독하기</a>';
         } else {
             el.innerHTML = '<a href="/billing.html" style="color:var(--primary);font-weight:600;text-decoration:underline">구독하기</a>';
         }
