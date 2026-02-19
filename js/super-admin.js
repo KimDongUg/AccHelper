@@ -222,8 +222,12 @@ async function openCompanyModal(companyId) {
 async function resetAdminPassword(userId, email) {
     if (!confirm(`[${email}] 의 비밀번호를 "admin1234"로 초기화하시겠습니까?`)) return;
     try {
-        await apiPatch('/admins/' + userId + '/reset-password', { new_password: 'admin1234' });
-        alert('비밀번호가 초기화되었습니다.\n새 비밀번호: admin1234');
+        const result = await apiPatch('/admins/' + userId + '/reset-password', { new_password: 'admin1234' });
+        if (result.success) {
+            alert('비밀번호가 초기화되었습니다.\n\n이메일: ' + email + '\n새 비밀번호: admin1234');
+        } else {
+            alert('비밀번호 초기화 실패: ' + (result.message || '알 수 없는 오류'));
+        }
     } catch (err) {
         alert('비밀번호 초기화 실패: ' + (err.message || '알 수 없는 오류'));
     }
