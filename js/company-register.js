@@ -16,20 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const companySummary = document.getElementById('companySummary');
 
     let autoCompanyCode = '';
-    let cachedCompanies = [];
 
     // Step 1에서 수집한 회사 정보 보관
     let companyData = {};
 
-    // Auto-generate company code from latest company_id + 1 & cache companies
+    // Auto-generate company code from latest company_id + 1
     (async function loadNextCode() {
         try {
             const result = await apiGet('/companies/public');
-            const companies = result.companies || result;
-            cachedCompanies = Array.isArray(companies) ? companies : [];
-            console.log('[회사등록] /companies/public 응답:', cachedCompanies);
+            const companies = Array.isArray(result) ? result : (result.companies || []);
             let maxId = 0;
-            cachedCompanies.forEach(c => {
+            companies.forEach(c => {
                 if (c.company_id > maxId) maxId = c.company_id;
             });
             autoCompanyCode = String(maxId + 1);
@@ -100,20 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
 
-        // 사업자등록번호 중복 체크 (캐시 우선, 없으면 재조회)
+        // 사업자등록번호 중복 체크 (항상 최신 데이터 조회)
         const normalize = (v) => (v || '').replace(/[^0-9]/g, '');
         const inputNum = normalize(businessNumber);
         setLoading(nextBtn, true);
         try {
-            let companies = cachedCompanies;
-            if (!companies || companies.length === 0) {
-                const result = await apiGet('/companies/public');
-                companies = result.companies || result;
-                cachedCompanies = Array.isArray(companies) ? companies : [];
-            }
-            console.log('[회사등록] 중복 체크 - 입력값:', businessNumber, '→', inputNum);
-            console.log('[회사등록] 등록된 사업자번호 목록:', companies.map(c => c.business_number));
-            if (companies && companies.length > 0) {
+            const freshResult = await apiGet('/companies/public');
+            const companies = Array.isArray(freshResult) ? freshResult : (freshResult.companies || []);
+            if (companies.length > 0) {
                 const duplicate = companies.find(c => normalize(c.business_number) === inputNum);
                 if (duplicate) {
                     setLoading(nextBtn, false);
@@ -170,6 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 admin_name: fullName,
                 admin_phone: phone || null,
             });
+
+            if (result.success === false) {
+                alert(result.message || '등록에 실패했습니다.');
+                return;
+            }
 
             showSuccess('회사와 관리자 계정이 등록되었습니다. 로그인 페이지로 이동합니다.');
             userForm.reset();
