@@ -263,8 +263,12 @@ function showChat() {
         try {
             const body = {
                 question: text,
+                session_id: sessionId,
                 category: selectedCategory === '전체' ? null : selectedCategory,
             };
+            if (currentCompanyId) {
+                body.company_id = currentCompanyId;
+            }
 
             const result = await apiPost('/chat', body);
             typingIndicator.classList.remove('show');
