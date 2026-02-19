@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load data
     loadStats();
-    loadQaList();
+    loadQaList().then(checkTemplateData);
 
     // Search debounce
     let searchTimer;
@@ -227,6 +227,8 @@ async function loadStats() {
 /* ═══════════════════════════════════════════════
  *  QA LIST
  * ═══════════════════════════════════════════════ */
+let lastQaTotal = 0;
+
 async function loadQaList() {
     const search = document.getElementById('searchInput').value.trim();
     const category = document.getElementById('categoryFilter').value;
@@ -244,6 +246,7 @@ async function loadQaList() {
     document.getElementById('tableLoading').classList.add('show');
     try {
         const data = await apiGet(`/qa?${params}`);
+        lastQaTotal = data.total || 0;
         renderTable(data.items);
         renderPagination(data.page, data.pages, data.total);
     } catch (e) {
@@ -251,6 +254,52 @@ async function loadQaList() {
     } finally {
         document.getElementById('tableLoading').classList.remove('show');
     }
+}
+
+/* ── 템플릿 데이터 안내 팝업 ── */
+function checkTemplateData() {
+    if (currentRole === 'super_admin') return;
+    const sess = AuthSession.get();
+    if (!sess) return;
+    const key = 'qa_modified_' + sess.companyId;
+    if (localStorage.getItem(key)) return;
+    if (lastQaTotal === 0) return;
+
+    // Q&A가 있지만 관리자가 아직 수정한 적 없으면 안내
+    showTemplatePopup();
+}
+
+function markQaModified() {
+    const sess = AuthSession.get();
+    if (sess) localStorage.setItem('qa_modified_' + sess.companyId, '1');
+}
+
+function showTemplatePopup() {
+    const overlay = document.getElementById('templatePopup');
+    if (overlay) { overlay.classList.add('show'); return; }
+
+    const popup = document.createElement('div');
+    popup.id = 'templatePopup';
+    popup.className = 'confirm-overlay show';
+    popup.innerHTML = `
+        <div class="confirm-dialog">
+            <div class="confirm-icon" style="background:#FFF3E0;color:#FF9800">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h3>Q&A 데이터 안내</h3>
+            <p>현재 데이터는 최근 등록한 회사의 데이터입니다.<br>우리 회사에 맞게 수정이 필요합니다.</p>
+            <div class="actions">
+                <button class="btn btn-outline" onclick="closeTemplatePopup()">나중에</button>
+                <button class="btn btn-primary" onclick="closeTemplatePopup(); openCreateModal();">+ 새 Q&A 추가</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+function closeTemplatePopup() {
+    const popup = document.getElementById('templatePopup');
+    if (popup) popup.classList.remove('show');
 }
 
 function highlightText(text, maxLen) {
@@ -327,6 +376,7 @@ async function toggleActive(qaId) {
     try {
         const qa = await apiPatch(`/qa/${qaId}/toggle`);
         showToast(qa.is_active ? 'Q&A가 활성화되었습니다.' : 'Q&A가 비활성화되었습니다.', 'success');
+        markQaModified();
         loadQaList();
         loadStats();
     } catch (e) {
@@ -471,9 +521,11 @@ async function saveQa() {
         if (qaId) {
             await apiPut(`/qa/${qaId}`, data);
             showToast('Q&A가 수정되었습니다.', 'success');
+            markQaModified();
         } else {
             await apiPost('/qa', data);
             showToast('새 Q&A가 등록되었습니다.', 'success');
+            markQaModified();
         }
         closeModal();
         loadQaList();
@@ -663,6 +715,7 @@ async function confirmDelete() {
             await apiDelete(`/qa/${deleteTargetId}`);
             closeDeleteConfirm();
             showToast('Q&A가 삭제되었습니다.', 'success');
+            markQaModified();
             loadQaList();
             loadStats();
         }
