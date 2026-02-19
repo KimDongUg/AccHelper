@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!auth.authenticated) { AuthSession.redirectToLogin(); return; }
         if (auth.session) {
             const persist = !!localStorage.getItem('acc_auth_session');
-            AuthSession.save(auth.session, persist);
+            AuthSession.save(auth.session, persist, AuthSession.getToken());
         }
 
         const sess = auth.session;
