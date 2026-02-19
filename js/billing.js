@@ -66,46 +66,89 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelSubBtn.addEventListener('click', cancelSubscription);
     }
 
-    // ── Promo popup ──
-    initPromoPopup();
+    // ── Promo popup (팝업 닫힌 뒤 나머지 로직 실행) ──
+    showPromoPopup().then(() => {
+        // ── 유료 구독(enterprise) 활성이면 바로 admin 이동 ──
+        if (sess.billingActive && sess.subscriptionPlan === 'enterprise') {
+            window.location.href = '/admin.html';
+            return;
+        }
 
-    // ── 유료 구독(enterprise) 활성이면 바로 admin 이동 (체험중은 구독 페이지 접근 허용) ──
-    if (sess.billingActive && sess.subscriptionPlan === 'enterprise') {
-        window.location.href = '/admin.html';
-        return;
-    }
-
-    // ── Load subscription status ──
-    loadSubscriptionStatus(sess.companyId);
+        // ── Load subscription status ──
+        loadSubscriptionStatus(sess.companyId);
+    });
 });
 
 /* ──────────────────────────────────────────────
  *  Promo Event Popup (오늘 안보기 지원)
+ *  팝업을 즉시 표시하고, 닫힌 뒤 resolve 되는 Promise 반환
  * ────────────────────────────────────────────── */
-function initPromoPopup() {
+function showPromoPopup() {
     const overlay = document.getElementById('promoPopup');
     const closeBtn = document.getElementById('promoPopupClose');
     const confirmBtn = document.getElementById('promoPopupConfirm');
     const todayCheck = document.getElementById('promoTodayCheck');
     const bannerBtn = document.getElementById('promoBannerBtn');
 
-    if (!overlay) return;
-
-    // "오늘 안보기" 체크 확인
     const STORAGE_KEY = 'promo_hide_date';
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-    function shouldShow() {
-        const hideDate = localStorage.getItem(STORAGE_KEY);
-        return hideDate !== today;
+    // 팝업 요소 없거나 "오늘 안보기" 상태면 즉시 resolve
+    if (!overlay || localStorage.getItem(STORAGE_KEY) === today) {
+        bindBannerReopen(overlay, bannerBtn, todayCheck, STORAGE_KEY, today);
+        return Promise.resolve();
     }
 
-    function openPopup() {
+    return new Promise((resolve) => {
+        function openPopup() {
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePopup() {
+            if (todayCheck && todayCheck.checked) {
+                localStorage.setItem(STORAGE_KEY, today);
+            }
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+            resolve();
+        }
+
+        // 즉시 표시
+        openPopup();
+
+        // 닫기 버튼들
+        if (closeBtn) closeBtn.addEventListener('click', closePopup);
+        if (confirmBtn) confirmBtn.addEventListener('click', closePopup);
+
+        // 오버레이 배경 클릭
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closePopup();
+        });
+
+        // ESC 키
+        document.addEventListener('keydown', function onEsc(e) {
+            if (e.key === 'Escape' && overlay.classList.contains('show')) {
+                closePopup();
+                document.removeEventListener('keydown', onEsc);
+            }
+        });
+
+        // 배너 클릭으로 다시 열기
+        bindBannerReopen(overlay, bannerBtn, todayCheck, STORAGE_KEY, today);
+    });
+}
+
+/** 프로모 배너 클릭 시 팝업 수동 재오픈 바인딩 */
+function bindBannerReopen(overlay, bannerBtn, todayCheck, STORAGE_KEY, today) {
+    if (!overlay || !bannerBtn) return;
+
+    function reopen() {
         overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
     }
 
-    function closePopup() {
+    function reclose() {
         if (todayCheck && todayCheck.checked) {
             localStorage.setItem(STORAGE_KEY, today);
         }
@@ -113,32 +156,17 @@ function initPromoPopup() {
         document.body.style.overflow = '';
     }
 
-    // 페이지 로드 시 자동 표시
-    if (shouldShow()) {
-        setTimeout(openPopup, 500);
-    }
-
-    // 배너 클릭 시 수동 표시
-    if (bannerBtn) {
-        bannerBtn.addEventListener('click', openPopup);
-        bannerBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopup(); }
-        });
-    }
-
-    // 닫기 버튼
-    if (closeBtn) closeBtn.addEventListener('click', closePopup);
-    if (confirmBtn) confirmBtn.addEventListener('click', closePopup);
-
-    // 오버레이 배경 클릭 시 닫기
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closePopup();
+    bannerBtn.addEventListener('click', reopen);
+    bannerBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reopen(); }
     });
 
-    // ESC 키 닫기
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && overlay.classList.contains('show')) closePopup();
-    });
+    // 재오픈용 닫기 이벤트 (이미 바인딩 안 된 경우 대비)
+    const closeBtn = document.getElementById('promoPopupClose');
+    const confirmBtn = document.getElementById('promoPopupConfirm');
+    if (closeBtn) closeBtn.addEventListener('click', reclose);
+    if (confirmBtn) confirmBtn.addEventListener('click', reclose);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) reclose(); });
 }
 
 
