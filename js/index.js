@@ -61,7 +61,7 @@ if (!sessionId) {
     sessionId = generateSessionId();
     sessionStorage.setItem('chatSessionId', sessionId);
 }
-let selectedCategory = '전체';
+let selectedCategory = null;
 let quotaRemaining = null;
 
 /* ── DOM refs (chat section — may not exist until shown) ── */
@@ -207,20 +207,9 @@ function showChat() {
     const chatInput      = document.getElementById('chatInput');
     const sendBtn        = document.getElementById('sendBtn');
     const typingIndicator = document.getElementById('typingIndicator');
-    const quickQuestions  = document.getElementById('quickQuestions');
+    const quickQuestions  = null; // removed from DOM
 
-    // Category filter handling
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => {
-                b.classList.remove('active');
-                b.setAttribute('aria-pressed', 'false');
-            });
-            btn.classList.add('active');
-            btn.setAttribute('aria-pressed', 'true');
-            selectedCategory = btn.dataset.category;
-        });
-    });
+    // Category filter removed — quick-btn handles questions directly
 
     // Quick question buttons
     document.querySelectorAll('.quick-btn').forEach(btn => {
@@ -264,7 +253,7 @@ function showChat() {
             const body = {
                 question: text,
                 session_id: sessionId,
-                category: selectedCategory === '전체' ? null : selectedCategory,
+                category: null,
             };
             if (currentCompanyId) {
                 body.company_id = currentCompanyId;

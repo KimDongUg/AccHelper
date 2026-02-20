@@ -72,18 +72,15 @@
         <div class="chat-hero">
             <h1>우리아파트 AI 경리 입니다. 무엇이든 물어보세요~</h1>
             <p>이사, 관리비, 기타 궁금한점 물어보세요</p>
-            <p class="category-hint">아래 카테고리를 선택하시면 좀 더 정확한 답변을 얻을 수 있습니다.</p>
+            <p class="category-hint">아래 버튼을 클릭하시면 자주 묻는 질문에 대한 답변을 바로 확인할 수 있습니다.</p>
         </div>
 
-        <!-- Category filters -->
-        <div class="category-filters" role="toolbar" aria-label="카테고리 필터">
-            <button class="category-btn active" data-category="전체" aria-pressed="true">전체</button>
-            <button class="category-btn" data-category="이주정산" aria-pressed="false">이주정산</button>
-            <button class="category-btn" data-category="시설물이용" aria-pressed="false">시설물이용</button>
-            <button class="category-btn" data-category="고장/수리" aria-pressed="false">고장/수리</button>
-            <button class="category-btn" data-category="관리비" aria-pressed="false">관리비</button>
-            <button class="category-btn" data-category="회계처리" aria-pressed="false">회계처리</button>
-            <button class="category-btn" data-category="기타" aria-pressed="false">기타</button>
+        <!-- Quick category questions -->
+        <div class="category-filters" role="toolbar" aria-label="빠른 질문">
+            <button class="quick-btn" data-question="이주정산이란?">이주정산</button>
+            <button class="quick-btn" data-question="입주신고 시 필요한 서류는?">입주신고</button>
+            <button class="quick-btn" data-question="관리비 납부 방법과 기한은 어떻게 되나요?">관리비</button>
+            <button class="quick-btn" data-question="관리사무소 업무 시간과 연락처를 알려주세요.">기타</button>
         </div>
 
         <!-- Chat messages -->
@@ -122,13 +119,7 @@
         </div>
 
         <!-- Quick questions -->
-        <div class="quick-questions" id="quickQuestions" aria-label="자주 묻는 질문">
-            <button class="quick-btn" data-question="이주정산에 대해 알려주세요.">이주정산</button>
-            <button class="quick-btn" data-question="입주에 대해 알려주세요.">입주</button>
-            <button class="quick-btn" data-question="고장/수리에 대해 알려주세요.">고장/수리</button>
-            <button class="quick-btn" data-question="관리실에 대해 알려주세요.">관리실</button>
-            <button class="quick-btn" data-question="방재실에 대해 알려주세요.">방재실</button>
-        </div>
+        <!-- Quick questions removed — merged into top category buttons -->
 
         <!-- Chat input -->
         <div class="chat-input-wrap">
