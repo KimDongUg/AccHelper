@@ -467,6 +467,168 @@
     transform: translate(-50%, -50%);
 }
 
+/* ── Excel Upload Modal ──────────────────────── */
+.upload-template-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    padding: 0.375rem 0;
+}
+
+.upload-template-link:hover {
+    text-decoration: underline;
+}
+
+.upload-file-area {
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--gray-400);
+}
+
+.upload-file-area:hover,
+.upload-file-area.dragover {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    color: var(--primary);
+}
+
+.upload-file-text {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+    margin: 0.5rem 0 0.25rem;
+}
+
+.upload-file-hint {
+    font-size: var(--text-xs);
+    color: var(--gray-400);
+    margin: 0;
+}
+
+.upload-file-name {
+    font-size: var(--text-sm);
+    color: var(--primary);
+    font-weight: var(--font-medium);
+    margin-top: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--primary-bg);
+    border-radius: var(--radius-sm);
+}
+
+.upload-result {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.upload-result h4 {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
+    color: var(--gray-700);
+}
+
+.upload-result-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.upload-stat-item {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+}
+
+.upload-stat-item.success { border-color: #C8E6C9; background: #E8F5E9; }
+.upload-stat-item.skipped { border-color: #FFE0B2; background: #FFF3E0; }
+.upload-stat-item.failed  { border-color: #FFCDD2; background: #FFEBEE; }
+
+.upload-stat-label {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    margin-bottom: 0.125rem;
+}
+
+.upload-stat-value {
+    display: block;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--gray-800);
+}
+
+.upload-stat-item.success .upload-stat-value { color: var(--success); }
+.upload-stat-item.skipped .upload-stat-value { color: #FF9800; }
+.upload-stat-item.failed .upload-stat-value  { color: var(--danger); }
+
+.upload-result-errors {
+    margin-top: 0.75rem;
+}
+
+.upload-result-errors h5 {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    color: var(--danger);
+    margin-bottom: 0.375rem;
+}
+
+.upload-result-errors ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.upload-result-errors li {
+    font-size: var(--text-xs);
+    color: var(--gray-600);
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid var(--gray-100);
+    line-height: 1.5;
+}
+
+.upload-result-errors li:last-child {
+    border-bottom: none;
+}
+
+/* Upload button spinner (reuse pattern from modalSaveBtn) */
+#uploadBtn {
+    position: relative;
+    min-width: 80px;
+}
+
+#uploadBtn .btn-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: tableSpin 0.6s linear infinite;
+}
+
+#uploadBtn.loading .btn-text { visibility: hidden; }
+#uploadBtn.loading .btn-spinner {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
 /* ── Toast ────────────────────────────────────── */
 .toast-container {
     position: fixed;

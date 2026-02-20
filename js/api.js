@@ -134,7 +134,10 @@ async function apiFetch(path, options = {}) {
     }
 
     const url = `${API_BASE}${path}`;
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    const headers = { ...(options.headers || {}) };
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     // Attach JWT Authorization header if available
     const token = AuthSession.getToken();
@@ -214,6 +217,21 @@ async function apiPatch(path, body) {
         method: 'PATCH',
         body: body ? JSON.stringify(body) : undefined,
     });
+}
+
+async function apiDownload(path, filename) {
+    const token = AuthSession.getToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}${path}`, { headers, credentials: 'same-origin' });
+    if (!res.ok) throw new ApiError('다운로드 실패', res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 function generateSessionId() {
