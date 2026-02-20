@@ -346,13 +346,7 @@ function showChat() {
             bubble.appendChild(catBadge);
         }
 
-        // RAG warning: used_rag === false
-        if (result.used_rag === false) {
-            var warning = document.createElement('div');
-            warning.className = 'rag-warning';
-            warning.textContent = '\u26A0 등록된 근거 없이 생성된 답변입니다. 확인이 필요합니다.';
-            bubble.appendChild(warning);
-        }
+        // RAG warning disabled
 
         // Markdown-rendered answer
         var answerDiv = document.createElement('div');
