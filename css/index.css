@@ -25,6 +25,12 @@
     color: var(--gray-500);
 }
 
+.category-hint {
+    font-size: var(--text-xs);
+    color: var(--gray-400);
+    margin-top: 0.25rem;
+}
+
 /* ── Category filters ───────────────────────── */
 .category-filters {
     display: flex;
