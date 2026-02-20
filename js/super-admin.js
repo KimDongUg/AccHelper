@@ -105,14 +105,20 @@ async function loadSubscribers() {
 
         renderSubscribers(list);
 
-        // Populate company filter for payments
+        // Populate company filter for payments & upload modal
         if (Array.isArray(items) && items.length > 0) {
             const select = document.getElementById('paymentCompanyFilter');
+            const uploadSelect = document.getElementById('uploadCompany');
             items.forEach(s => {
                 const opt = document.createElement('option');
                 opt.value = s.company_id;
                 opt.textContent = s.company_name;
                 select.appendChild(opt);
+
+                const opt2 = document.createElement('option');
+                opt2.value = s.company_id;
+                opt2.textContent = s.company_name;
+                uploadSelect.appendChild(opt2);
             });
         }
     } catch (e) {
@@ -343,6 +349,114 @@ function showToast(message, type = 'success') {
         toast.classList.add('removing');
         setTimeout(() => toast.remove(), 250);
     }, 3500);
+}
+
+/* ═══════════════════════════════════════════════
+ *  EXCEL UPLOAD
+ * ═══════════════════════════════════════════════ */
+function openUploadModal() {
+    const uploadCompany = document.getElementById('uploadCompany');
+    if (uploadCompany.options.length > 0) uploadCompany.selectedIndex = 0;
+    document.getElementById('uploadFile').value = '';
+    document.getElementById('uploadFileName').style.display = 'none';
+    document.getElementById('uploadFileName').textContent = '';
+    document.getElementById('uploadResult').style.display = 'none';
+    document.getElementById('uploadBtn').classList.remove('loading');
+    document.getElementById('uploadBtn').disabled = false;
+    document.getElementById('uploadModal').classList.add('show');
+
+    const fileArea = document.getElementById('uploadFileArea');
+    const fileInput = document.getElementById('uploadFile');
+    fileArea.onclick = () => fileInput.click();
+
+    fileArea.ondragover = (e) => { e.preventDefault(); fileArea.classList.add('dragover'); };
+    fileArea.ondragleave = () => fileArea.classList.remove('dragover');
+    fileArea.ondrop = (e) => {
+        e.preventDefault();
+        fileArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.xlsx')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            showSelectedFile(file.name);
+        } else {
+            showToast('.xlsx 파일만 업로드 가능합니다.', 'error');
+        }
+    };
+
+    fileInput.onchange = () => {
+        if (fileInput.files.length > 0) showSelectedFile(fileInput.files[0].name);
+    };
+}
+
+function showSelectedFile(name) {
+    const el = document.getElementById('uploadFileName');
+    el.textContent = name;
+    el.style.display = 'block';
+}
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').classList.remove('show');
+}
+
+async function downloadTemplate() {
+    try {
+        await apiDownload('/super/qa/upload-template', 'qa_upload_template.xlsx');
+    } catch (e) {
+        showToast('양식 다운로드에 실패했습니다: ' + e.message, 'error');
+    }
+}
+
+async function uploadExcel() {
+    const companyId = document.getElementById('uploadCompany').value;
+    if (!companyId) { showToast('회사를 선택해 주세요.', 'error'); return; }
+
+    const fileInput = document.getElementById('uploadFile');
+    if (!fileInput.files || fileInput.files.length === 0) { showToast('엑셀 파일을 선택해 주세요.', 'error'); return; }
+
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.classList.add('loading');
+    uploadBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    try {
+        const result = await apiFetch('/super/qa/upload?company_id=' + companyId, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const resultDiv = document.getElementById('uploadResult');
+        resultDiv.style.display = 'block';
+
+        document.getElementById('uploadResultStats').innerHTML = `
+            <div class="upload-stat-item total"><span class="upload-stat-label">전체 행</span><span class="upload-stat-value">${result.total_rows || 0}</span></div>
+            <div class="upload-stat-item success"><span class="upload-stat-label">등록 성공</span><span class="upload-stat-value">${result.created || 0}</span></div>
+            <div class="upload-stat-item skipped"><span class="upload-stat-label">건너뜀</span><span class="upload-stat-value">${result.skipped || 0}</span></div>
+            <div class="upload-stat-item failed"><span class="upload-stat-label">실패</span><span class="upload-stat-value">${result.failed || 0}</span></div>
+        `;
+
+        const errorsDiv = document.getElementById('uploadResultErrors');
+        if (result.errors && result.errors.length > 0) {
+            errorsDiv.style.display = 'block';
+            errorsDiv.innerHTML = '<h5>오류 상세</h5><ul>' +
+                result.errors.map(e => `<li>${escapeHtml(typeof e === 'string' ? e : (e.row ? '행 ' + e.row + ': ' : '') + (e.message || e.error || JSON.stringify(e)))}</li>`).join('') +
+                '</ul>';
+        } else {
+            errorsDiv.style.display = 'none';
+        }
+
+        if ((result.created || 0) > 0) {
+            showToast(`${result.created}건의 Q&A가 등록되었습니다.`, 'success');
+        }
+    } catch (e) {
+        showToast('업로드에 실패했습니다: ' + e.message, 'error');
+    } finally {
+        uploadBtn.classList.remove('loading');
+        uploadBtn.disabled = false;
+    }
 }
 
 /* ═══════════════════════════════════════════════
