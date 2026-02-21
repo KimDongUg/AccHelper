@@ -107,6 +107,27 @@ document.addEventListener('DOMContentLoaded', function () {
     var params = new URLSearchParams(window.location.search);
     var code = params.get('company');
 
+    // 로고 클릭 동작 설정
+    var headerLogo = document.getElementById('headerLogo');
+    if (headerLogo) {
+        headerLogo.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (sess && sess.isLoggedIn && sess.role === 'super_admin') {
+                // 수퍼관리자 → 메인(회사 선택)
+                window.location.href = '/';
+            } else if (sess && sess.isLoggedIn && sess.companyId) {
+                // 일반 관리자 → 본인 업체 챗봇
+                window.location.href = '/?company=' + sess.companyId;
+            } else if (code) {
+                // 입주민(비로그인, 업체 챗봇 접속 중) → 현재 페이지 새로고침
+                window.location.reload();
+            } else {
+                // 비로그인 + 메인 → 메인
+                window.location.href = '/';
+            }
+        });
+    }
+
     if (code) {
         validateAndStartChat(code);
     } else {
