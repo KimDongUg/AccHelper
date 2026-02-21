@@ -128,10 +128,19 @@ async function loadCompanies() {
             return;
         }
 
+        // 로그인 상태 확인
+        const sess = AuthSession.get();
+        const isLoggedIn = sess && sess.isLoggedIn;
+        const isSuperAdmin = isLoggedIn && sess.role === 'super_admin';
+        const myCompanyId = isLoggedIn ? sess.companyId : null;
+
         companies.forEach(c => {
             const card = document.createElement('button');
-            card.className = 'company-card' + (c.is_active ? '' : ' company-card-disabled');
             card.setAttribute('type', 'button');
+
+            // 활성화 조건: super_admin이면 전부, 일반 관리자는 본인 업체만, 비로그인은 전부 비활성
+            const canAccess = c.is_active && (isSuperAdmin || (isLoggedIn && c.company_id === myCompanyId));
+            card.className = 'company-card' + (canAccess ? '' : ' company-card-disabled');
 
             const icon = document.createElement('div');
             icon.className = 'company-card-icon';
@@ -152,12 +161,10 @@ async function loadCompanies() {
             card.appendChild(icon);
             card.appendChild(info);
 
-            if (!c.is_active) {
-                const badge = document.createElement('span');
-                badge.className = 'company-card-badge';
-                badge.textContent = '준비중';
-                card.appendChild(badge);
-                card.disabled = true;
+            if (!canAccess) {
+                card.addEventListener('click', () => {
+                    alert('해당업체 관리자만 들어가실 수 있습니다.');
+                });
             } else {
                 card.addEventListener('click', () => {
                     window.location.href = `/?company=${c.company_id}`;
