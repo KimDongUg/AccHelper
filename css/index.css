@@ -537,37 +537,36 @@
     }
 }
 
-/* ── Company Register Link ────────────────── */
+/* ── Company Register Link (hidden, replaced by grid card) ── */
 .company-register-link {
-    margin-top: var(--space-lg);
+    display: none;
 }
 
-.company-register-link a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
-    color: var(--primary);
-    background: var(--white);
-    border: 1px solid var(--primary);
-    border-radius: var(--radius-md);
+/* ── Company Register Card ───────────────── */
+.company-card-register {
     text-decoration: none;
-    transition: var(--transition);
+    border: 2px dashed var(--gray-300);
+    background: var(--white);
 }
 
-.company-register-link a:hover {
-    background: var(--primary);
-    color: var(--white);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+.company-card-register:hover {
+    border-color: var(--primary);
+    border-style: dashed;
 }
 
-@media (max-width: 1023px) {
-    .company-register-link {
-        display: none;
-    }
+.company-card-register .company-card-info h3 {
+    font-weight: 700;
+    color: var(--gray-700);
+}
+
+.company-card-icon-register {
+    background: var(--gray-100) !important;
+    color: var(--gray-500) !important;
+}
+
+.company-card-register:hover .company-card-icon-register {
+    background: var(--primary-bg) !important;
+    color: var(--primary) !important;
 }
 
 @media (min-width: 1024px) {
