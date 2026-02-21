@@ -540,6 +540,7 @@
 /* ── Company Register Link ────────────────── */
 .company-register-link {
     margin-top: var(--space-md);
+    margin-bottom: var(--space-lg);
     width: 100%;
     max-width: 720px;
 }
