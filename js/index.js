@@ -94,6 +94,16 @@ function showToast(message, duration) {
 
 /* ── Initialization ────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
+    // 로그인 상태면 헤더 버튼 텍스트 변경
+    var sess = AuthSession.get();
+    if (sess && sess.isLoggedIn) {
+        var adminLink = document.getElementById('adminLink');
+        if (adminLink) {
+            var label = sess.fullName || sess.username || '';
+            adminLink.textContent = '관리자 (' + label + ')';
+        }
+    }
+
     var params = new URLSearchParams(window.location.search);
     var code = params.get('company');
 
