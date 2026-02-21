@@ -539,34 +539,39 @@
 
 /* ── Company Register Link ────────────────── */
 .company-register-link {
-    margin-top: var(--space-lg);
+    margin-top: var(--space-md);
+    width: 100%;
+    max-width: 720px;
 }
 
 .company-register-link a {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.625rem 1.5rem;
-    font-size: var(--text-sm);
-    font-weight: var(--font-semibold);
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    font-size: var(--text-base);
+    font-weight: 700;
     color: var(--primary);
     background: var(--white);
-    border: 1px solid var(--primary);
+    border: 2px dashed var(--gray-300);
     border-radius: var(--radius-md);
     text-decoration: none;
     transition: var(--transition);
+    box-sizing: border-box;
 }
 
 .company-register-link a:hover {
-    background: var(--primary);
-    color: var(--white);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 @media (max-width: 1023px) {
-    .company-register-link {
-        display: none;
+    .company-register-link a {
+        padding: 1rem 1.25rem;
     }
 }
 
