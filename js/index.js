@@ -188,7 +188,7 @@ async function validateAndStartChat(code) {
         companyLabel.style.display = '';
 
         // Show chat (로그인 없이 누구나 이용 가능)
-        showChat();
+        showChat(company.company_name);
     } catch (err) {
         // Invalid company code — show selection with error
         showCompanySelection();
@@ -199,9 +199,17 @@ async function validateAndStartChat(code) {
 }
 
 /* ── Show Chat ─────────────────────────────── */
-function showChat() {
+function showChat(companyName) {
     chatSection.style.display = '';
     companySelection.style.display = 'none';
+
+    // 업체명 반영
+    if (companyName) {
+        const hero = document.getElementById('heroCompanyName');
+        const greeting = document.getElementById('greetingCompanyName');
+        if (hero) hero.textContent = companyName;
+        if (greeting) greeting.textContent = companyName;
+    }
 
     const chatMessages   = document.getElementById('chatMessages');
     const chatInput      = document.getElementById('chatInput');
