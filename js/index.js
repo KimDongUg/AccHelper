@@ -97,8 +97,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // 로그인 상태면 헤더 버튼 텍스트 변경
     var sess = AuthSession.get();
     if (sess && sess.isLoggedIn) {
+        var adminLoginLink = document.getElementById('adminLoginLink');
+        if (adminLoginLink) adminLoginLink.style.display = 'none';
         var adminLink = document.getElementById('adminLink');
         if (adminLink) {
+            adminLink.style.display = '';
             var label = sess.fullName || sess.username || '';
             adminLink.textContent = '관리자 (' + label + ')';
         }
@@ -650,8 +653,14 @@ function showChat(companyName) {
         try {
             var auth = await apiGet('/auth/check');
             if (auth.authenticated && auth.session) {
-                var label = auth.session.full_name || auth.session.username || '';
-                document.getElementById('adminLink').textContent = '관리자 (' + label + ')';
+                var adminLoginLink2 = document.getElementById('adminLoginLink');
+                if (adminLoginLink2) adminLoginLink2.style.display = 'none';
+                var adminLink2 = document.getElementById('adminLink');
+                if (adminLink2) {
+                    adminLink2.style.display = '';
+                    var label = auth.session.full_name || auth.session.username || '';
+                    adminLink2.textContent = '관리자 (' + label + ')';
+                }
                 var billingLink = document.getElementById('billingLink');
                 if (billingLink) billingLink.style.display = '';
                 if (auth.session.role === 'super_admin') {
