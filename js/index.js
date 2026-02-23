@@ -172,8 +172,9 @@ async function loadCompanies() {
             const card = document.createElement('button');
             card.setAttribute('type', 'button');
 
-            // 활성화 조건: super_admin이면 전부, 일반 관리자는 본인 업체만, 비로그인은 전부 비활성
-            const canAccess = c.is_active && (isSuperAdmin || (isLoggedIn && c.company_id === myCompanyId));
+            // 활성화 조건: 승인된 업체는 누구나, 미승인 업체는 super_admin 또는 해당 업체 관리자만
+            const isApproved = c.approval_status === 'approved';
+            const canAccess = c.is_active && (isApproved || isSuperAdmin || (isLoggedIn && c.company_id === myCompanyId));
             card.className = 'company-card' + (canAccess ? '' : ' company-card-disabled');
 
             const icon = document.createElement('div');
