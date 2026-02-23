@@ -269,6 +269,18 @@ function showChat(companyName) {
     const typingIndicator = document.getElementById('typingIndicator');
     const quickQuestions  = null; // removed from DOM
 
+    // 봇 답변 가독성 포맷팅: 문장 끝(마침표/물음표/느낌표) 뒤에 줄바꿈 삽입
+    function formatBotText(text) {
+        if (!text) return text;
+        // 한글 문장 끝(다. 요. 세요. 등) 또는 닫는 괄호) 뒤 줄바꿈
+        text = text.replace(/([가-힣\)])([.]) +/g, '$1$2\n\n');
+        text = text.replace(/([가-힣\)])([?]) +/g, '$1$2\n\n');
+        text = text.replace(/([가-힣\)])([!]) +/g, '$1$2\n\n');
+        // *로 시작하는 항목이 줄 시작이 아니면 줄바꿈 추가
+        text = text.replace(/([^\n])\s*\*([가-힣a-zA-Z])/g, '$1\n\n*$2');
+        return text;
+    }
+
     // Category filter removed — quick-btn handles questions directly
 
     // Quick question buttons
@@ -400,10 +412,11 @@ function showChat(companyName) {
         // Markdown-rendered answer
         var answerDiv = document.createElement('div');
         answerDiv.className = 'message-answer';
+        var formattedAnswer = formatBotText(result.answer || '');
         if (typeof marked !== 'undefined' && marked.parse) {
-            answerDiv.innerHTML = marked.parse(result.answer || '');
+            answerDiv.innerHTML = marked.parse(formattedAnswer);
         } else {
-            answerDiv.textContent = result.answer || '';
+            answerDiv.textContent = formattedAnswer;
         }
         bubble.appendChild(answerDiv);
 
@@ -600,10 +613,11 @@ function showChat(companyName) {
         }
 
         var textNode = document.createElement('div');
+        var displayText = type === 'bot' ? formatBotText(text) : text;
         if (type === 'bot' && typeof marked !== 'undefined' && marked.parse) {
-            textNode.innerHTML = marked.parse(text);
+            textNode.innerHTML = marked.parse(displayText);
         } else {
-            textNode.textContent = text;
+            textNode.textContent = displayText;
         }
         bubble.appendChild(textNode);
 
