@@ -140,17 +140,26 @@ function renderSubscribers(items) {
     }
 
     empty.style.display = 'none';
-    tbody.innerHTML = items.map(s => `
+    tbody.innerHTML = items.map(s => {
+        const approvalStatus = s.approval_status || 'approved';
+        const showActions = approvalStatus === 'pending' || approvalStatus === 'rejected';
+        return `
         <tr>
             <td>${s.company_id ?? '-'}</td>
             <td><a href="#" class="cell-link" onclick="openCompanyModal(${s.company_id});return false">${escapeHtml(s.company_name || '-')}</a></td>
+            <td>${renderApprovalBadge(approvalStatus)}</td>
             <td>${escapeHtml(s.plan || s.subscription_plan || '-')}</td>
             <td>${renderStatusBadge(s.subscription_status || s.status || (s.subscription_plan === 'trial' && s.billing_active ? 'trial' : (s.billing_active ? 'active' : 'free')), s.trial_ends_at)}</td>
             <td class="col-card">${escapeHtml(s.card_number ? (s.card_company ? s.card_company + ' ' : '') + s.card_number : (s.has_billing_key ? '카드 등록됨' : '-'))}</td>
             <td>${s.total_paid != null ? formatMoney(s.total_paid) : '-'}</td>
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
-        </tr>
-    `).join('');
+            <td>${showActions ? `<div class="action-btn-group">
+                <button class="btn-validate" onclick="validateCompanyData(${s.company_id}, '${escapeHtml(s.company_name)}')">검증</button>
+                <button class="btn-approve" onclick="approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
+                <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>
+            </div>` : '-'}</td>
+        </tr>`;
+    }).join('');
 }
 
 /* ═══════════════════════════════════════════════
@@ -178,12 +187,18 @@ async function openCompanyModal(companyId) {
         cardInfo = '카드 등록됨';
     }
 
+    const approvalStatus = s.approval_status || 'approved';
+    const showApprovalActions = approvalStatus === 'pending' || approvalStatus === 'rejected';
+
     const body = document.getElementById('companyModalBody');
     body.innerHTML = `
         <div class="detail-grid">
             <div class="detail-row"><span class="detail-label">회사번호</span><span class="detail-value">${s.company_id}</span></div>
             <div class="detail-row"><span class="detail-label">사업자등록번호</span><span class="detail-value">${escapeHtml(s.business_number || '-')}</span></div>
             <div class="detail-row" style="grid-column:1/-1"><span class="detail-label">회사 주소</span><span class="detail-value">${escapeHtml(s.address || '-')}</span></div>
+            <div class="detail-row"><span class="detail-label">승인 상태</span><span class="detail-value">${renderApprovalBadge(approvalStatus)}</span></div>
+            <div class="detail-row"><span class="detail-label">승인일</span><span class="detail-value">${s.approved_at ? formatDate(s.approved_at) : '-'}</span></div>
+            ${approvalStatus === 'rejected' && s.rejection_reason ? `<div class="detail-row" style="grid-column:1/-1"><span class="detail-label">반려 사유</span><span class="detail-value" style="color:var(--danger)">${escapeHtml(s.rejection_reason)}</span></div>` : ''}
             <div class="detail-row"><span class="detail-label">플랜</span><span class="detail-value">${escapeHtml(planLabel)}</span></div>
             <div class="detail-row"><span class="detail-label">구독 상태</span><span class="detail-value">${statusLabel}</span></div>
             <div class="detail-row"><span class="detail-label">카드 정보</span><span class="detail-value">${escapeHtml(cardInfo)}</span></div>
@@ -196,6 +211,18 @@ async function openCompanyModal(companyId) {
         <h4 class="admin-list-title">관리자 목록</h4>
         <div id="adminListArea" class="admin-list-area"><span class="stat-loading"></span> 로딩 중...</div>
     `;
+
+    // Update modal footer with approval buttons if needed
+    const modalFooter = document.querySelector('#companyModal .modal-footer');
+    if (showApprovalActions) {
+        modalFooter.innerHTML = `
+            <button class="btn btn-outline" onclick="closeCompanyModal()">닫기</button>
+            <button class="btn-approve" style="padding:0.5rem 1rem;font-size:var(--text-sm)" onclick="closeCompanyModal();approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
+            <button class="btn-reject" style="padding:0.5rem 1rem;font-size:var(--text-sm)" onclick="closeCompanyModal();openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>
+        `;
+    } else {
+        modalFooter.innerHTML = '<button class="btn btn-outline" onclick="closeCompanyModal()">닫기</button>';
+    }
 
     document.getElementById('companyModal').classList.add('show');
 
@@ -295,6 +322,115 @@ function renderPayments(items) {
             <td>${p.paid_at || p.payment_date ? formatDate(p.paid_at || p.payment_date) : '-'}</td>
         </tr>
     `).join('');
+}
+
+/* ═══════════════════════════════════════════════
+ *  APPROVAL SYSTEM
+ * ═══════════════════════════════════════════════ */
+
+function renderApprovalBadge(status) {
+    if (!status || status === 'approved') return '<span class="badge-approved">승인됨</span>';
+    if (status === 'pending') return '<span class="badge-pending">승인 대기</span>';
+    if (status === 'rejected') return '<span class="badge-rejected">반려됨</span>';
+    return '<span class="badge-inactive">' + escapeHtml(status) + '</span>';
+}
+
+/* ── Validate Company Data ─────────────────── */
+async function validateCompanyData(companyId, companyName) {
+    document.getElementById('validateModalTitle').textContent = '데이터 검증 결과 - ' + companyName;
+    const body = document.getElementById('validateModalBody');
+    body.innerHTML = '<div style="text-align:center;padding:2rem"><span class="stat-loading"></span> 검증 중...</div>';
+    document.getElementById('validateModalFooter').innerHTML = '<button class="btn btn-outline" onclick="closeValidateModal()">닫기</button>';
+    document.getElementById('validateModal').classList.add('show');
+
+    try {
+        const result = await apiGet('/admin-dashboard/companies/' + companyId + '/validate-data');
+        const warnings = result.warnings || [];
+
+        if (warnings.length === 0) {
+            body.innerHTML = '<div class="validation-result"><div class="validation-pass">검증 통과 (경고 없음)</div></div>';
+        } else {
+            body.innerHTML = `
+                <div class="validation-result">
+                    <div class="validation-warn-header">${warnings.length}건의 경고 발견</div>
+                    <ul class="validation-warn-list">
+                        ${warnings.map(w => `<li class="validation-warn-item">
+                            <span class="warn-type">[${escapeHtml(w.type || '경고')}]</span>
+                            ${escapeHtml(w.message || w.detail || '')}
+                            ${w.context ? '<span class="warn-detail">' + escapeHtml(w.context) + '</span>' : ''}
+                        </li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Add approve button in footer
+        const approvalStatus = (subscriberCache[companyId] || {}).approval_status || 'pending';
+        if (approvalStatus === 'pending' || approvalStatus === 'rejected') {
+            document.getElementById('validateModalFooter').innerHTML = `
+                <button class="btn btn-outline" onclick="closeValidateModal()">닫기</button>
+                <button class="btn-approve" style="padding:0.5rem 1rem;font-size:var(--text-sm)" onclick="closeValidateModal();approveCompany(${companyId}, '${escapeHtml(companyName)}')">승인 진행</button>
+            `;
+        }
+    } catch (e) {
+        body.innerHTML = '<div style="color:var(--danger);padding:1rem">검증에 실패했습니다: ' + escapeHtml(e.message) + '</div>';
+    }
+}
+
+function closeValidateModal() {
+    document.getElementById('validateModal').classList.remove('show');
+}
+
+/* ── Approve Company ───────────────────────── */
+async function approveCompany(companyId, companyName) {
+    if (!confirm('[' + companyName + '] 을(를) 승인하시겠습니까?')) return;
+
+    try {
+        await apiPatch('/admin-dashboard/companies/' + companyId + '/approve', { status: 'approved' });
+        showToast(companyName + ' 승인 완료', 'success');
+        loadSubscribers();
+    } catch (e) {
+        showToast('승인 실패: ' + e.message, 'error');
+    }
+}
+
+/* ── Reject Company ────────────────────────── */
+let rejectTargetCompanyId = null;
+let rejectTargetCompanyName = '';
+
+function openRejectModal(companyId, companyName) {
+    rejectTargetCompanyId = companyId;
+    rejectTargetCompanyName = companyName;
+    document.getElementById('rejectModalTitle').textContent = '회사 반려 - ' + companyName;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectModal').classList.add('show');
+    document.getElementById('rejectReason').focus();
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').classList.remove('show');
+    rejectTargetCompanyId = null;
+    rejectTargetCompanyName = '';
+}
+
+async function confirmReject() {
+    const reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) {
+        showToast('반려 사유를 입력해 주세요.', 'error');
+        return;
+    }
+
+    try {
+        await apiPatch('/admin-dashboard/companies/' + rejectTargetCompanyId + '/approve', {
+            status: 'rejected',
+            rejection_reason: reason,
+        });
+        showToast(rejectTargetCompanyName + ' 반려 완료', 'success');
+        closeRejectModal();
+        loadSubscribers();
+    } catch (e) {
+        showToast('반려 실패: ' + e.message, 'error');
+    }
 }
 
 /* ═══════════════════════════════════════════════

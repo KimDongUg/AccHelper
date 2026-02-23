@@ -228,6 +228,16 @@ async function validateAndStartChat(code) {
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company.company_name);
     } catch (err) {
+        if (err instanceof ApiError && err.status === 403) {
+            // 미승인 업체 접근 시 안내 메시지 표시
+            companySelection.style.display = '';
+            chatSection.style.display = 'none';
+            companyLoading.style.display = 'none';
+            companyGrid.innerHTML = '';
+            companyErrorMsg.textContent = '이 업체는 현재 서비스 준비 중입니다. 잠시 후 다시 시도해 주세요.';
+            companyError.style.display = '';
+            return;
+        }
         // Invalid company code — show selection with error
         showCompanySelection();
         companyLoading.style.display = 'none';

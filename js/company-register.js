@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const companyId = result.company_id || '';
-            showSuccess('회사와 관리자 계정이 등록되었습니다. 회사번호: ' + companyId + ' (로그인 시 사용)');
+            showSuccess('회사와 관리자 계정이 등록되었습니다. 관리자 승인 후 서비스 이용이 가능합니다. 회사번호: ' + companyId + ' (로그인 시 사용)');
             userForm.reset();
             setTimeout(() => {
                 window.location.href = '/login.html';

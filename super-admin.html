@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>수퍼관리 - 보태미 경리도우미</title>
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
-    <link rel="stylesheet" href="/css/common.css?v=7">
-    <link rel="stylesheet" href="/css/super-admin.css?v=7">
+    <link rel="stylesheet" href="/css/common.css?v=8">
+    <link rel="stylesheet" href="/css/super-admin.css?v=8">
 </head>
 <body>
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
@@ -129,11 +129,13 @@
                             <tr>
                                 <th scope="col" style="width:70px">회사번호</th>
                                 <th scope="col" style="width:150px">회사명</th>
+                                <th scope="col" style="width:90px">승인 상태</th>
                                 <th scope="col" style="width:80px">플랜</th>
                                 <th scope="col" style="width:90px">구독 상태</th>
                                 <th scope="col" style="width:140px" class="col-card">카드 정보</th>
                                 <th scope="col" style="width:110px">결제 합계</th>
                                 <th scope="col" style="width:180px;white-space:nowrap" class="col-date">최종 결제일</th>
+                                <th scope="col" style="width:160px">관리</th>
                             </tr>
                         </thead>
                         <tbody id="subscribersTableBody">
@@ -250,6 +252,41 @@
         </div>
     </div>
 
+    <!-- Reject Reason Modal -->
+    <div class="modal-overlay" id="rejectModal" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="rejectModalTitle">회사 반려</h3>
+                <button class="modal-close" onclick="closeRejectModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rejectReason">반려 사유 <span class="required" aria-hidden="true">*</span></label>
+                    <textarea id="rejectReason" class="reject-textarea" placeholder="반려 사유를 입력해 주세요" aria-required="true"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeRejectModal()">취소</button>
+                <button class="btn btn-reject" id="rejectConfirmBtn" onclick="confirmReject()">반려 확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Result Modal -->
+    <div class="modal-overlay" id="validateModal" role="dialog" aria-modal="true" aria-labelledby="validateModalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="validateModalTitle">데이터 검증 결과</h3>
+                <button class="modal-close" onclick="closeValidateModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body" id="validateModalBody">
+            </div>
+            <div class="modal-footer" id="validateModalFooter">
+                <button class="btn btn-outline" onclick="closeValidateModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
@@ -268,7 +305,7 @@
         </div>
     </footer>
 
-    <script src="/js/api.js?v=7"></script>
-    <script src="/js/super-admin.js?v=7"></script>
+    <script src="/js/api.js?v=8"></script>
+    <script src="/js/super-admin.js?v=8"></script>
 </body>
 </html>
