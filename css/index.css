@@ -543,9 +543,35 @@
     margin-bottom: var(--space-lg);
     width: 100%;
     max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.company-register-link a {
+#adminLoginLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.625rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--white);
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: var(--transition);
+    box-sizing: border-box;
+}
+
+#adminLoginLink:hover {
+    background: var(--primary-dark, #1a5fb4);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.company-register-link a:not(#adminLoginLink) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -563,7 +589,7 @@
     box-sizing: border-box;
 }
 
-.company-register-link a:hover {
+.company-register-link a:not(#adminLoginLink):hover {
     border-color: var(--primary);
     background: var(--primary-bg);
     transform: translateY(-2px);
