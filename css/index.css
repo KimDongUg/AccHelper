@@ -589,31 +589,54 @@
     box-sizing: border-box;
 }
 
-.company-register-link a:not(#adminLoginLink):hover {
+.company-register-link a:not(#adminLoginLink):not(.manual-btn):hover {
     border-color: var(--primary);
     background: var(--primary-bg);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
-.company-register-link a.manual-link {
-    border-style: solid;
-    border-color: var(--primary-light);
-    background: var(--primary-bg);
-    color: var(--primary-dark);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    padding: 0.875rem 1.5rem;
+/* Top buttons row: 관리자로그인 + 매뉴얼 */
+.company-top-btns {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
 }
 
-.company-register-link a.manual-link:hover {
-    background: var(--primary);
-    color: var(--white);
-    border-color: var(--primary);
+.company-top-btns #adminLoginLink {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
 }
 
-.company-register-link a.manual-link:hover svg {
+.company-top-btns .manual-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: var(--white) !important;
+    background: var(--gray-600) !important;
+    border: 1px solid var(--gray-600) !important;
+    border-radius: var(--radius-md) !important;
+    text-decoration: none;
+    transition: var(--transition);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.company-top-btns .manual-btn:hover {
+    background: var(--gray-700) !important;
+    border-color: var(--gray-700) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.company-top-btns .manual-btn svg {
     stroke: var(--white);
+    flex-shrink: 0;
 }
 
 @media (max-width: 1023px) {
