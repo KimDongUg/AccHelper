@@ -331,18 +331,51 @@
             font-size: 1.25rem;
         }
 
-        /* Print styles */
+        /* Print / PDF styles */
         @media print {
-            .manual-actions, .header, .site-footer, .btn-download {
+            body {
+                background: #fff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .manual-actions, .header, .site-footer, .btn-download, .skip-link {
                 display: none !important;
             }
             .manual-container {
-                padding: 0;
+                padding: 0 1cm;
                 max-width: 100%;
+                margin: 0;
+            }
+            .manual-header {
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+            }
+            .manual-toc {
+                page-break-after: always;
             }
             .manual-section {
                 page-break-inside: avoid;
             }
+            .manual-section h2 {
+                page-break-after: avoid;
+            }
+            .step-box, .screen-desc, .info-box, .warning-box {
+                page-break-inside: avoid;
+            }
+            .field-table {
+                page-break-inside: avoid;
+            }
+            a {
+                color: inherit !important;
+                text-decoration: none !important;
+            }
+        }
+
+        body.printing-pdf .header,
+        body.printing-pdf .site-footer,
+        body.printing-pdf .manual-actions,
+        body.printing-pdf .skip-link {
+            display: none !important;
         }
 
         @media (max-width: 767px) {
@@ -403,17 +436,10 @@
                         <polyline points="7 10 12 15 17 10"/>
                         <line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
-                    PDF 다운로드
-                </button>
-                <button class="btn-download" style="background: var(--gray-600);" onclick="window.print()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
-                    </svg>
-                    인쇄하기
+                    PDF 다운로드 / 인쇄
                 </button>
             </div>
+            <p style="font-size: var(--text-xs); color: var(--gray-400); margin-top: 0.5rem;">인쇄 화면에서 "대상"을 "PDF로 저장"으로 선택하면 PDF 파일로 저장됩니다.</p>
         </div>
 
         <!-- Table of Contents -->
@@ -991,84 +1017,23 @@
         </div>
     </footer>
 
-    <!-- jsPDF + html2canvas for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
     <script>
-        async function downloadPDF() {
+        function downloadPDF() {
             const btn = document.getElementById('downloadPdfBtn');
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> PDF 생성 중...';
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> PDF 준비 중...';
 
-            try {
-                const { jsPDF } = window.jspdf;
+            // Use browser print with PDF-optimized settings
+            // Hide non-print elements
+            document.body.classList.add('printing-pdf');
 
-                // Clone the content for PDF rendering
-                const content = document.querySelector('.manual-container');
-                const clone = content.cloneNode(true);
-
-                // Remove action buttons from clone
-                const actions = clone.querySelector('.manual-actions');
-                if (actions) actions.remove();
-
-                // Create a temporary container
-                const tempDiv = document.createElement('div');
-                tempDiv.style.position = 'absolute';
-                tempDiv.style.left = '-9999px';
-                tempDiv.style.top = '0';
-                tempDiv.style.width = '800px';
-                tempDiv.style.padding = '40px';
-                tempDiv.style.background = '#fff';
-                tempDiv.style.fontFamily = "'Noto Sans KR', sans-serif";
-                document.body.appendChild(tempDiv);
-                tempDiv.appendChild(clone);
-
-                // Wait for fonts to render
-                await new Promise(r => setTimeout(r, 500));
-
-                const canvas = await html2canvas(tempDiv, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: 800,
-                    windowWidth: 800
-                });
-
-                document.body.removeChild(tempDiv);
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const imgWidth = pdfWidth - 20; // 10mm margins
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                let heightLeft = imgHeight;
-                let position = 10; // top margin
-
-                // First page
-                pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
-                heightLeft -= (pdfHeight - 20);
-
-                // Additional pages
-                while (heightLeft > 0) {
-                    position -= (pdfHeight - 20);
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
-                    heightLeft -= (pdfHeight - 20);
-                }
-
-                pdf.save('보태미_사용자_매뉴얼.pdf');
-            } catch (error) {
-                console.error('PDF 생성 오류:', error);
-                alert('PDF 생성 중 오류가 발생했습니다. 브라우저의 인쇄 기능(Ctrl+P)을 이용해 주세요.');
-            } finally {
+            setTimeout(() => {
+                window.print();
+                document.body.classList.remove('printing-pdf');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
-            }
+            }, 300);
         }
     </script>
 </body>
