@@ -47,7 +47,8 @@ NUL
 .claude/
 
 # =========================
-# Node / Frontend cache (È¤½Ã ´ëºñ)
+# Node / Frontend cache (È¤ï¿½ï¿½ ï¿½ï¿½ï¿½)
 # =========================
 node_modules/
 dist/
+.vercel

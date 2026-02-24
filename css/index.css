@@ -596,6 +596,26 @@
     box-shadow: var(--shadow-md);
 }
 
+.company-register-link a.manual-link {
+    border-style: solid;
+    border-color: var(--primary-light);
+    background: var(--primary-bg);
+    color: var(--primary-dark);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: 0.875rem 1.5rem;
+}
+
+.company-register-link a.manual-link:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.company-register-link a.manual-link:hover svg {
+    stroke: var(--white);
+}
+
 @media (max-width: 1023px) {
     .company-register-link a {
         padding: 1rem 1.25rem;
