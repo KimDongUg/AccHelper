@@ -1216,12 +1216,42 @@ function formatDateTime(dateStr) {
 /* ═══════════════════════════════════════════════
  *  ANSWER EDITOR (Image / Link / Preview)
  * ═══════════════════════════════════════════════ */
-function insertImageToAnswer() {
-    const url = prompt('이미지 URL을 입력하세요:');
-    if (!url) return;
-    const alt = prompt('이미지 설명 (선택사항):', '') || '';
-    const markdown = `![${alt}](${url})`;
-    insertAtCursor('modalAnswer', markdown);
+async function handleImageUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('이미지는 5MB 이하만 업로드 가능합니다.', 'error');
+        input.value = '';
+        return;
+    }
+
+    const btn = document.getElementById('imageUploadBtn');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner" style="display:inline-block;width:14px;height:14px;border:2px solid var(--gray-300);border-top-color:var(--primary);border-radius:50%;animation:tableSpin 0.6s linear infinite"></span> 업로드중...';
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const result = await apiFetch('/upload/image', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const url = result.url;
+        const alt = file.name.replace(/\.[^.]+$/, '');
+        insertAtCursor('modalAnswer', `![${alt}](${url})`);
+        showToast('이미지가 업로드되었습니다.', 'success');
+    } catch (e) {
+        showToast('이미지 업로드에 실패했습니다: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        input.value = '';
+    }
 }
 
 function insertLinkToAnswer() {

@@ -337,8 +337,9 @@
                 </div>
                 <div class="form-group">
                     <label for="modalAnswer">답변 <span class="required" aria-hidden="true">*</span></label>
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
                     <div class="editor-toolbar">
-                        <button type="button" class="editor-btn" onclick="insertImageToAnswer()" title="이미지 추가">
+                        <button type="button" class="editor-btn" id="imageUploadBtn" onclick="document.getElementById('imageUploadInput').click()" title="이미지 업로드">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                             이미지
                         </button>
