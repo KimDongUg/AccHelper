@@ -496,14 +496,8 @@ function showChat(companyData) {
             bubble.appendChild(buildEvidenceSection(result.evidences));
         }
 
-        // 미답변 판정: evidences가 없거나 빈 배열
+        // 미답변 판정: evidences가 없거나 빈 배열일 때 자동 저장 (메시지는 표시하지 않음)
         if (!hasEvidences) {
-            var noEvidence = document.createElement('div');
-            noEvidence.className = 'evidence-empty';
-            noEvidence.textContent = '등록된 정보에서 답변을 찾지 못했습니다. 관리실에 문의해 주세요.';
-            bubble.appendChild(noEvidence);
-
-            // 미답변 질문 자동 저장
             apiPost('/unanswered-questions', {
                 question: question,
                 company_id: currentCompanyId,
