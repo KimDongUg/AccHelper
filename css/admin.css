@@ -76,7 +76,7 @@
 /* ── Stats Cards ─────────────────────────────── */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: var(--space-md);
     margin-bottom: var(--space-xl);
 }
@@ -117,6 +117,8 @@
 .stat-icon.green  { background: #E8F5E9; color: var(--success); }
 .stat-icon.orange { background: #FFF3E0; color: #FF9800; }
 .stat-icon.purple { background: #F3E5F5; color: #9C27B0; }
+.stat-icon.red    { background: #FFEBEE; color: #E53935; }
+.stat-icon.yellow { background: #FFF8E1; color: #F9A825; }
 
 .stat-info h4 {
     font-size: 0.8125rem;
@@ -440,6 +442,78 @@
     font-size: var(--text-sm);
     cursor: pointer;
     margin-bottom: 0;
+}
+
+/* ── Answer Editor Toolbar ───────────────────── */
+.editor-toolbar {
+    display: flex;
+    gap: 0.375rem;
+    margin-bottom: 0.375rem;
+}
+
+.editor-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--gray-600);
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.editor-btn:hover {
+    color: var(--primary);
+    background: var(--primary-bg);
+    border-color: var(--primary);
+}
+
+.editor-btn.active {
+    color: var(--white);
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.editor-btn svg {
+    flex-shrink: 0;
+}
+
+.answer-preview {
+    background: var(--gray-50, #f9fafb);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    max-height: 300px;
+    overflow-y: auto;
+    word-break: break-word;
+}
+
+.answer-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    margin: 0.5rem 0;
+}
+
+.answer-preview a {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.answer-preview p {
+    margin: 0.375rem 0;
+}
+
+.answer-preview ul,
+.answer-preview ol {
+    margin: 0.375rem 0;
+    padding-left: 1.5rem;
 }
 
 /* Save button spinner */

@@ -752,6 +752,46 @@
 .message-answer a {
     color: var(--primary);
     text-decoration: underline;
+    word-break: break-all;
+}
+
+.message-answer img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    display: block;
+    cursor: pointer;
+}
+
+.message-answer img:hover {
+    opacity: 0.9;
+}
+
+/* ── Image lightbox overlay ──────────────────── */
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+
+.lightbox-overlay.show {
+    display: flex;
+}
+
+.lightbox-overlay img {
+    max-width: 92%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ── Evidence section ──────────────────────── */

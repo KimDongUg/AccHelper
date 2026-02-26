@@ -6,6 +6,8 @@ let sessionCheckTimer = null;
 let currentSearchTerm = '';
 let currentRole = 'viewer';
 let logPage = 1;
+let unansweredPage = 1;
+let feedbackPage = 1;
 let companiesList = [];
 let companyMap = {};  // id → name
 
@@ -162,6 +164,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modalQuestion').addEventListener('input', onQuestionInput);
     document.getElementById('modalAnswer').addEventListener('input', onAnswerInput);
 
+    // Feedback filters
+    document.getElementById('feedbackRatingFilter').addEventListener('change', () => { feedbackPage = 1; loadFeedbackList(); });
+    document.getElementById('feedbackStatusFilter').addEventListener('change', () => { feedbackPage = 1; loadFeedbackList(); });
+
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -194,6 +200,8 @@ function switchTab(tab) {
     }
 
     if (tab === 'admins') loadAdminList();
+    if (tab === 'feedback') { feedbackPage = 1; loadFeedbackList(); }
+    if (tab === 'unanswered') { unansweredPage = 1; loadUnansweredList(); }
     if (tab === 'logs') { logPage = 1; loadActivityLogs(); }
 }
 
@@ -233,6 +241,20 @@ async function loadStats() {
         document.getElementById('statToday').textContent = s.today_chats;
     } catch (e) {
         console.error('Stats load error:', e);
+    }
+    // 불만족 피드백 건수 로드
+    try {
+        const fc = await apiGet('/feedback/count');
+        document.getElementById('statFeedback').textContent = fc.count ?? 0;
+    } catch (e) {
+        document.getElementById('statFeedback').textContent = '-';
+    }
+    // 미답변 질문 건수 로드
+    try {
+        const uc = await apiGet('/unanswered-questions/count');
+        document.getElementById('statUnanswered').textContent = uc.count ?? 0;
+    } catch (e) {
+        document.getElementById('statUnanswered').textContent = '-';
     }
     // 구독 상태 로드
     try {
@@ -528,6 +550,10 @@ function closeModal() {
     document.getElementById('qaModal').classList.remove('show');
     document.getElementById('modalSaveBtn').classList.remove('loading');
     document.getElementById('modalSaveBtn').disabled = false;
+    // Reset preview state
+    document.getElementById('answerPreview').style.display = 'none';
+    document.getElementById('modalAnswer').style.display = '';
+    document.getElementById('previewToggleBtn').classList.remove('active');
 }
 
 async function saveQa() {
@@ -672,6 +698,289 @@ async function saveAdmin() {
         loadAdminList();
     } catch (e) {
         showToast('저장에 실패했습니다: ' + e.message, 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  FEEDBACK MANAGEMENT
+ * ═══════════════════════════════════════════════ */
+async function loadFeedbackList() {
+    const rating = document.getElementById('feedbackRatingFilter').value;
+    const status = document.getElementById('feedbackStatusFilter').value;
+    const params = new URLSearchParams({ page: feedbackPage, size: PAGE_SIZE });
+    if (rating) params.append('rating', rating);
+    if (status) params.append('status', status);
+
+    const loading = document.getElementById('feedbackTableLoading');
+    loading.classList.add('show');
+    try {
+        const data = await apiGet(`/feedback?${params}`);
+        renderFeedbackTable(data.items);
+        renderFeedbackPagination(data.page, data.pages);
+    } catch (e) {
+        console.error('Feedback list error:', e);
+    } finally {
+        loading.classList.remove('show');
+    }
+}
+
+function renderFeedbackTable(items) {
+    const tbody = document.getElementById('feedbackTableBody');
+    const empty = document.getElementById('feedbackEmptyState');
+
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+    tbody.innerHTML = items.map(item => {
+        const ratingIcon = item.rating === 'like'
+            ? '<span style="color:var(--success);font-size:1.2rem" title="만족">&#x1F44D;</span>'
+            : '<span style="color:var(--danger);font-size:1.2rem" title="불만족">&#x1F44E;</span>';
+        const statusLabel = item.status === 'pending'
+            ? '<span style="color:#FF9800">미처리</span>'
+            : '<span style="color:var(--success)">처리완료</span>';
+        const qaIdStr = (item.qa_ids && item.qa_ids.length > 0) ? item.qa_ids[0] : '';
+        return `
+        <tr>
+            <td style="text-align:center">${ratingIcon}</td>
+            <td class="question-cell" title="${escapeHtml(item.question)}">${escapeHtml(item.question)}</td>
+            <td class="answer-cell" title="${escapeHtml(item.answer || '')}">${escapeHtml((item.answer || '').substring(0, 100))}</td>
+            <td>${statusLabel}</td>
+            <td>${item.created_at ? formatDateTime(item.created_at) : '-'}</td>
+            <td>
+                <div class="actions">
+                    ${item.status === 'pending' ? `
+                        ${qaIdStr ? `<button class="btn btn-primary btn-sm" onclick="editQaFromFeedback(${qaIdStr}, ${item.id})">Q&A 수정</button>` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="resolveFeedback(${item.id})">처리완료</button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderFeedbackPagination(page, pages) {
+    const container = document.getElementById('feedbackPagination');
+    if (pages <= 1) { container.innerHTML = ''; return; }
+
+    let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToFeedbackPage(${page - 1})">&laquo;</button>`;
+    const start = Math.max(1, page - 2);
+    const end = Math.min(pages, page + 2);
+    if (start > 1) {
+        html += `<button onclick="goToFeedbackPage(1)">1</button>`;
+        if (start > 2) html += `<button disabled>...</button>`;
+    }
+    for (let i = start; i <= end; i++) {
+        html += `<button class="${i === page ? 'active' : ''}" onclick="goToFeedbackPage(${i})">${i}</button>`;
+    }
+    if (end < pages) {
+        if (end < pages - 1) html += `<button disabled>...</button>`;
+        html += `<button onclick="goToFeedbackPage(${pages})">${pages}</button>`;
+    }
+    html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToFeedbackPage(${page + 1})">&raquo;</button>`;
+    container.innerHTML = html;
+}
+
+function goToFeedbackPage(page) { feedbackPage = page; loadFeedbackList(); }
+
+async function editQaFromFeedback(qaId, feedbackId) {
+    // Q&A 수정 모달 열기
+    await openEditModal(qaId);
+
+    // 저장 후 피드백도 resolved 처리하도록 오버라이드
+    const origSave = window._origSaveQaFb || saveQa;
+    if (!window._origSaveQaFb) window._origSaveQaFb = saveQa;
+
+    window.saveQa = async function () {
+        if (!validateModal()) return;
+        const saveBtn = document.getElementById('modalSaveBtn');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+
+        const editId = document.getElementById('editQaId').value;
+        const data = {
+            category: document.getElementById('modalCategory').value,
+            question: document.getElementById('modalQuestion').value.trim(),
+            answer: document.getElementById('modalAnswer').value.trim(),
+            keywords: document.getElementById('modalKeywords').value.trim(),
+            is_active: document.getElementById('modalActive').checked,
+        };
+        if (currentRole === 'super_admin' && companiesList.length > 0) {
+            data.company_id = parseInt(document.getElementById('modalCompany').value, 10);
+        }
+
+        try {
+            if (editId) {
+                await apiPut(`/qa/${editId}`, data);
+            } else {
+                await apiPost('/qa', data);
+            }
+            // 피드백 resolved 처리
+            await apiPatch(`/feedback/${feedbackId}`, { status: 'resolved' });
+            showToast('Q&A가 수정되고 피드백이 처리되었습니다.', 'success');
+            markQaModified();
+            closeModal();
+            loadQaList();
+            loadStats();
+            loadFeedbackList();
+        } catch (e) {
+            saveBtn.classList.remove('loading');
+            saveBtn.disabled = false;
+            showToast('저장에 실패했습니다: ' + e.message, 'error');
+        }
+        window.saveQa = origSave;
+    };
+}
+
+async function resolveFeedback(id) {
+    try {
+        await apiPatch(`/feedback/${id}`, { status: 'resolved' });
+        showToast('피드백이 처리완료되었습니다.', 'success');
+        loadFeedbackList();
+        loadStats();
+    } catch (e) {
+        showToast('처리에 실패했습니다: ' + e.message, 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  UNANSWERED QUESTIONS
+ * ═══════════════════════════════════════════════ */
+async function loadUnansweredList() {
+    const params = new URLSearchParams({ page: unansweredPage, size: PAGE_SIZE });
+    const loading = document.getElementById('unansweredTableLoading');
+    loading.classList.add('show');
+    try {
+        const data = await apiGet(`/unanswered-questions?${params}`);
+        renderUnansweredTable(data.items);
+        renderUnansweredPagination(data.page, data.pages);
+    } catch (e) {
+        console.error('Unanswered list error:', e);
+    } finally {
+        loading.classList.remove('show');
+    }
+}
+
+function renderUnansweredTable(items) {
+    const tbody = document.getElementById('unansweredTableBody');
+    const empty = document.getElementById('unansweredEmptyState');
+
+    if (!items || items.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+    tbody.innerHTML = items.map(item => {
+        const statusLabel = item.status === 'pending' ? '<span style="color:#FF9800">대기</span>'
+            : item.status === 'resolved' ? '<span style="color:var(--success)">등록됨</span>'
+            : '<span style="color:var(--gray-400)">무시</span>';
+        return `
+        <tr>
+            <td title="${escapeHtml(item.question)}">${escapeHtml(item.question)}</td>
+            <td>${item.created_at ? formatDateTime(item.created_at) : '-'}</td>
+            <td>${statusLabel}</td>
+            <td>
+                <div class="actions">
+                    ${item.status === 'pending' ? `
+                        <button class="btn btn-primary btn-sm" onclick="resolveUnanswered(${item.id}, '${escapeHtml(item.question).replace(/'/g, "\\'")}')">Q&A 등록</button>
+                        <button class="btn btn-outline btn-sm" onclick="dismissUnanswered(${item.id})">무시</button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderUnansweredPagination(page, pages) {
+    const container = document.getElementById('unansweredPagination');
+    if (pages <= 1) { container.innerHTML = ''; return; }
+
+    let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToUnansweredPage(${page - 1})">&laquo;</button>`;
+    const start = Math.max(1, page - 2);
+    const end = Math.min(pages, page + 2);
+    if (start > 1) {
+        html += `<button onclick="goToUnansweredPage(1)">1</button>`;
+        if (start > 2) html += `<button disabled>...</button>`;
+    }
+    for (let i = start; i <= end; i++) {
+        html += `<button class="${i === page ? 'active' : ''}" onclick="goToUnansweredPage(${i})">${i}</button>`;
+    }
+    if (end < pages) {
+        if (end < pages - 1) html += `<button disabled>...</button>`;
+        html += `<button onclick="goToUnansweredPage(${pages})">${pages}</button>`;
+    }
+    html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToUnansweredPage(${page + 1})">&raquo;</button>`;
+    container.innerHTML = html;
+}
+
+function goToUnansweredPage(page) { unansweredPage = page; loadUnansweredList(); }
+
+function resolveUnanswered(id, question) {
+    // Open Q&A create modal with question pre-filled
+    openCreateModal();
+    document.getElementById('modalQuestion').value = question;
+    onQuestionInput();
+
+    // Override save to also resolve the unanswered question
+    const origSave = window._origSaveQa || saveQa;
+    if (!window._origSaveQa) window._origSaveQa = saveQa;
+
+    window.saveQa = async function () {
+        if (!validateModal()) return;
+        const saveBtn = document.getElementById('modalSaveBtn');
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+
+        const qaId = document.getElementById('editQaId').value;
+        const data = {
+            category: document.getElementById('modalCategory').value,
+            question: document.getElementById('modalQuestion').value.trim(),
+            answer: document.getElementById('modalAnswer').value.trim(),
+            keywords: document.getElementById('modalKeywords').value.trim(),
+            is_active: document.getElementById('modalActive').checked,
+        };
+        if (currentRole === 'super_admin' && companiesList.length > 0) {
+            data.company_id = parseInt(document.getElementById('modalCompany').value, 10);
+        }
+
+        try {
+            if (qaId) {
+                await apiPut(`/qa/${qaId}`, data);
+            } else {
+                await apiPost('/qa', data);
+            }
+            // Mark unanswered as resolved
+            await apiPatch(`/unanswered-questions/${id}`, { status: 'resolved' });
+            showToast('Q&A가 등록되고 미답변이 처리되었습니다.', 'success');
+            markQaModified();
+            closeModal();
+            loadQaList();
+            loadStats();
+            loadUnansweredList();
+        } catch (e) {
+            saveBtn.classList.remove('loading');
+            saveBtn.disabled = false;
+            showToast('저장에 실패했습니다: ' + e.message, 'error');
+        }
+
+        // Restore original saveQa
+        window.saveQa = origSave;
+    };
+}
+
+async function dismissUnanswered(id) {
+    try {
+        await apiPatch(`/unanswered-questions/${id}`, { status: 'dismissed' });
+        showToast('미답변 질문이 무시 처리되었습니다.', 'success');
+        loadUnansweredList();
+        loadStats();
+    } catch (e) {
+        showToast('처리에 실패했습니다: ' + e.message, 'error');
     }
 }
 
@@ -902,6 +1211,68 @@ function formatDateTime(dateStr) {
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     return `${d.getFullYear()}-${m}-${day} ${h}:${min}`;
+}
+
+/* ═══════════════════════════════════════════════
+ *  ANSWER EDITOR (Image / Link / Preview)
+ * ═══════════════════════════════════════════════ */
+function insertImageToAnswer() {
+    const url = prompt('이미지 URL을 입력하세요:');
+    if (!url) return;
+    const alt = prompt('이미지 설명 (선택사항):', '') || '';
+    const markdown = `![${alt}](${url})`;
+    insertAtCursor('modalAnswer', markdown);
+}
+
+function insertLinkToAnswer() {
+    const url = prompt('웹사이트 URL을 입력하세요:', 'https://');
+    if (!url || url === 'https://') return;
+    const text = prompt('링크 텍스트를 입력하세요:', '') || url;
+    const markdown = `[${text}](${url})`;
+    insertAtCursor('modalAnswer', markdown);
+}
+
+function insertAtCursor(textareaId, text) {
+    const ta = document.getElementById(textareaId);
+    ta.focus();
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const before = ta.value.substring(0, start);
+    const after = ta.value.substring(end);
+    ta.value = before + text + after;
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    // Trigger input event for validation
+    ta.dispatchEvent(new Event('input'));
+}
+
+function toggleAnswerPreview() {
+    const ta = document.getElementById('modalAnswer');
+    const preview = document.getElementById('answerPreview');
+    const btn = document.getElementById('previewToggleBtn');
+
+    if (preview.style.display === 'none') {
+        // Show preview
+        const raw = ta.value || '';
+        if (typeof marked !== 'undefined' && marked.parse) {
+            preview.innerHTML = marked.parse(raw);
+        } else {
+            preview.textContent = raw;
+        }
+        // Make links open in new tab
+        preview.querySelectorAll('a').forEach(a => {
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+        });
+        preview.style.display = '';
+        ta.style.display = 'none';
+        btn.classList.add('active');
+    } else {
+        // Show editor
+        preview.style.display = 'none';
+        ta.style.display = '';
+        btn.classList.remove('active');
+        ta.focus();
+    }
 }
 
 /* ═══════════════════════════════════════════════

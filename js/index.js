@@ -250,6 +250,22 @@ async function validateAndStartChat(code) {
     }
 }
 
+/* ── Image Lightbox ────────────────────────── */
+function openLightbox(src) {
+    var overlay = document.getElementById('lightboxOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'lightboxOverlay';
+        overlay.className = 'lightbox-overlay';
+        overlay.addEventListener('click', function () { overlay.classList.remove('show'); });
+        var img = document.createElement('img');
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
+    }
+    overlay.querySelector('img').src = src;
+    overlay.classList.add('show');
+}
+
 /* ── Show Chat ─────────────────────────────── */
 function showChat(companyData) {
     var companyName = typeof companyData === 'string' ? companyData : (companyData && companyData.company_name);
@@ -463,6 +479,15 @@ function showChat(companyData) {
         } else {
             answerDiv.textContent = formattedAnswer;
         }
+        // 링크: 새 탭에서 열기
+        answerDiv.querySelectorAll('a').forEach(function (a) {
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+        });
+        // 이미지: 클릭 시 라이트박스
+        answerDiv.querySelectorAll('img').forEach(function (img) {
+            img.addEventListener('click', function () { openLightbox(img.src); });
+        });
         bubble.appendChild(answerDiv);
 
         // Evidence section (if evidences exist in response)
@@ -473,6 +498,13 @@ function showChat(companyData) {
             noEvidence.className = 'evidence-empty';
             noEvidence.textContent = '등록된 정보에서 답변을 찾지 못했습니다. 관리실에 문의해 주세요.';
             bubble.appendChild(noEvidence);
+
+            // 미답변 질문 자동 저장
+            apiPost('/unanswered-questions', {
+                question: question,
+                company_id: currentCompanyId,
+                session_id: sessionId,
+            }).catch(function () { /* 저장 실패해도 무시 */ });
         }
 
         // Feedback buttons
@@ -574,6 +606,7 @@ function showChat(companyData) {
                 answer: answer,
                 qa_ids: qaIds,
                 rating: rating,
+                session_id: sessionId,
             }).then(function () {
                 showToast('피드백 감사합니다');
             }).catch(function () {
