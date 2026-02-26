@@ -491,9 +491,13 @@ function showChat(companyData) {
         bubble.appendChild(answerDiv);
 
         // Evidence section (if evidences exist in response)
-        if (result.evidences && result.evidences.length > 0) {
+        var hasEvidences = result.evidences && result.evidences.length > 0;
+        if (hasEvidences) {
             bubble.appendChild(buildEvidenceSection(result.evidences));
-        } else if (result.evidences && result.evidences.length === 0) {
+        }
+
+        // 미답변 판정: evidences가 없거나 빈 배열
+        if (!hasEvidences) {
             var noEvidence = document.createElement('div');
             noEvidence.className = 'evidence-empty';
             noEvidence.textContent = '등록된 정보에서 답변을 찾지 못했습니다. 관리실에 문의해 주세요.';
