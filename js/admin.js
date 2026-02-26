@@ -775,10 +775,19 @@ async function openProfileModal() {
             const company = await apiGet('/companies/me');
             document.getElementById('profileCompanyName').value = company.company_name || '';
             document.getElementById('profileCompanyAddress').value = company.address || '';
+            document.getElementById('profileGreeting').value = company.greeting_text || '';
+
+            // Load categories
+            const wrap = document.getElementById('categoryItemsWrap');
+            wrap.innerHTML = '';
+            const categories = company.categories || [];
+            categories.forEach(cat => addCategoryItem(cat.label, cat.question));
         } catch (e) {
             const sess = AuthSession.get();
             document.getElementById('profileCompanyName').value = sess?.companyName || '';
             document.getElementById('profileCompanyAddress').value = '';
+            document.getElementById('profileGreeting').value = '';
+            document.getElementById('categoryItemsWrap').innerHTML = '';
         }
 
         document.getElementById('profileModal').classList.add('show');
@@ -804,10 +813,16 @@ async function saveProfile() {
     saveBtn.disabled = true;
 
     try {
+        // Collect greeting and categories
+        const greetingText = document.getElementById('profileGreeting').value.trim();
+        const categories = getCategoryItems();
+
         // Update company info via /companies/me
         await apiPut('/companies/me', {
             company_name: companyName || null,
             address: companyAddress || null,
+            greeting_text: greetingText || null,
+            categories: categories.length > 0 ? categories : null,
         });
         if (companyName) {
             document.getElementById('headerCompanyName').textContent = companyName;
@@ -885,4 +900,54 @@ function formatDateTime(dateStr) {
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     return `${d.getFullYear()}-${m}-${day} ${h}:${min}`;
+}
+
+/* ═══════════════════════════════════════════════
+ *  CATEGORY ITEMS (Profile Modal)
+ * ═══════════════════════════════════════════════ */
+const MAX_CATEGORIES = 6;
+
+function addCategoryItem(label, question) {
+    const wrap = document.getElementById('categoryItemsWrap');
+    const items = wrap.querySelectorAll('.category-item');
+    if (items.length >= MAX_CATEGORIES) {
+        showToast('카테고리는 최대 ' + MAX_CATEGORIES + '개까지 추가할 수 있습니다.', 'warning');
+        return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'category-item';
+    row.innerHTML =
+        '<input type="text" class="form-control cat-label" placeholder="버튼 텍스트 (예: 입주신고)" value="' + escapeHtml(label || '') + '">' +
+        '<input type="text" class="form-control cat-question" placeholder="질문 (예: 입주신고 시 필요한 서류는?)" value="' + escapeHtml(question || '') + '">' +
+        '<button type="button" class="btn-category-remove" title="삭제">&times;</button>';
+
+    row.querySelector('.btn-category-remove').addEventListener('click', function () {
+        row.remove();
+        updateAddCategoryBtn();
+    });
+
+    wrap.appendChild(row);
+    updateAddCategoryBtn();
+}
+
+function updateAddCategoryBtn() {
+    const wrap = document.getElementById('categoryItemsWrap');
+    const btn = document.getElementById('addCategoryBtn');
+    const count = wrap.querySelectorAll('.category-item').length;
+    btn.disabled = count >= MAX_CATEGORIES;
+}
+
+function getCategoryItems() {
+    const wrap = document.getElementById('categoryItemsWrap');
+    const items = wrap.querySelectorAll('.category-item');
+    const result = [];
+    items.forEach(item => {
+        const label = item.querySelector('.cat-label').value.trim();
+        const question = item.querySelector('.cat-question').value.trim();
+        if (label && question) {
+            result.push({ label, question });
+        }
+    });
+    return result;
 }

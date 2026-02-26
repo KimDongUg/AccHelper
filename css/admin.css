@@ -546,6 +546,43 @@
     to   { opacity: 0; transform: translateX(40px); }
 }
 
+/* ── Category Items (Profile Modal) ──────────── */
+.category-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.category-item input {
+    flex: 1;
+    min-width: 0;
+}
+
+.category-item .btn-category-remove {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-300);
+    background: var(--white);
+    color: var(--gray-500);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.category-item .btn-category-remove:hover {
+    background: #FEE2E2;
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
 /* ── Responsive ──────────────────────────────── */
 
 /* Tablet: hide answer column */

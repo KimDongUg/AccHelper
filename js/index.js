@@ -230,7 +230,7 @@ async function validateAndStartChat(code) {
         companyLabel.style.display = '';
 
         // Show chat (로그인 없이 누구나 이용 가능)
-        showChat(company.company_name);
+        showChat(company);
     } catch (err) {
         if (err instanceof ApiError && err.status === 403) {
             // 미승인 업체 접근 시 안내 메시지 표시
@@ -251,7 +251,8 @@ async function validateAndStartChat(code) {
 }
 
 /* ── Show Chat ─────────────────────────────── */
-function showChat(companyName) {
+function showChat(companyData) {
+    var companyName = typeof companyData === 'string' ? companyData : (companyData && companyData.company_name);
     chatSection.style.display = '';
     companySelection.style.display = 'none';
 
@@ -262,8 +263,12 @@ function showChat(companyName) {
         if (hero) hero.textContent = companyName;
         if (greeting) greeting.textContent = companyName;
 
-        // 업체별 커스텀 설정 (인사말 + 카테고리)
-        const companyCustom = {
+        // 업체별 커스텀 설정: API 응답 우선, 없으면 하드코딩 기본값
+        var apiGreeting = companyData && companyData.greeting_text;
+        var apiCategories = companyData && companyData.categories;
+
+        // 하드코딩 기본값 (하위호환)
+        var defaultCustom = {
             '세종푸르지오시티 2차': {
                 hero: ' AI 경리입니다.<br>무엇이든 물어보세요~',
                 greeting: '안녕하세요! 세종푸르지오시티 2차 AI 경리입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
@@ -275,23 +280,30 @@ function showChat(companyName) {
                 ]
             }
         };
-        const custom = companyCustom[companyName];
-        if (custom) {
-            if (custom.hero) {
-                const heroEl = document.querySelector('.chat-hero h1');
-                if (heroEl) heroEl.innerHTML = `<span id="heroCompanyName">${companyName}</span>${custom.hero}`;
-            }
-            if (custom.greeting) {
-                const bubbleEl = document.querySelector('.message.bot .message-bubble');
-                if (bubbleEl) bubbleEl.innerHTML = custom.greeting;
-            }
-            if (custom.categories) {
-                const filterEl = document.querySelector('.category-filters');
-                if (filterEl) {
-                    filterEl.innerHTML = custom.categories.map(c =>
-                        `<button class="quick-btn" data-question="${c.question}">${c.label}</button>`
-                    ).join('');
-                }
+        var fallback = defaultCustom[companyName];
+
+        // 인사말 적용: API → 하드코딩 기본값
+        var greetingText = apiGreeting || (fallback && fallback.greeting);
+        if (greetingText) {
+            var bubbleEl = document.querySelector('.message.bot .message-bubble');
+            if (bubbleEl) bubbleEl.innerHTML = greetingText;
+        }
+
+        // 히어로 텍스트: API 인사말이 있으면 기본 히어로, 없으면 하드코딩
+        var heroSuffix = fallback && fallback.hero;
+        if (heroSuffix && !apiGreeting) {
+            var heroEl = document.querySelector('.chat-hero h1');
+            if (heroEl) heroEl.innerHTML = '<span id="heroCompanyName">' + companyName + '</span>' + heroSuffix;
+        }
+
+        // 카테고리 적용: API → 하드코딩 기본값
+        var categories = (apiCategories && apiCategories.length > 0) ? apiCategories : (fallback && fallback.categories);
+        if (categories && categories.length > 0) {
+            var filterEl = document.querySelector('.category-filters');
+            if (filterEl) {
+                filterEl.innerHTML = categories.map(function (c) {
+                    return '<button class="quick-btn" data-question="' + c.question + '">' + c.label + '</button>';
+                }).join('');
             }
         }
     }

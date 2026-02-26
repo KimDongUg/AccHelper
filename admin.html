@@ -335,6 +335,17 @@
                     <label for="profileCompanyAddress">회사 주소</label>
                     <input type="text" id="profileCompanyAddress" class="form-control" placeholder="회사 주소를 입력하세요">
                 </div>
+                <div class="form-group">
+                    <label for="profileGreeting">챗봇 인사말</label>
+                    <textarea id="profileGreeting" class="form-control" rows="3" placeholder="예: 안녕하세요! OOO AI 경리입니다. 궁금한 점을 물어보세요."></textarea>
+                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">챗봇 첫 화면에 표시되는 인사말입니다.</div>
+                </div>
+                <div class="form-group">
+                    <label>카테고리 버튼 설정 <span style="font-size:var(--text-xs);color:var(--gray-400)">(최대 6개)</span></label>
+                    <div id="categoryItemsWrap"></div>
+                    <button type="button" class="btn btn-outline btn-sm" id="addCategoryBtn" onclick="addCategoryItem()" style="margin-top:0.5rem">+ 카테고리 추가</button>
+                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">챗봇 첫 화면의 빠른 질문 버튼입니다.</div>
+                </div>
                 <hr style="margin:1.25rem 0;border:0;border-top:1px solid var(--gray-200)">
                 <p style="font-size:var(--text-sm);color:var(--gray-500);margin-bottom:0.75rem;font-weight:600">내 정보</p>
                 <div class="form-group">
