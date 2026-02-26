@@ -496,21 +496,24 @@ function showChat(companyData) {
             bubble.appendChild(buildEvidenceSection(result.evidences));
         }
 
-        // 미답변 판정: evidences가 없거나 빈 배열일 때 자동 저장 (메시지는 표시하지 않음)
-        if (!hasEvidences) {
-            apiPost('/unanswered-questions', {
-                question: question,
-                company_id: currentCompanyId,
-                session_id: sessionId,
-            }).catch(function () { /* 저장 실패해도 무시 */ });
-        }
-
-        // Feedback buttons
+        // Feedback buttons 용 qa_ids 수집
         var qaIds = [];
         if (result.evidences) {
             result.evidences.forEach(function (e) {
                 if (e.qa_id) qaIds.push(e.qa_id);
             });
+        }
+
+        // 미답변 판정: evidences·qa_ids 모두 없고 답변이 미답변 패턴일 때만 저장
+        var answerText = result.answer || '';
+        var looksUnanswered = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없/.test(answerText);
+        var isUnanswered = !hasEvidences && qaIds.length === 0 && looksUnanswered;
+        if (isUnanswered) {
+            apiPost('/unanswered-questions', {
+                question: question,
+                company_id: currentCompanyId,
+                session_id: sessionId,
+            }).catch(function () { /* 저장 실패해도 무시 */ });
         }
         bubble.appendChild(buildFeedbackButtons(question, result.answer, qaIds));
 
