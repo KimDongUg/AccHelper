@@ -1278,15 +1278,8 @@ function toggleAnswerPreview() {
 /* ═══════════════════════════════════════════════
  *  CATEGORY ITEMS (Profile Modal)
  * ═══════════════════════════════════════════════ */
-const MAX_CATEGORIES = 6;
-
 function addCategoryItem(label, question) {
     const wrap = document.getElementById('categoryItemsWrap');
-    const items = wrap.querySelectorAll('.category-item');
-    if (items.length >= MAX_CATEGORIES) {
-        showToast('카테고리는 최대 ' + MAX_CATEGORIES + '개까지 추가할 수 있습니다.', 'warning');
-        return;
-    }
 
     const row = document.createElement('div');
     row.className = 'category-item';
@@ -1305,10 +1298,7 @@ function addCategoryItem(label, question) {
 }
 
 function updateAddCategoryBtn() {
-    const wrap = document.getElementById('categoryItemsWrap');
-    const btn = document.getElementById('addCategoryBtn');
-    const count = wrap.querySelectorAll('.category-item').length;
-    btn.disabled = count >= MAX_CATEGORIES;
+    // 제한 없음 — 버튼 항상 활성
 }
 
 function getCategoryItems() {
