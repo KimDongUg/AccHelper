@@ -742,7 +742,8 @@ function renderFeedbackTable(items) {
         const statusLabel = item.status === 'pending'
             ? '<span style="color:#FF9800">미처리</span>'
             : '<span style="color:var(--success)">처리완료</span>';
-        const qaIdStr = (item.qa_ids && item.qa_ids.length > 0) ? item.qa_ids[0] : '';
+        const feedbackId = item.feedback_id || item.id;
+        const qaId = (item.qa_ids && item.qa_ids.length > 0) ? item.qa_ids[0] : null;
         return `
         <tr>
             <td style="text-align:center">${ratingIcon}</td>
@@ -753,8 +754,8 @@ function renderFeedbackTable(items) {
             <td>
                 <div class="actions">
                     ${item.status === 'pending' ? `
-                        ${qaIdStr ? `<button class="btn btn-primary btn-sm" onclick="editQaFromFeedback(${qaIdStr}, ${item.id})">Q&A 수정</button>` : ''}
-                        <button class="btn btn-outline btn-sm" onclick="resolveFeedback(${item.id})">처리완료</button>
+                        <button class="btn btn-primary btn-sm" onclick="editQaFromFeedback(${qaId || 'null'}, ${feedbackId}, '${escapeHtml(item.question || '').replace(/'/g, "\\'")}')">Q&A 수정</button>
+                        <button class="btn btn-outline btn-sm" onclick="resolveFeedback(${feedbackId})">처리완료</button>
                     ` : ''}
                 </div>
             </td>
@@ -786,9 +787,25 @@ function renderFeedbackPagination(page, pages) {
 
 function goToFeedbackPage(page) { feedbackPage = page; loadFeedbackList(); }
 
-async function editQaFromFeedback(qaId, feedbackId) {
-    // Q&A 수정 모달 열기
-    await openEditModal(qaId);
+async function editQaFromFeedback(qaId, feedbackId, question) {
+    try {
+        if (qaId) {
+            await openEditModal(qaId);
+        } else {
+            openCreateModal();
+            if (question) {
+                document.getElementById('modalQuestion').value = question;
+                onQuestionInput();
+            }
+        }
+    } catch (e) {
+        // openEditModal 실패 시 새 Q&A 생성으로 전환
+        openCreateModal();
+        if (question) {
+            document.getElementById('modalQuestion').value = question;
+            onQuestionInput();
+        }
+    }
 
     // 저장 후 피드백도 resolved 처리하도록 오버라이드
     const origSave = window._origSaveQaFb || saveQa;
@@ -818,9 +835,8 @@ async function editQaFromFeedback(qaId, feedbackId) {
             } else {
                 await apiPost('/qa', data);
             }
-            // 피드백 resolved 처리
             await apiPatch(`/feedback/${feedbackId}`, { status: 'resolved' });
-            showToast('Q&A가 수정되고 피드백이 처리되었습니다.', 'success');
+            showToast('Q&A가 저장되고 피드백이 처리되었습니다.', 'success');
             markQaModified();
             closeModal();
             loadQaList();
