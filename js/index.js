@@ -611,6 +611,7 @@ function showChat(companyData) {
                 qa_ids: qaIds,
                 rating: rating,
                 session_id: sessionId,
+                company_id: currentCompanyId,
             }).then(function () {
                 showToast('피드백 감사합니다');
             }).catch(function () {
