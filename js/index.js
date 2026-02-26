@@ -261,6 +261,39 @@ function showChat(companyName) {
         const greeting = document.getElementById('greetingCompanyName');
         if (hero) hero.textContent = companyName;
         if (greeting) greeting.textContent = companyName;
+
+        // 업체별 커스텀 설정 (인사말 + 카테고리)
+        const companyCustom = {
+            '세종푸르지오시티 2차': {
+                hero: ' AI 경리입니다.<br>무엇이든 물어보세요~',
+                greeting: '안녕하세요! 세종푸르지오시티 2차 AI 경리입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
+                categories: [
+                    { label: '중간관리비 정산', question: '중간관리비 정산 절차가 어떻게 되나요?' },
+                    { label: '입주신고', question: '입주신고 시 필요한 서류는?' },
+                    { label: '시설물 AS', question: '각종 시설물 AS 안내를 알려주세요.' },
+                    { label: '기타', question: '관리사무소 업무 시간과 연락처를 알려주세요.' }
+                ]
+            }
+        };
+        const custom = companyCustom[companyName];
+        if (custom) {
+            if (custom.hero) {
+                const heroEl = document.querySelector('.chat-hero h1');
+                if (heroEl) heroEl.innerHTML = `<span id="heroCompanyName">${companyName}</span>${custom.hero}`;
+            }
+            if (custom.greeting) {
+                const bubbleEl = document.querySelector('.message.bot .message-bubble');
+                if (bubbleEl) bubbleEl.innerHTML = custom.greeting;
+            }
+            if (custom.categories) {
+                const filterEl = document.querySelector('.category-filters');
+                if (filterEl) {
+                    filterEl.innerHTML = custom.categories.map(c =>
+                        `<button class="quick-btn" data-question="${c.question}">${c.label}</button>`
+                    ).join('');
+                }
+            }
+        }
     }
 
     const chatMessages   = document.getElementById('chatMessages');
