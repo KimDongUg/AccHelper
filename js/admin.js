@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 60_000);
 
     // Load data
+    loadCompanyCategories();
     loadStats();
     loadQaList().then(checkTemplateData);
 
@@ -869,6 +870,7 @@ async function saveProfile() {
 
         showToast('내 정보가 수정되었습니다.', 'success');
         closeProfileModal();
+        loadCompanyCategories();
     } catch (e) {
         showToast(e.message || '저장에 실패했습니다.', 'error');
     } finally {
@@ -950,4 +952,43 @@ function getCategoryItems() {
         }
     });
     return result;
+}
+
+/* ═══════════════════════════════════════════════
+ *  LOAD COMPANY CATEGORIES → Q&A 드롭다운 동기화
+ * ═══════════════════════════════════════════════ */
+async function loadCompanyCategories() {
+    try {
+        const company = await apiGet('/companies/me');
+        const categories = company.categories;
+        if (!categories || categories.length === 0) return;
+
+        const labels = categories.map(c => c.label);
+
+        // Q&A 필터 드롭다운 갱신
+        const filterEl = document.getElementById('categoryFilter');
+        const filterVal = filterEl.value;
+        filterEl.innerHTML = '<option value="">전체 카테고리</option>';
+        labels.forEach(label => {
+            const opt = document.createElement('option');
+            opt.value = label;
+            opt.textContent = label;
+            filterEl.appendChild(opt);
+        });
+        filterEl.value = filterVal;
+
+        // Q&A 생성/수정 모달 드롭다운 갱신
+        const modalEl = document.getElementById('modalCategory');
+        const modalVal = modalEl.value;
+        modalEl.innerHTML = '';
+        labels.forEach(label => {
+            const opt = document.createElement('option');
+            opt.value = label;
+            opt.textContent = label;
+            modalEl.appendChild(opt);
+        });
+        if (modalVal && labels.includes(modalVal)) modalEl.value = modalVal;
+    } catch (e) {
+        // 실패 시 기존 하드코딩 옵션 유지
+    }
 }
