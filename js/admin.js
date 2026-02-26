@@ -704,6 +704,8 @@ async function saveAdmin() {
 /* ═══════════════════════════════════════════════
  *  FEEDBACK MANAGEMENT
  * ═══════════════════════════════════════════════ */
+let feedbackItems = [];
+
 async function loadFeedbackList() {
     const rating = document.getElementById('feedbackRatingFilter').value;
     const status = document.getElementById('feedbackStatusFilter').value;
@@ -715,7 +717,8 @@ async function loadFeedbackList() {
     loading.classList.add('show');
     try {
         const data = await apiGet(`/feedback?${params}`);
-        renderFeedbackTable(data.items);
+        feedbackItems = data.items || [];
+        renderFeedbackTable(feedbackItems);
         renderFeedbackPagination(data.page, data.pages);
     } catch (e) {
         console.error('Feedback list error:', e);
@@ -735,7 +738,7 @@ function renderFeedbackTable(items) {
     }
 
     empty.style.display = 'none';
-    tbody.innerHTML = items.map(item => {
+    tbody.innerHTML = items.map((item, idx) => {
         const ratingIcon = item.rating === 'like'
             ? '<span style="color:var(--success);font-size:1.2rem" title="만족">&#x1F44D;</span>'
             : '<span style="color:var(--danger);font-size:1.2rem" title="불만족">&#x1F44E;</span>';
@@ -743,7 +746,6 @@ function renderFeedbackTable(items) {
             ? '<span style="color:#FF9800">미처리</span>'
             : '<span style="color:var(--success)">처리완료</span>';
         const feedbackId = item.feedback_id || item.id;
-        const qaId = (item.qa_ids && item.qa_ids.length > 0) ? item.qa_ids[0] : null;
         return `
         <tr>
             <td style="text-align:center">${ratingIcon}</td>
@@ -754,7 +756,7 @@ function renderFeedbackTable(items) {
             <td>
                 <div class="actions">
                     ${item.status === 'pending' ? `
-                        <button class="btn btn-primary btn-sm" onclick="editQaFromFeedback(${qaId || 'null'}, ${feedbackId}, '${escapeHtml(item.question || '').replace(/'/g, "\\'")}')">Q&A 수정</button>
+                        <button class="btn btn-primary btn-sm" onclick="onFeedbackEdit(${idx})">Q&A 수정</button>
                         <button class="btn btn-outline btn-sm" onclick="resolveFeedback(${feedbackId})">처리완료</button>
                     ` : ''}
                 </div>
@@ -786,6 +788,14 @@ function renderFeedbackPagination(page, pages) {
 }
 
 function goToFeedbackPage(page) { feedbackPage = page; loadFeedbackList(); }
+
+function onFeedbackEdit(idx) {
+    const item = feedbackItems[idx];
+    if (!item) return;
+    const feedbackId = item.feedback_id || item.id;
+    const qaId = (item.qa_ids && item.qa_ids.length > 0) ? item.qa_ids[0] : null;
+    editQaFromFeedback(qaId, feedbackId, item.question || '');
+}
 
 async function editQaFromFeedback(qaId, feedbackId, question) {
     try {
