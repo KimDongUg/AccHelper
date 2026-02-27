@@ -230,7 +230,7 @@ select:focus-visible {
 }
 
 .header-logo img {
-    height: 270px;
+    height: 135px;
     width: auto;
     flex-shrink: 0;
     margin: -55px 0 -40px -20px;
