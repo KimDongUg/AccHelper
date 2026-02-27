@@ -80,7 +80,7 @@
     --space-xl: 2rem;      /* 32px */
 
     /* Layout */
-    --header-height: 64px;
+    --header-height: 155px;
     --max-width: 1200px;
     --transition: all 0.3s ease;
 
@@ -724,7 +724,7 @@ table tr:hover td {
 /* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
     :root {
-        --header-height: 64px;
+        --header-height: 155px;
     }
 
     .header-logo img {
