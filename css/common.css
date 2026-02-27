@@ -672,9 +672,9 @@ table tr:hover td {
 /* Mobile */
 @media (max-width: 767px) {
     .header {
-        padding: 0.25rem;
+        padding: 0.25rem 0.5rem;
         height: auto;
-        justify-content: center;
+        justify-content: space-between;
     }
 
     .header-left {
@@ -690,7 +690,11 @@ table tr:hover td {
     }
 
     .header-right {
-        display: none;
+        display: flex;
+    }
+
+    .header-right .company-label {
+        display: none !important;
     }
 
     .header-nav a,
