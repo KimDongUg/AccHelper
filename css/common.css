@@ -682,7 +682,7 @@ table tr:hover td {
     }
 
     .header-logo img {
-        display: none;
+        height: 48px;
     }
 
     .header-logo span {
@@ -728,7 +728,7 @@ table tr:hover td {
     }
 
     .header-logo img {
-        display: none;
+        height: 56px;
     }
 }
 
