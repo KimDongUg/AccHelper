@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
+    document.getElementById('createdByFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('companyFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
 
     // Profile button
@@ -314,6 +315,7 @@ async function loadQaList() {
     const search = document.getElementById('searchInput').value.trim();
     const category = document.getElementById('categoryFilter').value;
     const status = document.getElementById('statusFilter').value;
+    const createdBy = document.getElementById('createdByFilter').value;
     currentSearchTerm = search;
 
     const companyFilterVal = document.getElementById('companyFilter').value;
@@ -322,6 +324,7 @@ async function loadQaList() {
     if (search) params.append('search', search);
     if (category) params.append('category', category);
     if (status) params.append('status', status);
+    if (createdBy) params.append('created_by', createdBy);
     if (companyFilterVal) params.append('company_id', companyFilterVal);
 
     document.getElementById('tableLoading').classList.add('show');
@@ -330,11 +333,34 @@ async function loadQaList() {
         lastQaTotal = data.total || 0;
         renderTable(data.items);
         renderPagination(data.page, data.pages, data.total);
+        updateCreatedByFilter(data.items);
     } catch (e) {
         console.error('QA list error:', e);
     } finally {
         document.getElementById('tableLoading').classList.remove('show');
     }
+}
+
+/* ── 작성자 필터 드롭다운 업데이트 ── */
+let knownCreators = new Set();
+
+function updateCreatedByFilter(items) {
+    items.forEach(qa => {
+        if (qa.created_by) knownCreators.add(qa.created_by);
+    });
+
+    const select = document.getElementById('createdByFilter');
+    const current = select.value;
+    const options = Array.from(knownCreators).sort();
+
+    select.innerHTML = '<option value="">전체 작성자</option>';
+    options.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+    });
+    select.value = current;
 }
 
 /* ── 템플릿 데이터 안내 팝업 ── */
