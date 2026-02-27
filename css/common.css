@@ -186,7 +186,7 @@ select:focus-visible {
 .header {
     background: var(--white);
     border-bottom: 1px solid var(--gray-300);
-    padding: 10px 1.5rem;
+    padding: 30px 1.5rem;
     height: auto;
     display: flex;
     align-items: center;
