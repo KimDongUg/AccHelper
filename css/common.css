@@ -230,10 +230,10 @@ select:focus-visible {
 }
 
 .header-logo img {
-    height: 135px;
+    height: 68px;
     width: auto;
     flex-shrink: 0;
-    margin: -55px 0 -40px -20px;
+    margin: -10px 0 -10px -10px;
 }
 
 .header-nav {
