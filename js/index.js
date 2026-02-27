@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (code) {
+        sessionStorage.setItem('last_company', code);
         validateAndStartChat(code);
     } else {
         showCompanySelection();
