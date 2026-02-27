@@ -405,6 +405,7 @@ function renderTable(items) {
             <td>
                 <button class="toggle-btn ${qa.is_active ? 'active' : ''}" onclick="toggleActive(${qa.qa_id})" role="switch" aria-checked="${qa.is_active}" ${isViewer ? 'disabled' : ''} title="${qa.is_active ? '활성' : '비활성'}"></button>
             </td>
+            <td style="font-size:var(--text-xs);color:var(--gray-500)">${escapeHtml(qa.created_by || '-')}</td>
             <td>${formatDate(qa.updated_at)}</td>
             <td>
                 <div class="actions">
@@ -578,12 +579,17 @@ async function saveQa() {
     saveBtn.disabled = true;
 
     const qaId = document.getElementById('editQaId').value;
+    // Get current user name from session
+    const sess = AuthSession.get();
+    const creatorName = sess?.fullName || sess?.email || sess?.username || '';
+
     const data = {
         category: document.getElementById('modalCategory').value,
         question: document.getElementById('modalQuestion').value.trim(),
         answer: document.getElementById('modalAnswer').value.trim(),
         keywords: document.getElementById('modalKeywords').value.trim(),
         is_active: document.getElementById('modalActive').checked,
+        created_by: creatorName,
     };
 
     // super_admin: include selected company_id
