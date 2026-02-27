@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load data
     loadCompanySettings();
     loadStats();
-    loadQaList().then(checkTemplateData);
+    loadQaList();
 
     // Search debounce
     let searchTimer;
