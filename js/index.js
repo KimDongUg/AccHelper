@@ -443,7 +443,6 @@ function showChat(companyData) {
 
         chatInput.disabled = false;
         sendBtn.disabled = false;
-        chatInput.focus();
     }
 
     /* ── Render bot message with RAG response ── */
@@ -710,7 +709,13 @@ function showChat(companyData) {
 
     function scrollToBottom() {
         setTimeout(function () {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Scroll the last message into view so the answer is visible
+            var lastMsg = chatMessages.lastElementChild;
+            if (lastMsg) {
+                lastMsg.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
         }, 50);
     }
 
@@ -770,5 +775,4 @@ function showChat(companyData) {
         loadHistory();
     }
     checkAdmin();
-    chatInput.focus();
 }
