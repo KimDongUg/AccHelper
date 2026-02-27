@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const targetCompany = companies.find(c => String(c.company_id) === String(targetCompanyId));
                 if (targetCompany) {
                     document.getElementById('headerCompanyName').textContent = targetCompany.company_name;
-                    document.title = targetCompany.company_name + ' 관리자 - 보태미 경리도우미';
+                    document.title = targetCompany.company_name + ' 관리자 - AI Helper 경리도우미';
                 }
                 // Also pre-select in modal company select
                 modalCompany.value = targetCompanyId;

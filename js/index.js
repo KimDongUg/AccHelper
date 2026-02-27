@@ -764,8 +764,6 @@ function showChat(companyData) {
                     var label = auth.session.full_name || auth.session.username || '';
                     adminLink2.textContent = '관리자 (' + label + ')';
                 }
-                var billingLink = document.getElementById('billingLink');
-                if (billingLink) billingLink.style.display = '';
                 if (auth.session.role === 'super_admin') {
                     var saLink = document.getElementById('superAdminLink');
                     if (saLink) saLink.style.display = '';
