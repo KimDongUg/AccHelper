@@ -137,6 +137,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentRole === 'viewer') {
         const addQaBtn = document.getElementById('addQaBtn');
         if (addQaBtn) addQaBtn.style.display = 'none';
+        const csSection = document.getElementById('companySettingsSection');
+        if (csSection) csSection.style.display = 'none';
+    }
+
+    // super_admin viewing another company → hide company settings
+    if (currentRole === 'super_admin') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('company')) {
+            const csSection = document.getElementById('companySettingsSection');
+            if (csSection) csSection.style.display = 'none';
+        }
     }
 
     // Session watcher
@@ -149,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 60_000);
 
     // Load data
-    loadCompanyCategories();
+    loadCompanySettings();
     loadStats();
     loadQaList().then(checkTemplateData);
 
@@ -1127,26 +1138,6 @@ async function openProfileModal() {
         document.getElementById('profileNewPw').value = '';
         document.getElementById('profileNewPwConfirm').value = '';
 
-        // Load company info via /companies/me
-        try {
-            const company = await apiGet('/companies/me');
-            document.getElementById('profileCompanyName').value = company.company_name || '';
-            document.getElementById('profileCompanyAddress').value = company.address || '';
-            document.getElementById('profileGreeting').value = company.greeting_text || '';
-
-            // Load categories
-            const wrap = document.getElementById('categoryItemsWrap');
-            wrap.innerHTML = '';
-            const categories = company.categories || [];
-            categories.forEach(cat => addCategoryItem(cat.label, cat.question));
-        } catch (e) {
-            const sess = AuthSession.get();
-            document.getElementById('profileCompanyName').value = sess?.companyName || '';
-            document.getElementById('profileCompanyAddress').value = '';
-            document.getElementById('profileGreeting').value = '';
-            document.getElementById('categoryItemsWrap').innerHTML = '';
-        }
-
         document.getElementById('profileModal').classList.add('show');
     } catch (e) {
         showToast('내 정보를 불러올 수 없습니다.', 'error');
@@ -1158,8 +1149,6 @@ function closeProfileModal() {
 }
 
 async function saveProfile() {
-    const companyName = document.getElementById('profileCompanyName').value.trim();
-    const companyAddress = document.getElementById('profileCompanyAddress').value.trim();
     const fullName = document.getElementById('profileFullName').value.trim();
     const phone = document.getElementById('profilePhone').value.trim();
     const currentPw = document.getElementById('profileCurrentPw').value;
@@ -1170,21 +1159,6 @@ async function saveProfile() {
     saveBtn.disabled = true;
 
     try {
-        // Collect greeting and categories
-        const greetingText = document.getElementById('profileGreeting').value.trim();
-        const categories = getCategoryItems();
-
-        // Update company info via /companies/me
-        await apiPut('/companies/me', {
-            company_name: companyName || null,
-            address: companyAddress || null,
-            greeting_text: greetingText || null,
-            categories: categories.length > 0 ? categories : null,
-        });
-        if (companyName) {
-            document.getElementById('headerCompanyName').textContent = companyName;
-        }
-
         // Update profile info (name, phone)
         await apiPatch('/admins/me', {
             full_name: fullName || null,
@@ -1226,7 +1200,87 @@ async function saveProfile() {
 
         showToast('내 정보가 수정되었습니다.', 'success');
         closeProfileModal();
-        loadCompanyCategories();
+    } catch (e) {
+        showToast(e.message || '저장에 실패했습니다.', 'error');
+    } finally {
+        saveBtn.disabled = false;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  COMPANY SETTINGS (Dashboard)
+ * ═══════════════════════════════════════════════ */
+async function loadCompanySettings() {
+    try {
+        const company = await apiGet('/companies/me');
+        document.getElementById('dashCompanyName').value = company.company_name || '';
+        document.getElementById('dashCompanyAddress').value = company.address || '';
+        document.getElementById('dashGreeting').value = company.greeting_text || '';
+
+        // Load categories
+        const wrap = document.getElementById('categoryItemsWrap');
+        wrap.innerHTML = '';
+        const categories = company.categories || [];
+        categories.forEach(cat => addCategoryItem(cat.label, cat.question));
+
+        // Sync category dropdowns
+        syncCategoryDropdowns(categories);
+    } catch (e) {
+        const sess = AuthSession.get();
+        document.getElementById('dashCompanyName').value = sess?.companyName || '';
+    }
+}
+
+function syncCategoryDropdowns(categories) {
+    if (!categories || categories.length === 0) return;
+    const labels = categories.map(c => c.label);
+
+    const filterEl = document.getElementById('categoryFilter');
+    const filterVal = filterEl.value;
+    filterEl.innerHTML = '<option value="">전체 카테고리</option>';
+    labels.forEach(label => {
+        const opt = document.createElement('option');
+        opt.value = label;
+        opt.textContent = label;
+        filterEl.appendChild(opt);
+    });
+    filterEl.value = filterVal;
+
+    const modalEl = document.getElementById('modalCategory');
+    const modalVal = modalEl.value;
+    modalEl.innerHTML = '';
+    labels.forEach(label => {
+        const opt = document.createElement('option');
+        opt.value = label;
+        opt.textContent = label;
+        modalEl.appendChild(opt);
+    });
+    if (modalVal && labels.includes(modalVal)) modalEl.value = modalVal;
+}
+
+async function saveCompanySettings() {
+    const companyName = document.getElementById('dashCompanyName').value.trim();
+    const companyAddress = document.getElementById('dashCompanyAddress').value.trim();
+    const greetingText = document.getElementById('dashGreeting').value.trim();
+    const categories = getCategoryItems();
+
+    const saveBtn = document.getElementById('companySettingsSaveBtn');
+    saveBtn.disabled = true;
+
+    try {
+        await apiPut('/companies/me', {
+            company_name: companyName || null,
+            address: companyAddress || null,
+            greeting_text: greetingText || null,
+            categories: categories.length > 0 ? categories : null,
+        });
+
+        if (companyName) {
+            document.getElementById('headerCompanyName').textContent = companyName;
+        }
+
+        showToast('회사 설정이 저장되었습니다.', 'success');
+        syncCategoryDropdowns(categories);
     } catch (e) {
         showToast(e.message || '저장에 실패했습니다.', 'error');
     } finally {
@@ -1392,41 +1446,4 @@ function getCategoryItems() {
     return result;
 }
 
-/* ═══════════════════════════════════════════════
- *  LOAD COMPANY CATEGORIES → Q&A 드롭다운 동기화
- * ═══════════════════════════════════════════════ */
-async function loadCompanyCategories() {
-    try {
-        const company = await apiGet('/companies/me');
-        const categories = company.categories;
-        if (!categories || categories.length === 0) return;
-
-        const labels = categories.map(c => c.label);
-
-        // Q&A 필터 드롭다운 갱신
-        const filterEl = document.getElementById('categoryFilter');
-        const filterVal = filterEl.value;
-        filterEl.innerHTML = '<option value="">전체 카테고리</option>';
-        labels.forEach(label => {
-            const opt = document.createElement('option');
-            opt.value = label;
-            opt.textContent = label;
-            filterEl.appendChild(opt);
-        });
-        filterEl.value = filterVal;
-
-        // Q&A 생성/수정 모달 드롭다운 갱신
-        const modalEl = document.getElementById('modalCategory');
-        const modalVal = modalEl.value;
-        modalEl.innerHTML = '';
-        labels.forEach(label => {
-            const opt = document.createElement('option');
-            opt.value = label;
-            opt.textContent = label;
-            modalEl.appendChild(opt);
-        });
-        if (modalVal && labels.includes(modalVal)) modalEl.value = modalVal;
-    } catch (e) {
-        // 실패 시 기존 하드코딩 옵션 유지
-    }
-}
+/* loadCompanyCategories → replaced by loadCompanySettings + syncCategoryDropdowns */
