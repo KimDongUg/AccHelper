@@ -153,11 +153,12 @@ function renderSubscribers(items) {
             <td class="col-card">${escapeHtml(s.card_number ? (s.card_company ? s.card_company + ' ' : '') + s.card_number : (s.has_billing_key ? '카드 등록됨' : '-'))}</td>
             <td>${s.total_paid != null ? formatMoney(s.total_paid) : '-'}</td>
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
-            <td>${showActions ? `<div class="action-btn-group">
-                <button class="btn-validate" onclick="validateCompanyData(${s.company_id}, '${escapeHtml(s.company_name)}')">검증</button>
+            <td><div class="action-btn-group">
+                <button class="btn-admin-view" onclick="goToCompanyAdmin(${s.company_id})" title="${escapeHtml(s.company_name)} 관리자 화면으로 이동">관리자화면</button>
+                ${showActions ? `<button class="btn-validate" onclick="validateCompanyData(${s.company_id}, '${escapeHtml(s.company_name)}')">검증</button>
                 <button class="btn-approve" onclick="approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
-                <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>
-            </div>` : '-'}</td>
+                <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>` : ''}
+            </div></td>
         </tr>`;
     }).join('');
 }
@@ -269,6 +270,13 @@ async function resetAdminPassword(userId, email) {
 
 function closeCompanyModal() {
     document.getElementById('companyModal').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════════════
+ *  GO TO COMPANY ADMIN
+ * ═══════════════════════════════════════════════ */
+function goToCompanyAdmin(companyId) {
+    window.location.href = '/admin.html?company=' + companyId;
 }
 
 /* ═══════════════════════════════════════════════
