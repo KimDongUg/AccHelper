@@ -99,6 +99,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (sess && sess.isLoggedIn) {
         var adminLoginLink = document.getElementById('adminLoginLink');
         if (adminLoginLink) adminLoginLink.style.display = 'none';
+        var headerLoginLink = document.getElementById('headerLoginLink');
+        if (headerLoginLink) headerLoginLink.style.display = 'none';
         var adminLink = document.getElementById('adminLink');
         if (adminLink) {
             adminLink.style.display = '';
