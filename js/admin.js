@@ -1407,29 +1407,61 @@ function toggleAnswerPreview() {
 }
 
 /* ═══════════════════════════════════════════════
- *  CATEGORY ITEMS (Profile Modal)
+ *  CATEGORY ITEMS (Dashboard)
  * ═══════════════════════════════════════════════ */
 function addCategoryItem(label, question) {
     const wrap = document.getElementById('categoryItemsWrap');
+    const isEtc = (label || '').trim() === '기타';
 
     const row = document.createElement('div');
     row.className = 'category-item';
     row.innerHTML =
+        '<div class="cat-order-btns">' +
+            '<button type="button" class="cat-up" title="위로">&uarr;</button>' +
+            '<button type="button" class="cat-down" title="아래로">&darr;</button>' +
+        '</div>' +
         '<input type="text" class="form-control cat-label" placeholder="버튼 텍스트 (예: 입주신고)" value="' + escapeHtml(label || '') + '">' +
         '<input type="text" class="form-control cat-question" placeholder="질문 (예: 입주신고 시 필요한 서류는?)" value="' + escapeHtml(question || '') + '">' +
-        '<button type="button" class="btn-category-remove" title="삭제">&times;</button>';
+        '<button type="button" class="btn-category-remove' + (isEtc ? ' disabled' : '') + '" title="삭제">&times;</button>';
 
-    row.querySelector('.btn-category-remove').addEventListener('click', function () {
-        row.remove();
-        updateAddCategoryBtn();
+    row.querySelector('.cat-up').addEventListener('click', function () {
+        const prev = row.previousElementSibling;
+        if (prev) { wrap.insertBefore(row, prev); updateCategoryOrderBtns(); }
     });
 
+    row.querySelector('.cat-down').addEventListener('click', function () {
+        const next = row.nextElementSibling;
+        if (next) { wrap.insertBefore(next, row); updateCategoryOrderBtns(); }
+    });
+
+    if (!isEtc) {
+        row.querySelector('.btn-category-remove').addEventListener('click', function () {
+            const catLabel = row.querySelector('.cat-label').value.trim();
+            if (!confirm('삭제하시겠습니까?\n카테고리 이하 데이터가 보이지 않을 수 있습니다.')) return;
+
+            // Move Q&A data from this category to "기타"
+            if (catLabel) {
+                apiPatch('/qa/move-category', { from_category: catLabel, to_category: '기타' })
+                    .then(() => showToast('"' + catLabel + '" Q&A가 "기타"로 이동되었습니다.', 'success'))
+                    .catch(() => showToast('Q&A 카테고리 이동에 실패했습니다.', 'error'));
+            }
+
+            row.remove();
+            updateCategoryOrderBtns();
+        });
+    }
+
     wrap.appendChild(row);
-    updateAddCategoryBtn();
+    updateCategoryOrderBtns();
 }
 
-function updateAddCategoryBtn() {
-    // 제한 없음 — 버튼 항상 활성
+function updateCategoryOrderBtns() {
+    const wrap = document.getElementById('categoryItemsWrap');
+    const items = wrap.querySelectorAll('.category-item');
+    items.forEach((item, i) => {
+        item.querySelector('.cat-up').disabled = (i === 0);
+        item.querySelector('.cat-down').disabled = (i === items.length - 1);
+    });
 }
 
 function getCategoryItems() {

@@ -689,6 +689,46 @@
     border-color: var(--danger);
 }
 
+.category-item .btn-category-remove.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.cat-order-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.cat-order-btns button {
+    width: 24px;
+    height: 16px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    border: 1px solid var(--gray-300);
+    background: var(--gray-100);
+    color: var(--gray-500);
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.cat-order-btns button:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.cat-order-btns button:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
 /* ── Responsive ──────────────────────────────── */
 
 /* Tablet: hide answer column */
