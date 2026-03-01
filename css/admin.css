@@ -107,7 +107,7 @@
 /* ── Stats Cards ─────────────────────────────── */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: var(--space-md);
     margin-bottom: var(--space-xl);
 }
@@ -150,6 +150,7 @@
 .stat-icon.purple { background: #F3E5F5; color: #9C27B0; }
 .stat-icon.red    { background: #FFEBEE; color: #E53935; }
 .stat-icon.yellow { background: #FFF8E1; color: #F9A825; }
+.stat-icon.teal   { background: #E0F2F1; color: #00897B; }
 
 .stat-info h4 {
     font-size: 0.8125rem;

@@ -1505,3 +1505,73 @@ function getCategoryItems() {
 }
 
 /* loadCompanyCategories → replaced by loadCompanySettings + syncCategoryDropdowns */
+
+/* ═══════════════════════════════════════════════
+ *  QR CODE
+ * ═══════════════════════════════════════════════ */
+function getCompanyChatbotUrl() {
+    const sess = AuthSession.get();
+    const companyId = sess?.companyId || sess?.company_id;
+    if (!companyId) return null;
+    return 'https://acchelper.kr/?company=' + companyId;
+}
+
+function showQrModal() {
+    const url = getCompanyChatbotUrl();
+    if (!url) {
+        showToast('회사 정보를 불러올 수 없습니다.', 'error');
+        return;
+    }
+
+    document.getElementById('qrUrlDisplay').textContent = url;
+    const container = document.getElementById('qrCanvas');
+    container.innerHTML = '';
+
+    // Generate QR using qrcode-generator library
+    var qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+
+    // Create high-res canvas
+    var moduleCount = qr.getModuleCount();
+    var cellSize = 8;
+    var margin = cellSize * 2;
+    var size = moduleCount * cellSize + margin * 2;
+    var canvas = document.createElement('canvas');
+    canvas.id = 'qrCodeCanvas';
+    canvas.width = size;
+    canvas.height = size;
+    canvas.style.width = (size / 2) + 'px';
+    canvas.style.height = (size / 2) + 'px';
+
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+
+    for (var r = 0; r < moduleCount; r++) {
+        for (var c = 0; c < moduleCount; c++) {
+            if (qr.isDark(r, c)) {
+                ctx.fillRect(c * cellSize + margin, r * cellSize + margin, cellSize, cellSize);
+            }
+        }
+    }
+
+    container.appendChild(canvas);
+    document.getElementById('qrModal').classList.add('show');
+}
+
+function closeQrModal() {
+    document.getElementById('qrModal').classList.remove('show');
+}
+
+function downloadQrCode() {
+    var canvas = document.getElementById('qrCodeCanvas');
+    if (!canvas) return;
+
+    var link = document.createElement('a');
+    link.download = 'chatbot-qrcode.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('QR코드가 다운로드되었습니다.', 'success');
+}
