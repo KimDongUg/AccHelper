@@ -1634,7 +1634,7 @@ function generateNoticeHtml(chatbotUrl, qrDataUrl, companyName) {
 + '      padding: 20px;\n'
 + '    }\n'
 + '    .page {\n'
-+ '      width: 210mm;\n'
++ '      width: 231mm;\n'
 + '      min-height: 297mm;\n'
 + '      background: white;\n'
 + '      position: relative;\n'
