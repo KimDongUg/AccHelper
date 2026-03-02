@@ -1575,3 +1575,260 @@ function downloadQrCode() {
     link.click();
     showToast('QR코드가 다운로드되었습니다.', 'success');
 }
+
+/* ═══════════════════════════════════════════════
+ *  공고문 (NOTICE)
+ * ═══════════════════════════════════════════════ */
+function generateNoticeQrDataUrl() {
+    var url = getCompanyChatbotUrl();
+    if (!url) return null;
+
+    var qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+
+    var moduleCount = qr.getModuleCount();
+    var cellSize = 10;
+    var margin = cellSize * 2;
+    var size = moduleCount * cellSize + margin * 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+
+    for (var r = 0; r < moduleCount; r++) {
+        for (var c = 0; c < moduleCount; c++) {
+            if (qr.isDark(r, c)) {
+                ctx.fillRect(c * cellSize + margin, r * cellSize + margin, cellSize, cellSize);
+            }
+        }
+    }
+    return canvas.toDataURL('image/png');
+}
+
+function getNoticeCompanyName() {
+    return document.getElementById('dashCompanyName')?.value
+        || document.getElementById('headerCompanyName')?.textContent
+        || '관리사무소';
+}
+
+function generateNoticeHtml(chatbotUrl, qrDataUrl, companyName) {
+    return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n'
++ '  <meta charset="UTF-8" />\n'
++ '  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n'
++ '  <title>AI 챗봇 도입 안내 - ' + companyName + '</title>\n'
++ '  <style>\n'
++ "    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');\n"
++ '    * { margin: 0; padding: 0; box-sizing: border-box; }\n'
++ '    body {\n'
++ "      font-family: 'Noto Sans KR', sans-serif;\n"
++ '      background: #f0f4f0;\n'
++ '      display: flex;\n'
++ '      justify-content: center;\n'
++ '      align-items: center;\n'
++ '      min-height: 100vh;\n'
++ '      padding: 20px;\n'
++ '    }\n'
++ '    .page {\n'
++ '      width: 210mm;\n'
++ '      min-height: 297mm;\n'
++ '      background: white;\n'
++ '      position: relative;\n'
++ '      overflow: hidden;\n'
++ '      box-shadow: 0 8px 40px rgba(0,0,0,0.18);\n'
++ '      border-radius: 4px;\n'
++ '    }\n'
++ '    .header {\n'
++ '      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 40%, #43a047 100%);\n'
++ '      padding: 32px 36px 28px;\n'
++ '      position: relative;\n'
++ '      overflow: hidden;\n'
++ '    }\n'
++ "    .header::before {\n      content: '';\n      position: absolute;\n      top: -60px; right: -60px;\n      width: 220px; height: 220px;\n      background: rgba(255,255,255,0.07);\n      border-radius: 50%;\n    }\n"
++ "    .header::after {\n      content: '';\n      position: absolute;\n      bottom: -80px; left: -40px;\n      width: 260px; height: 260px;\n      background: rgba(255,255,255,0.05);\n      border-radius: 50%;\n    }\n"
++ '    .header-inner {\n      display: flex;\n      align-items: center;\n      gap: 18px;\n      position: relative;\n      z-index: 2;\n    }\n'
++ '    .logo-area { display: flex; align-items: center; gap: 10px; }\n'
++ '    .logo-icon {\n      width: 64px; height: 64px;\n      background: white;\n      border-radius: 16px;\n      display: flex; align-items: center; justify-content: center;\n      box-shadow: 0 4px 16px rgba(0,0,0,0.2);\n      flex-shrink: 0;\n    }\n'
++ '    .logo-icon svg { width: 44px; height: 44px; }\n'
++ '    .header-text { color: white; }\n'
++ '    .header-label { font-size: 11px; font-weight: 500; letter-spacing: 3px; opacity: 0.85; text-transform: uppercase; margin-bottom: 4px; }\n'
++ '    .header-title { font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: -0.5px; }\n'
++ '    .header-title span { color: #a5d6a7; }\n'
++ '    .header-sub { font-size: 13px; opacity: 0.82; margin-top: 6px; font-weight: 400; }\n'
++ '    .badge-row {\n      background: #e8f5e9; border-left: 5px solid #2e7d32;\n      margin: 26px 32px 0; padding: 11px 18px;\n      border-radius: 0 8px 8px 0;\n      display: flex; align-items: center; gap: 10px;\n    }\n'
++ '    .badge-row .icon { font-size: 20px; }\n'
++ '    .badge-row p { font-size: 13.5px; color: #1b5e20; font-weight: 600; line-height: 1.5; }\n'
++ '    .badge-row p span { font-weight: 400; color: #388e3c; }\n'
++ '    .body { padding: 22px 32px 24px; }\n'
++ '    .intro-box {\n      background: linear-gradient(135deg, #f1f8e9, #e8f5e9);\n      border: 1.5px solid #a5d6a7; border-radius: 14px;\n      padding: 20px 22px; display: flex; gap: 16px;\n      align-items: flex-start; margin-bottom: 22px;\n    }\n'
++ '    .intro-box .emoji { font-size: 36px; flex-shrink: 0; margin-top: 2px; }\n'
++ '    .intro-box-text h3 { font-size: 15.5px; font-weight: 800; color: #1b5e20; margin-bottom: 6px; }\n'
++ '    .intro-box-text p { font-size: 13px; color: #444; line-height: 1.75; }\n'
++ '    .section-title {\n      font-size: 13px; font-weight: 700; color: #2e7d32;\n      letter-spacing: 1.5px; text-transform: uppercase;\n      margin-bottom: 12px; display: flex; align-items: center; gap: 6px;\n    }\n'
++ "    .section-title::after { content: ''; flex: 1; height: 1.5px; background: #c8e6c9; border-radius: 2px; }\n"
++ '    .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }\n'
++ '    .feature-card {\n      background: #fafafa; border: 1.5px solid #e0e0e0;\n      border-radius: 12px; padding: 14px 16px;\n      display: flex; align-items: flex-start; gap: 12px;\n    }\n'
++ '    .feat-icon {\n      width: 38px; height: 38px; border-radius: 10px;\n      display: flex; align-items: center; justify-content: center;\n      font-size: 18px; flex-shrink: 0;\n    }\n'
++ '    .feat-icon.green { background: #e8f5e9; }\n'
++ '    .feat-icon.blue { background: #e3f2fd; }\n'
++ '    .feat-icon.orange { background: #fff3e0; }\n'
++ '    .feat-icon.purple { background: #f3e5f5; }\n'
++ '    .feat-text h4 { font-size: 13px; font-weight: 700; color: #222; margin-bottom: 3px; }\n'
++ '    .feat-text p { font-size: 11.5px; color: #666; line-height: 1.55; }\n'
++ '    .how-section { margin-bottom: 22px; }\n'
++ '    .steps { display: flex; align-items: center; gap: 0; justify-content: space-between; }\n'
++ '    .step { flex: 1; text-align: center; }\n'
++ '    .step-num {\n      width: 36px; height: 36px;\n      background: linear-gradient(135deg, #2e7d32, #66bb6a);\n      color: white; border-radius: 50%;\n      font-size: 16px; font-weight: 900;\n      display: flex; align-items: center; justify-content: center;\n      margin: 0 auto 8px;\n      box-shadow: 0 3px 10px rgba(46,125,50,0.3);\n    }\n'
++ '    .step p { font-size: 11.5px; color: #333; font-weight: 600; line-height: 1.5; }\n'
++ '    .step-arrow { font-size: 20px; color: #81c784; flex-shrink: 0; padding-bottom: 28px; }\n'
++ '    .qr-section {\n      background: linear-gradient(135deg, #1b5e20, #2e7d32);\n      border-radius: 16px; padding: 20px 24px;\n      display: flex; align-items: center; gap: 24px;\n      margin-bottom: 18px; position: relative; overflow: hidden;\n    }\n'
++ "    .qr-section::before {\n      content: ''; position: absolute;\n      top: -40px; right: -40px;\n      width: 150px; height: 150px;\n      background: rgba(255,255,255,0.06); border-radius: 50%;\n    }\n"
++ '    .qr-wrap {\n      background: white; border-radius: 12px; padding: 8px;\n      flex-shrink: 0; box-shadow: 0 4px 16px rgba(0,0,0,0.25);\n    }\n'
++ '    .qr-wrap img { width: 100px; height: 100px; display: block; border-radius: 6px; }\n'
++ '    .qr-info { flex: 1; position: relative; z-index: 2; }\n'
++ '    .qr-info h3 { font-size: 17px; font-weight: 900; color: white; margin-bottom: 6px; }\n'
++ '    .qr-info p { font-size: 12px; color: #a5d6a7; line-height: 1.6; margin-bottom: 10px; }\n'
++ '    .url-chip {\n      display: inline-block; background: rgba(255,255,255,0.15);\n      border: 1px solid rgba(255,255,255,0.3); color: white;\n      font-size: 11.5px; padding: 5px 12px; border-radius: 20px;\n      font-weight: 600; letter-spacing: 0.3px;\n    }\n'
++ '    .notice-row {\n      background: #fff8e1; border: 1.5px solid #ffe082;\n      border-radius: 10px; padding: 12px 16px;\n      display: flex; align-items: center; gap: 10px; margin-bottom: 18px;\n    }\n'
++ '    .notice-row .icon { font-size: 18px; }\n'
++ '    .notice-row p { font-size: 11.5px; color: #5d4037; line-height: 1.6; }\n'
++ '    .notice-row p strong { color: #e65100; }\n'
++ '    .footer {\n      background: #f5f5f5; border-top: 2px solid #e8f5e9;\n      padding: 14px 32px; display: flex;\n      align-items: center; justify-content: space-between;\n    }\n'
++ '    .footer-left { display: flex; align-items: center; gap: 8px; }\n'
++ '    .footer-logo { font-size: 14px; font-weight: 800; color: #2e7d32; }\n'
++ '    .footer-logo span { color: #81c784; }\n'
++ '    .footer-divider { width: 1px; height: 14px; background: #ccc; margin: 0 10px; }\n'
++ '    .footer-info { font-size: 10.5px; color: #888; }\n'
++ '    .footer-right { font-size: 10.5px; color: #aaa; text-align: right; line-height: 1.6; }\n'
++ '    @media print {\n      body { background: white; padding: 0; }\n      .page { box-shadow: none; border-radius: 0; }\n    }\n'
++ '  </style>\n</head>\n<body>\n<div class="page">\n'
++ '  <div class="header">\n    <div class="header-inner">\n      <div class="logo-area">\n        <div class="logo-icon">\n'
++ '          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">\n'
++ '            <circle cx="40" cy="32" r="22" fill="#2e7d32"/>\n'
++ '            <circle cx="40" cy="32" r="18" fill="#66bb6a"/>\n'
++ '            <ellipse cx="33" cy="31" rx="3.5" ry="4" fill="white"/>\n'
++ '            <ellipse cx="47" cy="31" rx="3.5" ry="4" fill="white"/>\n'
++ '            <ellipse cx="33" cy="32" rx="2" ry="2.5" fill="#1b5e20"/>\n'
++ '            <ellipse cx="47" cy="32" rx="2" ry="2.5" fill="#1b5e20"/>\n'
++ '            <path d="M33 41 Q40 47 47 41" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>\n'
++ '            <ellipse cx="40" cy="54" rx="16" ry="10" fill="#2e7d32"/>\n'
++ '            <rect x="30" y="52" width="20" height="8" rx="4" fill="#388e3c"/>\n'
++ '            <ellipse cx="18" cy="32" rx="4" ry="5" fill="#2e7d32"/>\n'
++ '            <ellipse cx="62" cy="32" rx="4" ry="5" fill="#2e7d32"/>\n'
++ '            <path d="M18 32 Q18 14 40 14 Q62 14 62 32" stroke="#1b5e20" stroke-width="4" fill="none" stroke-linecap="round"/>\n'
++ '          </svg>\n'
++ '        </div>\n      </div>\n'
++ '      <div class="header-text">\n'
++ '        <div class="header-label">\uacf5 \uace0 \ubb38 \xb7 Notice</div>\n'
++ '        <div class="header-title">AI <span>\ucc57\ubd07</span> \ub3c4\uc785 \uc548\ub0b4</div>\n'
++ '        <div class="header-sub">' + escapeHtml(companyName) + ' - AI Helper(\uacbd\ub9ac\ub3c4\uc6b0\ubbf8) \uc11c\ube44\uc2a4\ub97c \ub3c4\uc785\ud558\uc5ec \uc785\uc8fc\ubbfc \uc5ec\ub7ec\ubd84\uaed8 \ub354 \ud3b8\ub9ac\ud55c \uc11c\ube44\uc2a4\ub97c \uc81c\uacf5\ud569\ub2c8\ub2e4</div>\n'
++ '      </div>\n    </div>\n  </div>\n'
++ '  <div class="badge-row">\n    <div class="icon">\ud83d\udce2</div>\n'
++ '    <p>\uc774\uc81c <strong>\uc2a4\ub9c8\ud2b8\ud3f0 \ud558\ub098</strong>\ub85c \uad00\ub9ac\uc0ac\ubb34\uc18c\uc5d0 \uc9c1\uc811 \ubc29\ubb38\ud558\uc9c0 \uc54a\uc544\ub3c4 \uac01\uc885 \ubb38\uc758\ub97c \ud574\uacb0\ud558\uc2e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.'
++ '      <br/><span>AI \ucc57\ubd07\uc774 24\uc2dc\uac04 365\uc77c \uc5ec\ub7ec\ubd84\uc758 \uad81\uae08\uc99d\uc5d0 \ub2f5\ubcc0\ud574 \ub4dc\ub9bd\ub2c8\ub2e4.</span></p>\n  </div>\n'
++ '  <div class="body">\n'
++ '    <div class="intro-box">\n      <div class="emoji">\ud83e\udd16</div>\n'
++ '      <div class="intro-box-text">\n        <h3>AI Helper(\uacbd\ub9ac\ub3c4\uc6b0\ubbf8)\ub780?</h3>\n'
++ '        <p>\uad00\ub9ac\ube44 \ub0a9\ubd80 \ub0b4\uc5ed, \uacf5\uc9c0\uc0ac\ud56d, \uc2dc\uc124 \uc774\uc6a9 \ubc29\ubc95 \ub4f1 \ub2e8\uc9c0 \uc6b4\uc601\uacfc \uad00\ub828\ub41c \ub2e4\uc591\ud55c \uc815\ubcf4\ub97c'
++ '          <strong>AI \ucc57\ubd07\uc774 \uc989\uc2dc \uc548\ub0b4</strong>\ud574 \ub4dc\ub9ac\ub294 \uc2a4\ub9c8\ud2b8 \uc11c\ube44\uc2a4\uc785\ub2c8\ub2e4.'
++ '          \ubcc4\ub3c4 \uc571 \uc124\uce58 \uc5c6\uc774 <strong>QR \ucf54\ub4dc \uc2a4\ucba8</strong> \ub610\ub294 <strong>\ub9c1\ud06c \uc811\uc18d</strong>\ub9cc\uc73c\ub85c \ubc14\ub85c \uc774\uc6a9\ud558\uc2e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.</p>\n'
++ '      </div>\n    </div>\n'
++ '    <div class="section-title">\u2726 \uc8fc\uc694 \uae30\ub2a5</div>\n'
++ '    <div class="features-grid">\n'
++ '      <div class="feature-card"><div class="feat-icon green">\ud83d\udcac</div><div class="feat-text"><h4>24\uc2dc\uac04 \uc2e4\uc2dc\uac04 \ubb38\uc758</h4><p>\uacf5\ud734\uc77c\xb7\uc57c\uac04\uc5d0\ub3c4 \uad00\ub9ac\ube44, \uc2dc\uc124, \uc0dd\ud65c\ud3b8\uc758 \uad00\ub828 \uc9c8\ubb38\uc5d0 \uc989\uc2dc \ub2f5\ubcc0</p></div></div>\n'
++ '      <div class="feature-card"><div class="feat-icon blue">\ud83d\udccb</div><div class="feat-text"><h4>\uacf5\uc9c0\uc0ac\ud56d \uc989\uc2dc \ud655\uc778</h4><p>\ub2e8\uc9c0 \ub0b4 \uacf5\uc9c0\xb7\uc548\ub0b4\uc0ac\ud56d\uc744 \ucc57\ubd07\uc744 \ud1b5\ud574 \ube60\ub974\uac8c \uac80\uc0c9\xb7\ud655\uc778 \uac00\ub2a5</p></div></div>\n'
++ '      <div class="feature-card"><div class="feat-icon orange">\ud83d\udca1</div><div class="feat-text"><h4>\uad00\ub9ac\ube44 \uc548\ub0b4</h4><p>\uad00\ub9ac\ube44 \ud56d\ubaa9\ubcc4 \uc124\uba85, \ub0a9\ubd80 \ubc29\ubc95, \uc5f0\uccb4 \uc548\ub0b4 \ub4f1\uc744 \uc27d\uac8c \ubb38\uc758</p></div></div>\n'
++ '      <div class="feature-card"><div class="feat-icon purple">\ud83c\udfe2</div><div class="feat-text"><h4>\uc2dc\uc124 \uc774\uc6a9 \uc548\ub0b4</h4><p>\uc8fc\ucc28\uc7a5, \ucee4\ubba4\ub2c8\ud2f0\uc13c\ud130, \ud0dd\ubc30\ud568 \ub4f1 \ud3b8\uc758\uc2dc\uc124 \uc774\uc6a9 \uc815\ubcf4 \uc81c\uacf5</p></div></div>\n'
++ '    </div>\n'
++ '    <div class="how-section">\n      <div class="section-title">\u2726 \uc774\uc6a9 \ubc29\ubc95</div>\n'
++ '      <div class="steps">\n'
++ '        <div class="step"><div class="step-num">1</div><p>\uc544\ub798 QR \ucf54\ub4dc<br/>\uc2a4\ucba8 \ub610\ub294<br/>\ub9c1\ud06c \uc811\uc18d</p></div>\n'
++ '        <div class="step-arrow">\u203a</div>\n'
++ '        <div class="step"><div class="step-num">2</div><p>\ucc44\ud305\ucc3d\uc5d0<br/>\uad81\uae08\ud55c \ub0b4\uc6a9<br/>\uc785\ub825</p></div>\n'
++ '        <div class="step-arrow">\u203a</div>\n'
++ '        <div class="step"><div class="step-num">3</div><p>AI\uac00 \uc989\uc2dc<br/>\ub2f5\ubcc0 \uc81c\uacf5</p></div>\n'
++ '        <div class="step-arrow">\u203a</div>\n'
++ '        <div class="step"><div class="step-num">4</div><p>\ucd94\uac00 \ubb38\uc758 \uc2dc<br/>\uad00\ub9ac\uc0ac\ubb34\uc18c<br/>\uc5f0\uacb0 \uc548\ub0b4</p></div>\n'
++ '      </div>\n    </div>\n'
++ '    <div class="qr-section">\n'
++ '      <div class="qr-wrap"><img src="' + qrDataUrl + '" alt="QR \ucf54\ub4dc" /></div>\n'
++ '      <div class="qr-info">\n'
++ '        <h3>\ud83d\udcf1 \uc9c0\uae08 \ubc14\ub85c \uc811\uc18d\ud558\uc138\uc694!</h3>\n'
++ '        <p>QR \ucf54\ub4dc\ub97c \uc2a4\ucba8\ud558\uac70\ub098 \uc544\ub798 \uc8fc\uc18c\ub85c \uc9c1\uc811 \uc811\uc18d\ud558\uc2dc\uba74<br/>AI \ucc57\ubd07\uacfc \ubc14\ub85c \ub300\ud654\ub97c \uc2dc\uc791\ud558\uc2e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.</p>\n'
++ '        <div class="url-chip">\ud83d\udd17 ' + escapeHtml(chatbotUrl.replace('https://', '')) + '</div>\n'
++ '      </div>\n    </div>\n'
++ '    <div class="notice-row">\n      <div class="icon">\u26a0\ufe0f</div>\n'
++ '      <p>AI \ucc57\ubd07\uc740 <strong>\uc77c\ubc18\uc801\uc778 \uc548\ub0b4 \uc11c\ube44\uc2a4</strong>\ub97c \uc81c\uacf5\ud558\uba70, \uae34\uae09 \uc0c1\ud669\uc774\ub098 \ubc95\uc801 \ud6a8\ub825\uc774 \ud544\uc694\ud55c \uc0ac\ud56d\uc740'
++ '        \ubc18\ub4dc\uc2dc <strong>\uad00\ub9ac\uc0ac\ubb34\uc18c(\ub300\ud45c\ubc88\ud638)</strong>\ub85c \uc9c1\uc811 \uc5f0\ub77d\ud558\uc2dc\uae30 \ubc14\ub78d\ub2c8\ub2e4.'
++ '        \uac1c\uc778\uc815\ubcf4\ub294 \ucc57\ubd07 \ub300\ud654\ucc3d\uc5d0 \uc785\ub825\ud558\uc9c0 \ub9c8\uc2ed\uc2dc\uc624.</p>\n'
++ '    </div>\n  </div>\n'
++ '  <div class="footer">\n'
++ '    <div class="footer-left">\n'
++ '      <div class="footer-logo">AI <span>Helper</span></div>\n'
++ '      <div class="footer-divider"></div>\n'
++ '      <div class="footer-info">\uacbd\ub9ac\ub3c4\uc6b0\ubbf8(Accounting Helper) \xb7 \ubcf4\ub4ec\ub204\ub9ac</div>\n'
++ '    </div>\n'
++ '    <div class="footer-right">\n'
++ '      \uc11c\ube44\uc2a4 \ubb38\uc758: kduaro124@naver.com<br/>\n'
++ '      \ud1b5\uc2e0\ud310\ub9e4\uc5c5 \uc2e0\uace0 \uc81c 2026-\uc138\uc885-0130 \ud638\n'
++ '    </div>\n  </div>\n'
++ '</div>\n</body>\n</html>';
+}
+
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+function showNoticeModal() {
+    var url = getCompanyChatbotUrl();
+    if (!url) {
+        showToast('회사 정보를 불러올 수 없습니다.', 'error');
+        return;
+    }
+    document.getElementById('noticeModal').classList.add('show');
+}
+
+function closeNoticeModal() {
+    document.getElementById('noticeModal').classList.remove('show');
+}
+
+function previewNotice() {
+    var url = getCompanyChatbotUrl();
+    if (!url) {
+        showToast('회사 정보를 불러올 수 없습니다.', 'error');
+        return;
+    }
+    var qrDataUrl = generateNoticeQrDataUrl();
+    var companyName = getNoticeCompanyName();
+    var html = generateNoticeHtml(url, qrDataUrl, companyName);
+
+    var win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    showToast('공고문이 새 창에 열렸습니다. 인쇄(Ctrl+P)하여 사용하세요.', 'success');
+}
+
+function downloadNoticeFile() {
+    var url = getCompanyChatbotUrl();
+    if (!url) {
+        showToast('회사 정보를 불러올 수 없습니다.', 'error');
+        return;
+    }
+    var qrDataUrl = generateNoticeQrDataUrl();
+    var companyName = getNoticeCompanyName();
+    var html = generateNoticeHtml(url, qrDataUrl, companyName);
+
+    var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    var link = document.createElement('a');
+    link.download = 'AI챗봇_도입_공고문.html';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('공고문이 다운로드되었습니다.', 'success');
+}
