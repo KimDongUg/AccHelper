@@ -1733,7 +1733,7 @@ function generateNoticeHtml(chatbotUrl, qrDataUrl, companyName) {
 + '  <div class="body">\n'
 + '    <div class="intro-box">\n      <div class="emoji">\ud83e\udd16</div>\n'
 + '      <div class="intro-box-text">\n        <h3>AI Helper(\uacbd\ub9ac\ub3c4\uc6b0\ubbf8)\ub780?</h3>\n'
-+ '        <p>\uad00\ub9ac\ube44 \ub0a9\ubd80 \ub0b4\uc5ed, \uacf5\uc9c0\uc0ac\ud56d, \uc2dc\uc124 \uc774\uc6a9 \ubc29\ubc95 \ub4f1 \ub2e8\uc9c0 \uc6b4\uc601\uacfc \uad00\ub828\ub41c \ub2e4\uc591\ud55c \uc815\ubcf4\ub97c'
++ '        <p>\uc911\uac04\uad00\ub9ac\ube44 \uc815\uc0b0, \uc785\uc8fc\uc2e0\uace0, \uac01\uc885 \uc2dc\uc124\ubb3c AS \ub4f1 \ub2e8\uc9c0 \uc6b4\uc601\uacfc \uad00\ub828\ub41c \ub2e4\uc591\ud55c \uc815\ubcf4\ub97c'
 + '          <strong>AI \ucc57\ubd07\uc774 \uc989\uc2dc \uc548\ub0b4</strong>\ud574 \ub4dc\ub9ac\ub294 \uc2a4\ub9c8\ud2b8 \uc11c\ube44\uc2a4\uc785\ub2c8\ub2e4.'
 + '          \ubcc4\ub3c4 \uc571 \uc124\uce58 \uc5c6\uc774 <strong>QR \ucf54\ub4dc \uc2a4\ucba8</strong> \ub610\ub294 <strong>\ub9c1\ud06c \uc811\uc18d</strong>\ub9cc\uc73c\ub85c \ubc14\ub85c \uc774\uc6a9\ud558\uc2e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.</p>\n'
 + '      </div>\n    </div>\n'
@@ -1812,6 +1812,55 @@ function previewNotice() {
     win.document.write(html);
     win.document.close();
     showToast('공고문이 새 창에 열렸습니다. 인쇄(Ctrl+P)하여 사용하세요.', 'success');
+}
+
+function downloadNoticePng() {
+    var url = getCompanyChatbotUrl();
+    if (!url) {
+        showToast('회사 정보를 불러올 수 없습니다.', 'error');
+        return;
+    }
+    var qrDataUrl = generateNoticeQrDataUrl();
+    var companyName = getNoticeCompanyName();
+    var html = generateNoticeHtml(url, qrDataUrl, companyName);
+
+    // Create hidden iframe to render the notice
+    var iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;height:297mm;border:none;';
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
+
+    // Wait for fonts and content to load, then capture
+    setTimeout(function() {
+        var page = iframe.contentDocument.querySelector('.page');
+        if (!page) {
+            document.body.removeChild(iframe);
+            showToast('공고문 생성에 실패했습니다.', 'error');
+            return;
+        }
+        html2canvas(page, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: page.scrollWidth,
+            height: page.scrollHeight
+        }).then(function(canvas) {
+            var link = document.createElement('a');
+            link.download = 'AI챗봇_도입_공고문.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            document.body.removeChild(iframe);
+            showToast('공고문 PNG가 다운로드되었습니다.', 'success');
+        }).catch(function() {
+            document.body.removeChild(iframe);
+            showToast('PNG 생성에 실패했습니다. 인쇄 미리보기를 이용해주세요.', 'error');
+        });
+    }, 1500);
+
+    showToast('PNG 생성 중입니다. 잠시만 기다려주세요...', 'success');
 }
 
 function downloadNoticeFile() {
