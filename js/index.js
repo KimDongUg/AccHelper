@@ -778,7 +778,7 @@ function showChat(companyData) {
                 var adminLoginLink2 = document.getElementById('adminLoginLink');
                 if (adminLoginLink2) adminLoginLink2.style.display = 'none';
                 var adminLink2 = document.getElementById('adminLink');
-                if (adminLink2) {
+                if (adminLink2 && currentCompanyId < 1000) {
                     adminLink2.style.display = '';
                     var label = auth.session.full_name || auth.session.username || '';
                     adminLink2.textContent = '관리자 (' + label + ')';
