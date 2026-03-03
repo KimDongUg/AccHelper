@@ -221,6 +221,14 @@ async function validateAndStartChat(code) {
         companyLabel.textContent = company.company_name;
         companyLabel.style.display = '';
 
+        // Hide admin buttons for sample companies (company_id >= 1000)
+        if (currentCompanyId >= 1000) {
+            var loginLink = document.getElementById('headerLoginLink');
+            if (loginLink) loginLink.style.display = 'none';
+            var admLink = document.getElementById('adminLink');
+            if (admLink) admLink.style.display = 'none';
+        }
+
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company);
     } catch (err) {
