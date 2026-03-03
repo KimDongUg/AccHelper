@@ -85,6 +85,8 @@ function showToast(message, duration) {
 document.addEventListener('DOMContentLoaded', function () {
     // 로그인 상태면 헤더 버튼 텍스트 변경
     var sess = AuthSession.get();
+    var urlParams = new URLSearchParams(window.location.search);
+    var hasCompanyParam = urlParams.get('company');
     if (sess && sess.isLoggedIn) {
         var adminLoginLink = document.getElementById('adminLoginLink');
         if (adminLoginLink) adminLoginLink.style.display = 'none';
@@ -92,9 +94,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (headerLoginLink) headerLoginLink.style.display = 'none';
         var adminLink = document.getElementById('adminLink');
         if (adminLink) {
-            adminLink.style.display = '';
             var label = sess.fullName || sess.username || '';
             adminLink.textContent = '관리자 (' + label + ')';
+            // 회사 파라미터가 있으면 샘플회사 여부 확인 후 표시 (validateAndStartChat에서 처리)
+            if (!hasCompanyParam) {
+                adminLink.style.display = '';
+            }
         }
     }
 
@@ -222,11 +227,18 @@ async function validateAndStartChat(code) {
         companyLabel.style.display = '';
 
         // Hide admin buttons for sample companies (company_id >= 1000)
+        // Show admin link for non-sample companies if logged in
         if (currentCompanyId >= 1000) {
             var loginLink = document.getElementById('headerLoginLink');
             if (loginLink) loginLink.style.display = 'none';
             var admLink = document.getElementById('adminLink');
             if (admLink) admLink.style.display = 'none';
+        } else {
+            var sess = AuthSession.get();
+            if (sess && sess.isLoggedIn) {
+                var admLink2 = document.getElementById('adminLink');
+                if (admLink2) admLink2.style.display = '';
+            }
         }
 
         // Show chat (로그인 없이 누구나 이용 가능)
