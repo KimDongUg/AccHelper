@@ -1241,6 +1241,7 @@ async function loadCompanySettings() {
         const company = await apiGet('/companies/me');
         document.getElementById('dashCompanyName').value = company.company_name || '';
         document.getElementById('dashCompanyAddress').value = company.address || '';
+        document.getElementById('dashChatbotUrl').value = getCompanyChatbotUrl() || '';
         document.getElementById('dashGreeting').value = company.greeting_text || '';
 
         // Load categories
@@ -1514,6 +1515,16 @@ function getCompanyChatbotUrl() {
     const companyId = sess?.companyId || sess?.company_id;
     if (!companyId) return null;
     return 'https://acchelper.kr/?company=' + companyId;
+}
+
+function copyChatbotUrl() {
+    const url = document.getElementById('dashChatbotUrl').value;
+    if (!url) { showToast('챗봇 주소를 불러올 수 없습니다.', 'error'); return; }
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('챗봇 주소가 복사되었습니다.', 'success');
+    }).catch(() => {
+        showToast('복사에 실패했습니다.', 'error');
+    });
 }
 
 function showQrModal() {
