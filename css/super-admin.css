@@ -322,7 +322,8 @@
 .btn-admin-view,
 .btn-validate,
 .btn-approve,
-.btn-reject {
+.btn-reject,
+.btn-delete {
     display: inline-flex;
     align-items: center;
     padding: 0.2rem 0.5rem;
@@ -373,6 +374,16 @@
 
 .btn-reject:hover {
     background: #FFCDD2;
+}
+
+.btn-delete {
+    background: #D32F2F;
+    color: #fff;
+    border-color: #B71C1C;
+}
+
+.btn-delete:hover {
+    background: #B71C1C;
 }
 
 /* ── Validation Result Modal ───────────────── */

@@ -158,6 +158,7 @@ function renderSubscribers(items) {
                 ${showActions ? `<button class="btn-validate" onclick="validateCompanyData(${s.company_id}, '${escapeHtml(s.company_name)}')">검증</button>
                 <button class="btn-approve" onclick="approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
                 <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>` : ''}
+                ${approvalStatus === 'rejected' ? `<button class="btn-delete" onclick="deleteCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">삭제</button>` : ''}
             </div></td>
         </tr>`;
     }).join('');
@@ -438,6 +439,21 @@ async function confirmReject() {
         loadSubscribers();
     } catch (e) {
         showToast('반려 실패: ' + e.message, 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  DELETE REJECTED COMPANY
+ * ═══════════════════════════════════════════════ */
+async function deleteCompany(companyId, companyName) {
+    if (!confirm('[' + companyName + '] 회사를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) return;
+
+    try {
+        await apiDelete('/companies/' + companyId);
+        showToast(companyName + ' 삭제 완료', 'success');
+        loadSubscribers();
+    } catch (e) {
+        showToast('삭제 실패: ' + e.message, 'error');
     }
 }
 
