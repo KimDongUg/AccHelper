@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const companies = Array.isArray(result) ? result : (result.companies || []);
             let maxId = 0;
             companies.forEach(c => {
+                if (c.company_id >= 1000) return; // 샘플회사 제외
                 if (c.company_id > maxId) maxId = c.company_id;
             });
             autoCompanyCode = String(maxId + 1);
