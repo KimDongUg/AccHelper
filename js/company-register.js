@@ -23,14 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-generate company code from latest company_id + 1
     (async function loadNextCode() {
         try {
-            const result = await apiGet('/companies/public');
-            const companies = Array.isArray(result) ? result : (result.companies || []);
-            let maxId = 0;
-            companies.forEach(c => {
-                if (c.company_id >= 1000) return; // 샘플회사 제외
-                if (c.company_id > maxId) maxId = c.company_id;
-            });
-            autoCompanyCode = String(maxId + 1);
+            const result = await apiGet('/companies/public/next-id');
+            autoCompanyCode = String(result.next_id);
             document.getElementById('companyCode').value = autoCompanyCode;
         } catch {
             autoCompanyCode = '1';
