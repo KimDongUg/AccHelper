@@ -1512,7 +1512,11 @@ function getCategoryItems() {
  * ═══════════════════════════════════════════════ */
 function getCompanyChatbotUrl() {
     const sess = AuthSession.get();
-    const companyId = sess?.companyId || sess?.company_id;
+    let companyId = sess?.companyId || sess?.company_id;
+    if (!companyId) {
+        const filter = document.getElementById('companyFilter');
+        if (filter && filter.value) companyId = filter.value;
+    }
     if (!companyId) return null;
     return 'https://acchelper.kr/?company=' + companyId;
 }
