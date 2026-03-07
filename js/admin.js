@@ -131,6 +131,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {
             console.error('Companies load error:', e);
         }
+
+        // Show Excel export button for super_admin
+        const exportBtn = document.getElementById('exportQaExcelBtn');
+        if (exportBtn) exportBtn.style.display = '';
     }
 
     // Hide edit buttons for viewer
@@ -1870,4 +1874,87 @@ function downloadNoticeFile() {
     link.click();
     URL.revokeObjectURL(link.href);
     showToast('공고문이 다운로드되었습니다.', 'success');
+}
+
+/* ═══════════════════════════════════════════════
+ *  Q&A 엑셀 다운로드 (super_admin 전용)
+ * ═══════════════════════════════════════════════ */
+async function exportQaToExcel() {
+    if (currentRole !== 'super_admin') return;
+
+    const btn = document.getElementById('exportQaExcelBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner" style="display:inline-block"></span> 다운로드 중...';
+
+    try {
+        // 현재 필터 값 가져오기
+        const search = document.getElementById('searchInput').value.trim();
+        const category = document.getElementById('categoryFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        const createdBy = document.getElementById('createdByFilter').value;
+        const companyFilterVal = document.getElementById('companyFilter').value;
+
+        // 전체 데이터를 가져오기 위해 큰 size 사용
+        const params = new URLSearchParams({ page: 1, size: 10000 });
+        if (search) params.append('search', search);
+        if (category) params.append('category', category);
+        if (status) params.append('status', status);
+        if (createdBy) params.append('created_by', createdBy);
+        if (companyFilterVal) params.append('company_id', companyFilterVal);
+
+        const data = await apiGet(`/qa?${params}`);
+        const items = data.items || [];
+
+        if (items.length === 0) {
+            showToast('다운로드할 Q&A 데이터가 없습니다.', 'warning');
+            return;
+        }
+
+        // 엑셀 데이터 구성
+        const rows = items.map(qa => ({
+            'ID': qa.qa_id,
+            '회사명': qa.company_name || companyMap[qa.company_id] || '-',
+            '카테고리': qa.category || '-',
+            '질문': qa.question,
+            '답변': qa.answer,
+            '키워드': qa.keywords || '',
+            '상태': qa.is_active ? '활성' : '비활성',
+            '작성자': qa.created_by || '-',
+            '수정일': qa.updated_at ? new Date(qa.updated_at).toLocaleString('ko-KR') : '-',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+
+        // 열 너비 설정
+        ws['!cols'] = [
+            { wch: 6 },   // ID
+            { wch: 20 },  // 회사명
+            { wch: 12 },  // 카테고리
+            { wch: 50 },  // 질문
+            { wch: 60 },  // 답변
+            { wch: 20 },  // 키워드
+            { wch: 8 },   // 상태
+            { wch: 12 },  // 작성자
+            { wch: 20 },  // 수정일
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Q&A 데이터');
+
+        // 파일명에 날짜 포함
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const companyLabel = companyFilterVal
+            ? (companyMap[companyFilterVal] || companyFilterVal)
+            : '전체';
+        const filename = `QA_데이터_${companyLabel}_${today}.xlsx`;
+
+        XLSX.writeFile(wb, filename);
+        showToast(`${items.length}건의 Q&A 데이터를 다운로드했습니다.`, 'success');
+    } catch (e) {
+        console.error('Excel export error:', e);
+        showToast('엑셀 다운로드에 실패했습니다: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 엑셀 다운로드';
+    }
 }
