@@ -234,6 +234,7 @@ function switchTab(tab) {
     if (tab === 'feedback') { feedbackPage = 1; loadFeedbackList(); }
     if (tab === 'unanswered') { unansweredPage = 1; loadUnansweredList(); }
     if (tab === 'logs') { logPage = 1; loadActivityLogs(); }
+    if (tab === 'statistics') initStatistics();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1957,4 +1958,240 @@ async function exportQaToExcel() {
         btn.disabled = false;
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 엑셀 다운로드';
     }
+}
+
+/* ═══════════════════════════════════════════════
+ *  STATISTICS (통계)
+ * ═══════════════════════════════════════════════ */
+let visitorsChartInstance = null;
+let qaViewsChartInstance = null;
+let statsInitialized = false;
+
+function initStatistics() {
+    if (!statsInitialized) {
+        // Set default date range: last 30 days
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        document.getElementById('statsDateTo').value = formatDateISO(today);
+        document.getElementById('statsDateFrom').value = formatDateISO(thirtyDaysAgo);
+
+        // Period type change handler
+        document.getElementById('statsPeriodType').addEventListener('change', function () {
+            adjustStatsDateRange(this.value);
+            loadStatistics();
+        });
+
+        statsInitialized = true;
+    }
+    loadStatistics();
+}
+
+function formatDateISO(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
+function adjustStatsDateRange(periodType) {
+    const today = new Date();
+    const toEl = document.getElementById('statsDateTo');
+    const fromEl = document.getElementById('statsDateFrom');
+    toEl.value = formatDateISO(today);
+
+    if (periodType === 'daily') {
+        const d = new Date(today);
+        d.setDate(today.getDate() - 30);
+        fromEl.value = formatDateISO(d);
+    } else if (periodType === 'monthly') {
+        const d = new Date(today);
+        d.setMonth(today.getMonth() - 12);
+        fromEl.value = formatDateISO(d);
+    } else if (periodType === 'quarterly') {
+        const d = new Date(today);
+        d.setFullYear(today.getFullYear() - 2);
+        fromEl.value = formatDateISO(d);
+    } else if (periodType === 'yearly') {
+        const d = new Date(today);
+        d.setFullYear(today.getFullYear() - 5);
+        fromEl.value = formatDateISO(d);
+    }
+}
+
+async function loadStatistics() {
+    const periodType = document.getElementById('statsPeriodType').value;
+    const dateFrom = document.getElementById('statsDateFrom').value;
+    const dateTo = document.getElementById('statsDateTo').value;
+
+    if (!dateFrom || !dateTo) {
+        showToast('조회 기간을 선택해주세요.', 'warning');
+        return;
+    }
+
+    // Build query params — company_id is resolved server-side from JWT
+    // For super_admin viewing a specific company, pass company filter
+    let companyParam = '';
+    if (currentRole === 'super_admin') {
+        const companyFilter = document.getElementById('companyFilter');
+        if (companyFilter && companyFilter.value) {
+            companyParam = '&company_id=' + companyFilter.value;
+        }
+    }
+
+    const query = `?period=${periodType}&from=${dateFrom}&to=${dateTo}${companyParam}`;
+
+    try {
+        const data = await apiGet('/stats/usage' + query);
+        renderStatsSummary(data);
+        renderStatsCharts(data, periodType);
+        renderStatsTable(data, periodType);
+    } catch (e) {
+        console.error('Statistics load error:', e);
+        showToast('통계 데이터를 불러오는데 실패했습니다.', 'error');
+        // Show empty state
+        document.getElementById('statsTableBody').innerHTML = '';
+        document.getElementById('statsEmptyState').style.display = '';
+    }
+}
+
+function renderStatsSummary(data) {
+    const items = data.items || [];
+    let totalVisitors = 0, totalQuestions = 0, totalAnswers = 0;
+
+    items.forEach(item => {
+        totalVisitors += item.visitors || 0;
+        totalQuestions += item.question_views || 0;
+        totalAnswers += item.answer_views || 0;
+    });
+
+    const avgVisitors = items.length > 0 ? Math.round(totalVisitors / items.length) : 0;
+
+    document.getElementById('statsTotalVisitors').textContent = totalVisitors.toLocaleString();
+    document.getElementById('statsTotalQuestions').textContent = totalQuestions.toLocaleString();
+    document.getElementById('statsTotalAnswers').textContent = totalAnswers.toLocaleString();
+    document.getElementById('statsAvgVisitors').textContent = avgVisitors.toLocaleString();
+}
+
+function renderStatsCharts(data, periodType) {
+    const items = data.items || [];
+    const labels = items.map(item => formatStatLabel(item.period, periodType));
+    const visitorsData = items.map(item => item.visitors || 0);
+    const questionData = items.map(item => item.question_views || 0);
+    const answerData = items.map(item => item.answer_views || 0);
+
+    // Destroy previous charts
+    if (visitorsChartInstance) { visitorsChartInstance.destroy(); visitorsChartInstance = null; }
+    if (qaViewsChartInstance) { qaViewsChartInstance.destroy(); qaViewsChartInstance = null; }
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12 } } },
+            tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, cornerRadius: 8 },
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 45 } },
+            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 }, precision: 0 } },
+        },
+    };
+
+    // Visitors chart
+    const visitorsCtx = document.getElementById('visitorsChart').getContext('2d');
+    visitorsChartInstance = new Chart(visitorsCtx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '접속자 수',
+                data: visitorsData,
+                backgroundColor: 'rgba(125, 194, 66, 0.6)',
+                borderColor: '#7DC242',
+                borderWidth: 1,
+                borderRadius: 4,
+                maxBarThickness: 40,
+            }],
+        },
+        options: commonOptions,
+    });
+
+    // Q&A Views chart
+    const qaCtx = document.getElementById('qaViewsChart').getContext('2d');
+    qaViewsChartInstance = new Chart(qaCtx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '질문 조회',
+                    data: questionData,
+                    borderColor: '#4A90D9',
+                    backgroundColor: 'rgba(74, 144, 217, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: '답변 조회',
+                    data: answerData,
+                    borderColor: '#FF9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                },
+            ],
+        },
+        options: commonOptions,
+    });
+}
+
+function formatStatLabel(period, periodType) {
+    if (!period) return '';
+    if (periodType === 'daily') {
+        // "2026-03-12" → "3/12"
+        const parts = period.split('-');
+        return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+    } else if (periodType === 'monthly') {
+        // "2026-03" → "2026.03"
+        return period.replace('-', '.');
+    } else if (periodType === 'quarterly') {
+        // "2026-Q1" → "2026 Q1"
+        return period.replace('-', ' ');
+    } else if (periodType === 'yearly') {
+        // "2026" → "2026년"
+        return period + '년';
+    }
+    return period;
+}
+
+function renderStatsTable(data, periodType) {
+    const items = data.items || [];
+    const tbody = document.getElementById('statsTableBody');
+    const emptyState = document.getElementById('statsEmptyState');
+
+    // Update column header
+    const colHeader = document.getElementById('statsColPeriod');
+    const periodLabels = { daily: '날짜', monthly: '월', quarterly: '분기', yearly: '연도' };
+    colHeader.textContent = periodLabels[periodType] || '기간';
+
+    if (!items.length) {
+        tbody.innerHTML = '';
+        emptyState.style.display = '';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    tbody.innerHTML = items.map(item => `
+        <tr>
+            <td>${formatStatLabel(item.period, periodType)}</td>
+            <td style="text-align:right">${(item.visitors || 0).toLocaleString()}</td>
+            <td style="text-align:right">${(item.question_views || 0).toLocaleString()}</td>
+            <td style="text-align:right">${(item.answer_views || 0).toLocaleString()}</td>
+        </tr>
+    `).join('');
 }
