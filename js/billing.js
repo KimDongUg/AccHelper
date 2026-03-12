@@ -46,11 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Bind events (SDK 초기화는 클릭 시점에) ──
-    const trialBtn = document.getElementById('trialBtn');
-    if (trialBtn) {
-        trialBtn.addEventListener('click', startTrial);
-    }
-
     const subscribeBtn = document.getElementById('subscribeBtn');
     if (subscribeBtn) {
         subscribeBtn.addEventListener('click', () => requestBillingAuth(customerKey));
@@ -118,31 +113,10 @@ async function loadSubscriptionStatus(companyId) {
     const loadingEl = document.getElementById('billingLoading');
     const statusSection = document.getElementById('subscriptionStatus');
     const planSection = document.getElementById('planSection');
-    const promoSection = document.getElementById('promoSection');
 
-    function showPlanSelection(trialState) {
+    function showPlanSelection() {
         statusSection.style.display = 'none';
         planSection.style.display = '';
-        if (promoSection) promoSection.style.display = '';
-
-        const trialBtn = document.getElementById('trialBtn');
-        const trialExpiredBtn = document.getElementById('trialExpiredBtn');
-
-        if (trialState === 'active') {
-            // 체험 진행중 — 남은 일수 표시 + 비활성
-            if (trialBtn) {
-                trialBtn.disabled = true;
-                trialBtn.textContent = '체험중 (' + (trialState.days || '') + ')';
-                trialBtn.style.display = '';
-            }
-            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
-        } else if (trialState === 'expired') {
-            if (trialBtn) trialBtn.style.display = 'none';
-            if (trialExpiredBtn) trialExpiredBtn.style.display = '';
-        } else {
-            if (trialBtn) { trialBtn.style.display = ''; trialBtn.disabled = false; }
-            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
-        }
     }
 
     try {
@@ -155,33 +129,10 @@ async function loadSubscriptionStatus(companyId) {
             return;
         }
 
-        if (data.subscription_plan === 'trial' && data.active) {
-            // 체험중 — 남은 일수 계산
-            let daysLeft = '';
-            if (data.trial_ends_at) {
-                const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
-                daysLeft = (diff > 0 ? diff : 0) + '일 남음';
-            }
-            const trialBtn = document.getElementById('trialBtn');
-            const trialExpiredBtn = document.getElementById('trialExpiredBtn');
-            statusSection.style.display = 'none';
-            planSection.style.display = '';
-            if (promoSection) promoSection.style.display = '';
-            if (trialBtn) {
-                trialBtn.textContent = '체험중 (' + daysLeft + ')';
-                trialBtn.disabled = true;
-                trialBtn.style.opacity = '0.7';
-                trialBtn.style.display = '';
-            }
-            if (trialExpiredBtn) trialExpiredBtn.style.display = 'none';
-        } else if (data.subscription_plan === 'trial' && !data.active) {
-            showPlanSelection('expired');
-        } else {
-            showPlanSelection('none');
-        }
+        showPlanSelection();
     } catch (err) {
         loadingEl.style.display = 'none';
-        showPlanSelection(false);
+        showPlanSelection();
     }
 }
 
@@ -199,26 +150,6 @@ async function executeBillingPay() {
     } catch (err) {
         var msg = (err && typeof err.message === 'string') ? err.message : '결제 API 연동 대기 중입니다. (백엔드 구현 필요)';
         showAlert(msg, 'error');
-    }
-}
-
-/* ──────────────────────────────────────────────
- *  Start free trial
- * ────────────────────────────────────────────── */
-async function startTrial() {
-    const trialBtn = document.getElementById('trialBtn');
-    trialBtn.disabled = true;
-
-    try {
-        const sess = AuthSession.get();
-        await apiPost('/billing/trial?company_id=' + sess.companyId);
-        showAlert('14일 무료체험이 시작되었습니다!', 'success');
-        setTimeout(() => {
-            window.location.href = '/admin.html';
-        }, 1500);
-    } catch (err) {
-        showAlert(err.message || '무료체험 시작에 실패했습니다.', 'error');
-        trialBtn.disabled = false;
     }
 }
 
