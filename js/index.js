@@ -298,8 +298,8 @@ function showChat(companyData) {
         // 하드코딩 기본값 (하위호환)
         var defaultCustom = {
             '세종푸르지오시티 2차': {
-                hero: ' AI 경리입니다.<br>무엇이든 물어보세요~',
-                greeting: '안녕하세요! 세종푸르지오시티 2차 AI 경리입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
+                hero: ' AI Helper입니다.<br>무엇이든 물어보세요~',
+                greeting: '안녕하세요! 세종푸르지오시티 2차 AI Helper입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
                 categories: [
                     { label: '중간관리비 정산', question: '중간관리비 정산 절차가 어떻게 되나요?' },
                     { label: '입주신고', question: '입주신고 시 필요한 서류는?' },
