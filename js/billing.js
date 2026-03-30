@@ -46,10 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Bind events (SDK 초기화는 클릭 시점에) ──
-    const subscribeBtn = document.getElementById('subscribeBtn');
-    if (subscribeBtn) {
-        subscribeBtn.addEventListener('click', () => requestBillingAuth(customerKey));
-    }
+    document.querySelectorAll('.plan-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => requestBillingAuth(customerKey));
+    });
 
     const changeCardBtn = document.getElementById('changeCardBtn');
     if (changeCardBtn) {
@@ -112,10 +111,12 @@ function requestBillingAuth(customerKey) {
 async function loadSubscriptionStatus(companyId) {
     const loadingEl = document.getElementById('billingLoading');
     const statusSection = document.getElementById('subscriptionStatus');
+    const setupSection = document.getElementById('setupSection');
     const planSection = document.getElementById('planSection');
 
     function showPlanSelection() {
         statusSection.style.display = 'none';
+        setupSection.style.display = '';
         planSection.style.display = '';
     }
 
