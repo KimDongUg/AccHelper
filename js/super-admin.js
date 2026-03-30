@@ -159,6 +159,7 @@ function renderSubscribers(items) {
                 <button class="btn-approve" onclick="approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
                 <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>` : ''}
                 ${approvalStatus === 'rejected' ? `<button class="btn-delete" onclick="deleteCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">삭제</button>` : ''}
+                ${approvalStatus === 'approved' ? (s.billing_active ? `<button class="btn-sub-deactivate" onclick="toggleSubscription(${s.company_id}, '${escapeHtml(s.company_name)}', false)">구독 해제</button>` : `<button class="btn-sub-activate" onclick="toggleSubscription(${s.company_id}, '${escapeHtml(s.company_name)}', true)">구독 활성</button>`) : ''}
             </div></td>
         </tr>`;
     }).join('');
@@ -439,6 +440,26 @@ async function confirmReject() {
         loadSubscribers();
     } catch (e) {
         showToast('반려 실패: ' + e.message, 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  TOGGLE SUBSCRIPTION (수동 활성/해제)
+ * ═══════════════════════════════════════════════ */
+async function toggleSubscription(companyId, companyName, activate) {
+    const action = activate ? '구독 활성화' : '구독 해제';
+    if (!confirm('[' + companyName + '] ' + action + '하시겠습니까?' + (activate ? '\n\n오프라인 자동이체 등 수동 결제 업체에 사용합니다.' : ''))) return;
+
+    try {
+        await apiPatch('/admin-dashboard/companies/' + companyId + '/subscription', {
+            billing_active: activate,
+            subscription_plan: activate ? 'enterprise' : 'free',
+        });
+        showToast(companyName + ' ' + action + ' 완료', 'success');
+        loadSubscribers();
+        loadOverview();
+    } catch (e) {
+        showToast(action + ' 실패: ' + e.message, 'error');
     }
 }
 

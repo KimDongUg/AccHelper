@@ -323,7 +323,9 @@
 .btn-validate,
 .btn-approve,
 .btn-reject,
-.btn-delete {
+.btn-delete,
+.btn-sub-activate,
+.btn-sub-deactivate {
     display: inline-flex;
     align-items: center;
     padding: 0.2rem 0.5rem;
@@ -384,6 +386,26 @@
 
 .btn-delete:hover {
     background: #B71C1C;
+}
+
+.btn-sub-activate {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-color: #C8E6C9;
+}
+
+.btn-sub-activate:hover {
+    background: #C8E6C9;
+}
+
+.btn-sub-deactivate {
+    background: #FFF3E0;
+    color: #E65100;
+    border-color: #FFE0B2;
+}
+
+.btn-sub-deactivate:hover {
+    background: #FFE0B2;
 }
 
 /* ── Validation Result Modal ───────────────── */
