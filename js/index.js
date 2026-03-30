@@ -45,11 +45,8 @@
 /* ── State ──────────────────────────────────── */
 let currentCompanyId = null;
 let currentCompanyCode = null;
-let sessionId = sessionStorage.getItem('chatSessionId');
-if (!sessionId) {
-    sessionId = generateSessionId();
-    sessionStorage.setItem('chatSessionId', sessionId);
-}
+let sessionId = generateSessionId();
+sessionStorage.setItem('chatSessionId', sessionId);
 let selectedCategory = null;
 let quotaRemaining = null;
 
