@@ -1342,9 +1342,11 @@ function formatDateTime(dateStr) {
     const d = new Date(dateStr);
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    const h = String(d.getHours()).padStart(2, '0');
+    const hours = d.getHours();
+    const ampm = hours < 12 ? '오전' : '오후';
+    const h12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     const min = String(d.getMinutes()).padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day} ${h}:${min}`;
+    return `${d.getFullYear()}-${m}-${day} ${ampm} ${h12}:${min}`;
 }
 
 /* ═══════════════════════════════════════════════
