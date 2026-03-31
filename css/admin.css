@@ -1025,3 +1025,12 @@
     color: var(--danger);
     font-weight: 600;
 }
+
+/* 알림톡 링크로 진입 시 해당 질문 하이라이트 */
+@keyframes highlight-fade {
+    0% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+.highlight-row {
+    animation: highlight-fade 3s ease-out;
+}

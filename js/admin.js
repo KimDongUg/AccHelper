@@ -163,6 +163,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 60_000);
 
+    // 알림톡 URL에서 questionId 파라미터 처리: 미답변 질문 탭으로 자동 전환
+    const urlParams2 = new URLSearchParams(window.location.search);
+    const targetQuestionId = urlParams2.get('questionId');
+    if (targetQuestionId) {
+        switchTab('unanswered');
+        // 질문 목록 로드 후 해당 질문 하이라이트
+        setTimeout(() => {
+            const targetRow = document.querySelector(`tr[data-question-id="${targetQuestionId}"]`);
+            if (targetRow) {
+                targetRow.classList.add('highlight-row');
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 800);
+    }
+
     // Load data
     loadCompanySettings();
     loadStats();
@@ -970,7 +985,7 @@ function renderUnansweredTable(items) {
             : item.status === 'resolved' ? '<span style="color:var(--success)">등록됨</span>'
             : '<span style="color:var(--gray-400)">무시</span>';
         return `
-        <tr>
+        <tr data-question-id="${item.id}">
             <td title="${escapeHtml(item.question)}">${escapeHtml(item.question)}</td>
             <td>${item.created_at ? formatDateTime(item.created_at) : '-'}</td>
             <td>${statusLabel}</td>
