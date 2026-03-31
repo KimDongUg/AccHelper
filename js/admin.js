@@ -715,6 +715,7 @@ function openAdminModal() {
     document.getElementById('adminPosition').value = '';
     document.getElementById('adminAlertToggle').checked = true;
     document.getElementById('adminPasswordGroup').style.display = '';
+    document.getElementById('adminPassword').setAttribute('required', '');
     document.getElementById('adminModal').classList.add('show');
 }
 
@@ -731,6 +732,7 @@ async function openEditAdminModal(userId) {
         document.getElementById('adminPosition').value = admin.position || '';
         document.getElementById('adminAlertToggle').checked = admin.receive_unanswered_alert !== false;
         document.getElementById('adminPasswordGroup').style.display = 'none';
+        document.getElementById('adminPassword').removeAttribute('required');
         document.getElementById('adminModal').classList.add('show');
     } catch (e) {
         showToast('관리자 정보를 불러올 수 없습니다.', 'error');
