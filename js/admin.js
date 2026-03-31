@@ -713,6 +713,7 @@ function openAdminModal() {
     document.getElementById('adminPhone').value = '';
     document.getElementById('adminDepartment').value = '';
     document.getElementById('adminPosition').value = '';
+    document.getElementById('adminAlertToggle').checked = true;
     document.getElementById('adminPasswordGroup').style.display = '';
     document.getElementById('adminModal').classList.add('show');
 }
@@ -728,6 +729,7 @@ async function openEditAdminModal(userId) {
         document.getElementById('adminPhone').value = admin.phone || '';
         document.getElementById('adminDepartment').value = admin.department || '';
         document.getElementById('adminPosition').value = admin.position || '';
+        document.getElementById('adminAlertToggle').checked = admin.receive_unanswered_alert !== false;
         document.getElementById('adminPasswordGroup').style.display = 'none';
         document.getElementById('adminModal').classList.add('show');
     } catch (e) {
@@ -753,6 +755,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
+                receive_unanswered_alert: document.getElementById('adminAlertToggle').checked,
                 role: 'admin',
             };
             await apiPut(`/admins/${adminId}`, data);
@@ -768,6 +771,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
+                receive_unanswered_alert: document.getElementById('adminAlertToggle').checked,
                 role: 'admin',
             };
             await apiPost('/admins', data);
