@@ -520,7 +520,6 @@ function onQuestionInput() {
     const val = document.getElementById('modalQuestion').value.trim();
     const hint = document.getElementById('questionHint');
     if (val.length === 0) { hint.textContent = ''; hint.className = 'field-hint'; }
-    else if (val.length < 5) { hint.textContent = `${val.length}/5자 (최소 5자)`; hint.className = 'field-hint error'; }
     else { hint.textContent = `${val.length}자`; hint.className = 'field-hint ok'; checkDuplicate(val); }
 }
 
@@ -559,7 +558,7 @@ function validateModal() {
     const question = document.getElementById('modalQuestion').value.trim();
     const answer = document.getElementById('modalAnswer').value.trim();
     const errors = [];
-    if (question.length < 5) errors.push('질문은 최소 5자 이상 입력해 주세요.');
+    if (question.length === 0) errors.push('질문을 입력해 주세요.');
     if (answer.length < 10) errors.push('답변은 최소 10자 이상 입력해 주세요.');
     if (errors.length > 0) { showToast(errors[0], 'error'); onQuestionInput(); onAnswerInput(); return false; }
     return true;
