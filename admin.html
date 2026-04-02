@@ -459,10 +459,15 @@
             <div class="toolbar" style="flex-wrap:wrap;gap:0.75rem">
                 <h3 style="margin:0;font-size:var(--text-base)">질문 조회 상세</h3>
                 <div style="display:flex;gap:0.5rem;align-items:center;margin-left:auto;flex-wrap:wrap">
+                    <select id="qvPeriodType" class="form-control" aria-label="통계 기간 유형" style="min-width:100px">
+                        <option value="daily">일별</option>
+                        <option value="monthly">월별</option>
+                        <option value="quarterly">분기별</option>
+                        <option value="yearly">연도별</option>
+                    </select>
                     <input type="date" id="qvDateFrom" class="form-control" style="min-width:140px">
                     <span style="color:var(--gray-500)">~</span>
                     <input type="date" id="qvDateTo" class="form-control" style="min-width:140px">
-                    <input type="text" id="qvSearch" class="form-control" placeholder="질문 검색..." style="min-width:180px">
                     <button class="btn btn-primary btn-sm" onclick="loadQuestionViews()">조회</button>
                 </div>
             </div>
@@ -485,22 +490,22 @@
 
             <!-- Chart -->
             <div class="stats-chart-card" style="margin-top:1rem">
-                <h4 class="stats-chart-title">일별 질문 조회 추이</h4>
+                <h4 class="stats-chart-title">질문 조회 추이 <span style="font-size:var(--text-xs);color:var(--gray-400);font-weight:400">(차트 클릭 시 상세 보기)</span></h4>
                 <div class="stats-chart-wrap">
                     <canvas id="qvDailyChart"></canvas>
                 </div>
             </div>
 
-            <!-- Detail Table -->
+            <!-- Period Summary Table -->
             <div class="qa-table-wrap" style="margin-top:1rem">
                 <div class="table-wrap">
-                    <table class="qa-table" aria-label="질문 조회 상세">
+                    <table class="qa-table" aria-label="질문 조회 기간별 요약">
                         <thead>
                             <tr>
-                                <th scope="col" style="width:120px">날짜</th>
-                                <th scope="col">질문</th>
-                                <th scope="col" style="width:100px">카테고리</th>
-                                <th scope="col" style="width:100px">조회 수</th>
+                                <th scope="col" id="qvColPeriod" style="width:140px">기간</th>
+                                <th scope="col" style="width:120px">질문 수</th>
+                                <th scope="col" style="width:120px">총 조회 수</th>
+                                <th scope="col" style="width:100px">상세</th>
                             </tr>
                         </thead>
                         <tbody id="qvTableBody">
@@ -511,7 +516,6 @@
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <p>해당 기간의 질문 조회 데이터가 없습니다.</p>
                 </div>
-                <nav class="pagination" id="qvPagination" aria-label="질문 조회 페이지 내비게이션"></nav>
             </div>
         </div>
 
@@ -576,6 +580,37 @@
             </div>
         </div>
     </main>
+
+    <!-- Question Views Detail Modal -->
+    <div class="modal-overlay" id="qvDetailModal" role="dialog" aria-modal="true" aria-labelledby="qvDetailModalTitle">
+        <div class="modal" style="max-width:720px">
+            <div class="modal-header">
+                <h3 id="qvDetailModalTitle">질문 조회 상세</h3>
+                <button class="modal-close" onclick="closeQvDetailModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height:60vh;overflow-y:auto">
+                <div id="qvDetailLoading" style="text-align:center;padding:2rem;color:var(--gray-400)">불러오는 중...</div>
+                <table class="qa-table" id="qvDetailTable" style="display:none" aria-label="기간별 질문 상세">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width:50px">#</th>
+                            <th scope="col">질문</th>
+                            <th scope="col" style="width:100px">카테고리</th>
+                            <th scope="col" style="width:80px">조회 수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="qvDetailTableBody"></tbody>
+                </table>
+                <div id="qvDetailEmpty" class="empty-state" style="display:none">
+                    <p>해당 기간의 질문 조회 데이터가 없습니다.</p>
+                </div>
+                <nav class="pagination" id="qvDetailPagination" style="margin-top:0.75rem"></nav>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline btn-sm" onclick="closeQvDetailModal()">닫기</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Create/Edit QA Modal -->
     <div class="modal-overlay" id="qaModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
