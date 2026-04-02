@@ -472,10 +472,41 @@ function _showActionSheet(pageName, visitorType) {
 }
 
 /* ============================================================
-   9. Initialize on page load
+   9. Impression Tracking (IntersectionObserver)
+   ============================================================ */
+
+function initImpressionTracking(pageName, visitorType) {
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    var observed = new Set();
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var btn = entry.target;
+            var ctaType = btn.getAttribute('data-cta');
+            if (!ctaType) return;
+
+            // Log impression only once per CTA per session
+            var key = 'imp_' + ctaType + '_' + pageName;
+            if (observed.has(key)) return;
+            observed.add(key);
+
+            logCtaClick(ctaType, pageName, visitorType, 'impression', getOrCreateSessionId());
+        });
+    }, { threshold: 0.5 });
+
+    // Observe all CTA buttons with data-cta attribute
+    document.querySelectorAll('[data-cta]').forEach(function (btn) {
+        observer.observe(btn);
+    });
+}
+
+/* ============================================================
+   10. Initialize on page load
    ============================================================ */
 
 function initKakaoCta(pageName, visitorType) {
     retryFailedLogs();
     initFloatingCta(pageName, visitorType);
+    initImpressionTracking(pageName, visitorType);
 }
