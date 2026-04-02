@@ -2394,7 +2394,7 @@ function openQvDetailModal(period, periodType) {
     qvDetailPage = 1;
     document.getElementById('qvDetailModalTitle').textContent =
         formatStatLabel(period, periodType) + ' 질문 조회 상세';
-    document.getElementById('qvDetailModal').classList.add('active');
+    document.getElementById('qvDetailModal').classList.add('show');
     document.getElementById('qvDetailTable').style.display = 'none';
     document.getElementById('qvDetailEmpty').style.display = 'none';
     document.getElementById('qvDetailLoading').style.display = '';
@@ -2403,7 +2403,7 @@ function openQvDetailModal(period, periodType) {
 }
 
 function closeQvDetailModal() {
-    document.getElementById('qvDetailModal').classList.remove('active');
+    document.getElementById('qvDetailModal').classList.remove('show');
 }
 
 async function loadQvDetail(period) {
