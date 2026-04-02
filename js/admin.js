@@ -250,6 +250,7 @@ function switchTab(tab) {
     if (tab === 'unanswered') { unansweredPage = 1; loadUnansweredList(); }
     if (tab === 'logs') { logPage = 1; loadActivityLogs(); }
     if (tab === 'statistics') initStatistics();
+    if (tab === 'questionViews') initQuestionViews();
     if (tab === 'subscription') loadSubscriptionTab();
 }
 
@@ -2219,6 +2220,176 @@ function renderStatsTable(data, periodType) {
     `).join('');
 }
 
+
+/* ═══════════════════════════════════════════════
+ *  QUESTION VIEWS DETAIL (질문 조회 상세)
+ * ═══════════════════════════════════════════════ */
+let qvChartInstance = null;
+let qvInitialized = false;
+let qvPage = 1;
+const QV_PAGE_SIZE = 20;
+
+function initQuestionViews() {
+    if (!qvInitialized) {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        document.getElementById('qvDateTo').value = formatDateISO(today);
+        document.getElementById('qvDateFrom').value = formatDateISO(thirtyDaysAgo);
+
+        document.getElementById('qvSearch').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { qvPage = 1; loadQuestionViews(); }
+        });
+
+        qvInitialized = true;
+    }
+    qvPage = 1;
+    loadQuestionViews();
+}
+
+async function loadQuestionViews() {
+    const dateFrom = document.getElementById('qvDateFrom').value;
+    const dateTo = document.getElementById('qvDateTo').value;
+    const search = document.getElementById('qvSearch').value.trim();
+
+    if (!dateFrom || !dateTo) {
+        showToast('조회 기간을 선택해주세요.', 'warning');
+        return;
+    }
+
+    let companyParam = '';
+    if (currentRole === 'super_admin') {
+        const companyFilter = document.getElementById('companyFilter');
+        if (companyFilter && companyFilter.value) {
+            companyParam = '&company_id=' + companyFilter.value;
+        }
+    }
+
+    const searchParam = search ? '&search=' + encodeURIComponent(search) : '';
+    const query = `?from=${dateFrom}&to=${dateTo}&page=${qvPage}&size=${QV_PAGE_SIZE}${searchParam}${companyParam}`;
+
+    try {
+        const data = await apiGet('/stats/question-views' + query);
+        renderQvSummary(data);
+        renderQvChart(data);
+        renderQvTable(data);
+        renderQvPagination(data);
+    } catch (e) {
+        console.error('Question views load error:', e);
+        showToast('질문 조회 데이터를 불러오는데 실패했습니다.', 'error');
+        document.getElementById('qvTableBody').innerHTML = '';
+        document.getElementById('qvEmptyState').style.display = '';
+        document.getElementById('qvPagination').innerHTML = '';
+    }
+}
+
+function renderQvSummary(data) {
+    const summary = data.summary || {};
+    document.getElementById('qvTotalQuestions').textContent = (summary.unique_questions || 0).toLocaleString();
+    document.getElementById('qvTotalViews').textContent = (summary.total_views || 0).toLocaleString();
+    document.getElementById('qvAvgViews').textContent = (summary.avg_daily_views || 0).toLocaleString();
+}
+
+function renderQvChart(data) {
+    const dailyTotals = data.daily_totals || [];
+
+    if (qvChartInstance) { qvChartInstance.destroy(); qvChartInstance = null; }
+
+    const labels = dailyTotals.map(d => {
+        const parts = d.date.split('-');
+        return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+    });
+    const viewData = dailyTotals.map(d => d.views || 0);
+
+    const ctx = document.getElementById('qvDailyChart').getContext('2d');
+    qvChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '질문 조회 수',
+                data: viewData,
+                backgroundColor: 'rgba(74, 144, 217, 0.6)',
+                borderColor: '#4A90D9',
+                borderWidth: 1,
+                borderRadius: 4,
+                maxBarThickness: 40,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, cornerRadius: 8 },
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 45 } },
+                y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 }, precision: 0 } },
+            },
+        },
+    });
+}
+
+function renderQvTable(data) {
+    const items = data.items || [];
+    const tbody = document.getElementById('qvTableBody');
+    const emptyState = document.getElementById('qvEmptyState');
+
+    if (!items.length) {
+        tbody.innerHTML = '';
+        emptyState.style.display = '';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    tbody.innerHTML = items.map(item => {
+        const dateParts = (item.date || '').split('-');
+        const dateLabel = dateParts.length === 3
+            ? `${dateParts[0]}.${dateParts[1]}.${dateParts[2]}`
+            : item.date;
+        const category = item.category
+            ? `<span class="badge-category">${escapeHtml(item.category)}</span>`
+            : '<span style="color:var(--gray-400)">-</span>';
+        return `
+            <tr>
+                <td>${dateLabel}</td>
+                <td>${escapeHtml(item.question || '')}</td>
+                <td>${category}</td>
+                <td style="text-align:right;font-weight:600">${(item.view_count || 0).toLocaleString()}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderQvPagination(data) {
+    const totalPages = data.total_pages || 1;
+    const nav = document.getElementById('qvPagination');
+
+    if (totalPages <= 1) { nav.innerHTML = ''; return; }
+
+    let html = '';
+    const maxVisible = 5;
+    let start = Math.max(1, qvPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+    if (qvPage > 1) {
+        html += `<button class="page-btn" onclick="goQvPage(${qvPage - 1})">&laquo;</button>`;
+    }
+    for (let i = start; i <= end; i++) {
+        html += `<button class="page-btn${i === qvPage ? ' active' : ''}" onclick="goQvPage(${i})">${i}</button>`;
+    }
+    if (qvPage < totalPages) {
+        html += `<button class="page-btn" onclick="goQvPage(${qvPage + 1})">&raquo;</button>`;
+    }
+    nav.innerHTML = html;
+}
+
+function goQvPage(page) {
+    qvPage = page;
+    loadQuestionViews();
+}
 
 /* ═══════════════════════════════════════════════
  *  SUBSCRIPTION MANAGEMENT
