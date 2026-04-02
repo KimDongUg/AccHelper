@@ -12,7 +12,7 @@
    ============================================================ */
 
 var KAKAO_CONFIG = {
-    channelUrl: 'https://pf.kakao.com/_xxxxx/chat',
+    channelUrl: 'http://pf.kakao.com/_xhxlpxdX/chat',
     ctas: {
         kakao_intro:            { label: '카카오로 소개자료 받기',   type: 'intro'   },
         kakao_pricing:          { label: '카카오로 요금 안내 받기',  type: 'pricing'  },
