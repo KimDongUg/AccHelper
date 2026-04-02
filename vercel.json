@@ -28,6 +28,9 @@
     { "source": "/privacy.html", "destination": "/privacy.html" },
     { "source": "/terms.html", "destination": "/terms.html" },
     { "source": "/copyright.html", "destination": "/copyright.html" },
-    { "source": "/contact.html", "destination": "/contact.html" }
+    { "source": "/contact.html", "destination": "/contact.html" },
+    { "source": "/landing.html", "destination": "/landing.html" },
+    { "source": "/manager.html", "destination": "/manager.html" },
+    { "source": "/demo.html", "destination": "/demo.html" }
   ]
 }
