@@ -19,8 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.location.href = '/super-admin.html';
                     return;
                 }
-                const billingActive = (res.session && res.session.billing_active);
-                window.location.href = billingActive ? '/admin.html' : '/billing.html';
+                window.location.href = '/admin.html';
                 return;
             }
             // Server says no — clear stale client session
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 AuthSession.save(result.session, remember, jwtToken);
                 loginCard.classList.add('success');
                 const role = result.session.role;
-                const billingActive = result.session.billing_active;
+
                 setTimeout(() => {
                     // Redirect to chat if requested via URL params
                     if (redirectTarget === 'chat') {
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (role === 'super_admin') {
                         window.location.href = '/super-admin.html';
                     } else {
-                        window.location.href = billingActive ? '/admin.html' : '/billing.html';
+                        window.location.href = '/admin.html';
                     }
                 }, 300);
             } else {
