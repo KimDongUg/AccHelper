@@ -11,6 +11,28 @@ let feedbackPage = 1;
 let companiesList = [];
 let companyMap = {};  // id → name
 
+/* 시설관리 회사는 카카오 알림톡 기능을 지원하지 않음 */
+function isFacilityManagementCompany(name) {
+    return typeof name === 'string' && name.indexOf('시설관리') !== -1;
+}
+
+function applyAlimtalkRestriction() {
+    const sess = AuthSession.get();
+    const restricted = isFacilityManagementCompany(sess && sess.companyName);
+    const toggle = document.getElementById('adminAlertToggle');
+    const hint = document.getElementById('adminAlertHint');
+    if (!toggle) return restricted;
+    if (restricted) {
+        toggle.checked = false;
+        toggle.disabled = true;
+        if (hint) hint.style.display = '';
+    } else {
+        toggle.disabled = false;
+        if (hint) hint.style.display = 'none';
+    }
+    return restricted;
+}
+
 /* ═══════════════════════════════════════════════
  *  INIT
  * ═══════════════════════════════════════════════ */
@@ -716,6 +738,7 @@ function openAdminModal() {
     document.getElementById('adminAlertToggle').checked = true;
     document.getElementById('adminPasswordGroup').style.display = '';
     document.getElementById('adminPassword').setAttribute('required', '');
+    applyAlimtalkRestriction();
     document.getElementById('adminModal').classList.add('show');
 }
 
@@ -733,6 +756,7 @@ async function openEditAdminModal(userId) {
         document.getElementById('adminAlertToggle').checked = admin.receive_unanswered_alert !== false;
         document.getElementById('adminPasswordGroup').style.display = 'none';
         document.getElementById('adminPassword').removeAttribute('required');
+        applyAlimtalkRestriction();
         document.getElementById('adminModal').classList.add('show');
     } catch (e) {
         showToast('관리자 정보를 불러올 수 없습니다.', 'error');
@@ -748,6 +772,10 @@ async function saveAdmin() {
     const email = document.getElementById('adminEmail').value.trim();
     if (!email) { showToast('이메일을 입력해 주세요.', 'error'); return; }
 
+    const sess = AuthSession.get();
+    const alimtalkBlocked = isFacilityManagementCompany(sess && sess.companyName);
+    const receiveAlert = alimtalkBlocked ? false : document.getElementById('adminAlertToggle').checked;
+
     try {
         if (adminId) {
             // Update
@@ -757,7 +785,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
-                receive_unanswered_alert: document.getElementById('adminAlertToggle').checked,
+                receive_unanswered_alert: receiveAlert,
                 role: 'admin',
             };
             await apiPut(`/admins/${adminId}`, data);
@@ -773,7 +801,7 @@ async function saveAdmin() {
                 phone: document.getElementById('adminPhone').value.trim() || null,
                 department: document.getElementById('adminDepartment').value.trim() || null,
                 position: document.getElementById('adminPosition').value.trim() || null,
-                receive_unanswered_alert: document.getElementById('adminAlertToggle').checked,
+                receive_unanswered_alert: receiveAlert,
                 role: 'admin',
             };
             await apiPost('/admins', data);
