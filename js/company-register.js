@@ -149,6 +149,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setLoading(registerBtn, true);
 
         try {
+            // 등록 직전 최신 회사번호 재조회 (stale ID 방지)
+            try {
+                const freshId = await apiGet('/companies/public/next-id');
+                companyData.company_id = freshId.next_id;
+            } catch (e) {
+                console.error('최신 회사번호 조회 실패:', e);
+            }
+
             const result = await apiPost('/companies/register', {
                 ...companyData,
                 admin_email: email,
@@ -162,12 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const companyId = result.company_id || '';
-            showSuccess('회사와 관리자 계정이 등록되었습니다. 관리자 승인 후 서비스 이용이 가능합니다. 회사번호: ' + companyId + ' (로그인 시 사용)');
+            const companyId = result.company_id || companyData.company_id || '';
             userForm.reset();
-            setTimeout(() => {
-                window.location.href = '/login.html';
-            }, 1500);
+            alert('🎉 회사 등록이 완료되었습니다!\n\n📌 회사번호: ' + companyId + '\n\n이 번호는 로그인 시 반드시 필요합니다.\n꼭 기억해 주세요!\n\n관리자 승인 후 서비스 이용이 가능합니다.');
+            window.location.href = '/login.html';
         } catch (err) {
             showError(err.message);
         } finally {
