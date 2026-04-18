@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Step 1에서 수집한 회사 정보 보관
     let companyData = {};
 
-    // 회사번호는 서버가 자동 할당하므로 안내 텍스트 표시
-    document.getElementById('companyCode').value = '자동 할당';
-
     function showError(msg) {
         successDiv.classList.remove('show');
         errorMsg.textContent = msg;
