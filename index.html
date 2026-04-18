@@ -72,13 +72,8 @@
             <p class="category-hint">아래 버튼을 클릭하시면 자주 묻는 질문에 대한 답변을 바로 확인할 수 있습니다.</p>
         </div>
 
-        <!-- Quick category questions -->
-        <div class="category-filters" role="toolbar" aria-label="빠른 질문">
-            <button class="quick-btn" data-question="이주정산이란?">이주정산</button>
-            <button class="quick-btn" data-question="입주신고 시 필요한 서류는?">입주신고</button>
-            <button class="quick-btn" data-question="관리비 납부 방법과 기한은 어떻게 되나요?">관리비</button>
-            <button class="quick-btn" data-question="관리사무소 업무 시간과 연락처를 알려주세요.">기타</button>
-        </div>
+        <!-- Quick category questions (dynamically populated by js/index.js) -->
+        <div class="category-filters" role="toolbar" aria-label="빠른 질문"></div>
 
         <!-- Chat messages -->
         <div class="chat-messages" id="chatMessages" role="log" aria-label="채팅 메시지" aria-live="polite">
