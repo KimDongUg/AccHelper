@@ -40,15 +40,22 @@
 
 .notice-text-link {
     display: block;
+    width: 100%;
+    background: none;
+    border: none;
     font-size: var(--text-base, 1rem);
     font-weight: 600;
     color: #e65100;
     text-decoration: underline;
+    text-decoration-style: dashed;
     margin-bottom: 0.5rem;
     line-height: 1.6;
+    cursor: pointer;
+    padding: 0;
+    text-align: center;
 }
 
-.notice-text-link:hover { color: #bf360c; }
+.notice-text-link:hover { color: #bf360c; text-decoration-style: solid; }
 
 .notice-img {
     display: block;

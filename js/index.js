@@ -304,7 +304,7 @@ function showChat(companyData) {
                 // 텍스트 (링크 포함 가능)
                 var safeText = companyData.notice_text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
                 if (companyData.notice_text_link) {
-                    html += '<a href="' + escapeAttr(companyData.notice_text_link) + '" target="_blank" rel="noopener" class="notice-text-link">' + safeText + '</a>';
+                    html += '<button type="button" class="notice-text-link" data-question="' + escapeAttr(companyData.notice_text_link) + '">' + safeText + '</button>';
                 } else {
                     html += '<p class="notice-text">' + safeText + '</p>';
                 }
@@ -406,6 +406,14 @@ function showChat(companyData) {
             sendMessage(btn.dataset.question);
         });
     });
+
+    // 공지사항 텍스트 클릭 → 질문 전송
+    var noticeBtn = document.querySelector('.notice-text-link');
+    if (noticeBtn && noticeBtn.dataset.question) {
+        noticeBtn.addEventListener('click', () => {
+            sendMessage(noticeBtn.dataset.question);
+        });
+    }
 
     // Send button
     sendBtn.addEventListener('click', () => {
