@@ -1304,14 +1304,6 @@ async function loadCompanySettings() {
         document.getElementById('noticeActiveLabel').textContent = noticeActive ? '활성' : '비활성';
         document.getElementById('noticeText').value = company.notice_text || '';
         document.getElementById('noticeTextLink').value = company.notice_text_link || '';
-        document.getElementById('noticeImageUrl').value = company.notice_image_url || '';
-        document.getElementById('noticeImageLink').value = company.notice_image_link || '';
-        if (company.notice_image_url) {
-            document.getElementById('noticeImgPreview').src = company.notice_image_url;
-            document.getElementById('noticeImgPreviewWrap').style.display = 'block';
-        } else {
-            document.getElementById('noticeImgPreviewWrap').style.display = 'none';
-        }
 
         // Load categories
         const wrap = document.getElementById('categoryItemsWrap');
@@ -1362,8 +1354,6 @@ async function saveCompanySettings() {
     const noticeActive = document.getElementById('noticeActive').checked;
     const noticeText = document.getElementById('noticeText').value.trim();
     const noticeTextLink = document.getElementById('noticeTextLink').value.trim();
-    const noticeImageUrl = document.getElementById('noticeImageUrl').value.trim();
-    const noticeImageLink = document.getElementById('noticeImageLink').value.trim();
 
     const saveBtn = document.getElementById('companySettingsSaveBtn');
     saveBtn.disabled = true;
@@ -1377,8 +1367,6 @@ async function saveCompanySettings() {
             notice_active: noticeActive,
             notice_text: noticeText || null,
             notice_text_link: noticeTextLink || null,
-            notice_image_url: noticeImageUrl || null,
-            notice_image_link: noticeImageLink || null,
         });
 
         if (companyName) {
@@ -1409,8 +1397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 async function uploadNoticeImage(input) {
     const file = input.files[0];
     if (!file) return;
-    const MAX_MB = 5;
-    if (file.size > MAX_MB * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
         showToast('이미지는 5MB 이하만 업로드 가능합니다.', 'error');
         input.value = '';
         return;
@@ -1421,23 +1408,16 @@ async function uploadNoticeImage(input) {
         const formData = new FormData();
         formData.append('file', file);
         const result = await apiFetch('/upload/image', { method: 'POST', body: formData });
-        document.getElementById('noticeImageUrl').value = result.url;
-        document.getElementById('noticeImgPreview').src = result.url;
-        document.getElementById('noticeImgPreviewWrap').style.display = 'block';
+        const alt = file.name.replace(/\.[^.]+$/, '');
+        insertAtCursor('noticeText', `![${alt}](${result.url})`);
         statusEl.textContent = '';
-        showToast('이미지가 업로드되었습니다.', 'success');
+        showToast('이미지가 삽입되었습니다.', 'success');
     } catch (e) {
         showToast('이미지 업로드 실패: ' + e.message, 'error');
         statusEl.textContent = '';
     } finally {
         input.value = '';
     }
-}
-
-function removeNoticeImage() {
-    document.getElementById('noticeImageUrl').value = '';
-    document.getElementById('noticeImgPreview').src = '';
-    document.getElementById('noticeImgPreviewWrap').style.display = 'none';
 }
 
 /* ═══════════════════════════════════════════════

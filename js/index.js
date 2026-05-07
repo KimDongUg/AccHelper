@@ -302,20 +302,26 @@ function showChat(companyData) {
                 var noticeContent = document.getElementById('noticeContent');
                 var html = '';
                 // 텍스트 (링크 포함 가능)
-                var safeText = companyData.notice_text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
-                if (companyData.notice_text_link) {
-                    html += '<button type="button" class="notice-text-link" data-question="' + escapeAttr(companyData.notice_text_link) + '">' + safeText + '</button>';
-                } else {
-                    html += '<p class="notice-text">' + safeText + '</p>';
+                // 마크다운 이미지 ![alt](url) → <img> 변환 후 나머지 텍스트 escape
+                var rawText = companyData.notice_text;
+                var rendered = '';
+                var imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+                var lastIndex = 0, m;
+                while ((m = imgRegex.exec(rawText)) !== null) {
+                    var before = rawText.slice(lastIndex, m.index)
+                        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                    if (before.trim()) rendered += before;
+                    rendered += '<img src="' + escapeAttr(m[2]) + '" alt="' + escapeAttr(m[1]) + '" class="notice-img">';
+                    lastIndex = m.index + m[0].length;
                 }
-                // 이미지 (링크 포함 가능)
-                if (companyData.notice_image_url) {
-                    var imgTag = '<img src="' + escapeAttr(companyData.notice_image_url) + '" alt="공지 이미지" class="notice-img">';
-                    if (companyData.notice_image_link) {
-                        html += '<a href="' + escapeAttr(companyData.notice_image_link) + '" target="_blank" rel="noopener" class="notice-img-link">' + imgTag + '</a>';
-                    } else {
-                        html += imgTag;
-                    }
+                var tail = rawText.slice(lastIndex)
+                    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                if (tail.trim()) rendered += tail;
+
+                if (companyData.notice_text_link) {
+                    html += '<button type="button" class="notice-text-link" data-question="' + escapeAttr(companyData.notice_text_link) + '">' + rendered + '</button>';
+                } else {
+                    html += '<div class="notice-text">' + rendered + '</div>';
                 }
                 noticeContent.innerHTML = html;
                 noticeArea.style.display = '';
