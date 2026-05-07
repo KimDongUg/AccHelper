@@ -13,6 +13,55 @@
     padding: var(--space-lg) 0 var(--space-md);
 }
 
+/* ── 공지사항 ── */
+.notice-area {
+    text-align: center;
+}
+
+.notice-content {
+    display: inline-block;
+    max-width: 560px;
+    width: 100%;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.notice-text {
+    font-size: var(--text-base, 1rem);
+    font-weight: 600;
+    color: #5d4037;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.notice-text-link {
+    display: block;
+    font-size: var(--text-base, 1rem);
+    font-weight: 600;
+    color: #e65100;
+    text-decoration: underline;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.notice-text-link:hover { color: #bf360c; }
+
+.notice-img {
+    display: block;
+    max-height: 200px;
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 0.5rem auto 0;
+    object-fit: contain;
+}
+
+.notice-img-link { display: block; }
+.notice-img-link:hover .notice-img { opacity: 0.88; }
+
 .chat-hero h1 {
     font-size: var(--text-xl);
     font-weight: var(--font-bold);

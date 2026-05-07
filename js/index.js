@@ -1,3 +1,7 @@
+function escapeAttr(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 /* ── Site Intro (처음 방문 시에만 표시, 팝업 닫힌 후 시작) ── */
 (function () {
     const intro = document.querySelector('.site-intro');
@@ -287,6 +291,39 @@ function showChat(companyData) {
         const greeting = document.getElementById('greetingCompanyName');
         if (hero) hero.textContent = companyName;
         if (greeting) greeting.textContent = companyName;
+
+        // 공지사항 표시
+        var noticeActive = companyData && companyData.notice_active;
+        var heroDefault = document.getElementById('heroDefault');
+        var noticeArea = document.getElementById('noticeArea');
+        if (noticeActive && companyData.notice_text) {
+            if (heroDefault) heroDefault.style.display = 'none';
+            if (noticeArea) {
+                var noticeContent = document.getElementById('noticeContent');
+                var html = '';
+                // 텍스트 (링크 포함 가능)
+                var safeText = companyData.notice_text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+                if (companyData.notice_text_link) {
+                    html += '<a href="' + escapeAttr(companyData.notice_text_link) + '" target="_blank" rel="noopener" class="notice-text-link">' + safeText + '</a>';
+                } else {
+                    html += '<p class="notice-text">' + safeText + '</p>';
+                }
+                // 이미지 (링크 포함 가능)
+                if (companyData.notice_image_url) {
+                    var imgTag = '<img src="' + escapeAttr(companyData.notice_image_url) + '" alt="공지 이미지" class="notice-img">';
+                    if (companyData.notice_image_link) {
+                        html += '<a href="' + escapeAttr(companyData.notice_image_link) + '" target="_blank" rel="noopener" class="notice-img-link">' + imgTag + '</a>';
+                    } else {
+                        html += imgTag;
+                    }
+                }
+                noticeContent.innerHTML = html;
+                noticeArea.style.display = '';
+            }
+        } else {
+            if (heroDefault) heroDefault.style.display = '';
+            if (noticeArea) noticeArea.style.display = 'none';
+        }
 
         // 업체별 커스텀 설정: API 응답 우선, 없으면 하드코딩 기본값
         var apiGreeting = companyData && companyData.greeting_text;

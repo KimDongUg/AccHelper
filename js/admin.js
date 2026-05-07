@@ -1298,6 +1298,21 @@ async function loadCompanySettings() {
         document.getElementById('dashChatbotUrl').value = getCompanyChatbotUrl() || '';
         document.getElementById('dashGreeting').value = company.greeting_text || '';
 
+        // Load notice
+        const noticeActive = !!company.notice_active;
+        document.getElementById('noticeActive').checked = noticeActive;
+        document.getElementById('noticeActiveLabel').textContent = noticeActive ? '활성' : '비활성';
+        document.getElementById('noticeText').value = company.notice_text || '';
+        document.getElementById('noticeTextLink').value = company.notice_text_link || '';
+        document.getElementById('noticeImageUrl').value = company.notice_image_url || '';
+        document.getElementById('noticeImageLink').value = company.notice_image_link || '';
+        if (company.notice_image_url) {
+            document.getElementById('noticeImgPreview').src = company.notice_image_url;
+            document.getElementById('noticeImgPreviewWrap').style.display = 'block';
+        } else {
+            document.getElementById('noticeImgPreviewWrap').style.display = 'none';
+        }
+
         // Load categories
         const wrap = document.getElementById('categoryItemsWrap');
         wrap.innerHTML = '';
@@ -1344,6 +1359,11 @@ async function saveCompanySettings() {
     const companyAddress = document.getElementById('dashCompanyAddress').value.trim();
     const greetingText = document.getElementById('dashGreeting').value.trim();
     const categories = getCategoryItems();
+    const noticeActive = document.getElementById('noticeActive').checked;
+    const noticeText = document.getElementById('noticeText').value.trim();
+    const noticeTextLink = document.getElementById('noticeTextLink').value.trim();
+    const noticeImageUrl = document.getElementById('noticeImageUrl').value.trim();
+    const noticeImageLink = document.getElementById('noticeImageLink').value.trim();
 
     const saveBtn = document.getElementById('companySettingsSaveBtn');
     saveBtn.disabled = true;
@@ -1354,6 +1374,11 @@ async function saveCompanySettings() {
             address: companyAddress || null,
             greeting_text: greetingText || null,
             categories: categories.length > 0 ? categories : null,
+            notice_active: noticeActive,
+            notice_text: noticeText || null,
+            notice_text_link: noticeTextLink || null,
+            notice_image_url: noticeImageUrl || null,
+            notice_image_link: noticeImageLink || null,
         });
 
         if (companyName) {
@@ -1367,6 +1392,52 @@ async function saveCompanySettings() {
     } finally {
         saveBtn.disabled = false;
     }
+}
+
+/* ═══════════════════════════════════════════════
+ *  NOTICE — 공지사항 이미지 업로드
+ * ═══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('noticeActive');
+    if (toggle) {
+        toggle.addEventListener('change', function () {
+            document.getElementById('noticeActiveLabel').textContent = this.checked ? '활성' : '비활성';
+        });
+    }
+});
+
+async function uploadNoticeImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const MAX_MB = 5;
+    if (file.size > MAX_MB * 1024 * 1024) {
+        showToast('이미지는 5MB 이하만 업로드 가능합니다.', 'error');
+        input.value = '';
+        return;
+    }
+    const statusEl = document.getElementById('noticeImgStatus');
+    statusEl.textContent = '업로드 중...';
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const result = await apiFetch('/upload/image', { method: 'POST', body: formData });
+        document.getElementById('noticeImageUrl').value = result.url;
+        document.getElementById('noticeImgPreview').src = result.url;
+        document.getElementById('noticeImgPreviewWrap').style.display = 'block';
+        statusEl.textContent = '';
+        showToast('이미지가 업로드되었습니다.', 'success');
+    } catch (e) {
+        showToast('이미지 업로드 실패: ' + e.message, 'error');
+        statusEl.textContent = '';
+    } finally {
+        input.value = '';
+    }
+}
+
+function removeNoticeImage() {
+    document.getElementById('noticeImageUrl').value = '';
+    document.getElementById('noticeImgPreview').src = '';
+    document.getElementById('noticeImgPreviewWrap').style.display = 'none';
 }
 
 /* ═══════════════════════════════════════════════
