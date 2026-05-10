@@ -157,6 +157,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Show Excel export button for super_admin
         const exportBtn = document.getElementById('exportQaExcelBtn');
         if (exportBtn) exportBtn.style.display = '';
+
+        // Show ERP collector card for super_admin
+        const collectorCard = document.getElementById('collectorCard');
+        if (collectorCard) collectorCard.style.display = '';
     }
 
     // Hide edit buttons for viewer
