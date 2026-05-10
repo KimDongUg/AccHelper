@@ -97,6 +97,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Show admin tab for admin/super_admin
     if (currentRole === 'admin' || currentRole === 'super_admin') {
         document.getElementById('tabAdmins').style.display = '';
+
+        // Show ERP collector card for admin and super_admin
+        const collectorCard = document.getElementById('collectorCard');
+        if (collectorCard) collectorCard.style.display = '';
     }
 
     // Show super admin link for super_admin
@@ -158,9 +162,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const exportBtn = document.getElementById('exportQaExcelBtn');
         if (exportBtn) exportBtn.style.display = '';
 
-        // Show ERP collector card for super_admin
-        const collectorCard = document.getElementById('collectorCard');
-        if (collectorCard) collectorCard.style.display = '';
     }
 
     // Hide edit buttons for viewer
