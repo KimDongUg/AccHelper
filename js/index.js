@@ -316,12 +316,16 @@ function showChat(companyData) {
                 var rendered = '';
                 var imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
                 var lastIndex = 0, m;
+                var collectedImgs = [];
                 while ((m = imgRegex.exec(rawText)) !== null) {
                     var before = rawText.slice(lastIndex, m.index)
                         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
                     if (before.trim()) rendered += before;
-                    rendered += '<img src="' + escapeAttr(m[2]) + '" alt="' + escapeAttr(m[1]) + '" class="notice-img">';
+                    collectedImgs.push('<img src="' + escapeAttr(m[2]) + '" alt="' + escapeAttr(m[1]) + '" class="notice-img">');
                     lastIndex = m.index + m[0].length;
+                }
+                if (collectedImgs.length > 0) {
+                    rendered += '<div class="notice-img-row">' + collectedImgs.join('') + '</div>';
                 }
                 var tail = rawText.slice(lastIndex)
                     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
