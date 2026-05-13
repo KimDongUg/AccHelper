@@ -81,10 +81,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const displayName = sess.full_name || sess.email || sess.username || '';
     document.getElementById('adminUsername').textContent = displayName + '님';
 
-    // 챗봇 버튼 → 해당 업체 챗봇으로 이동
+    // 챗봇 버튼 + 로고 → 해당 업체 챗봇으로 이동
     var chatBotLink = document.getElementById('chatBotLink');
-    if (chatBotLink && sess.company_id) {
-        chatBotLink.href = '/?company=' + sess.company_id;
+    var headerLogo = document.getElementById('headerLogo');
+    if (sess.company_id) {
+        var chatbotHref = '/?company=' + sess.company_id;
+        if (chatBotLink) chatBotLink.href = chatbotHref;
+        if (headerLogo) headerLogo.href = chatbotHref;
     }
 
     // Role badge
