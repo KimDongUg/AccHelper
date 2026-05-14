@@ -910,18 +910,35 @@ function onFeedbackEdit(idx) {
 }
 
 async function editQaFromFeedback(qaId, feedbackId, question) {
-    try {
-        if (qaId) {
-            await openEditModal(qaId);
-        } else {
-            openCreateModal();
-            if (question) {
-                document.getElementById('modalQuestion').value = question;
-                onQuestionInput();
+    let modalOpened = false;
+
+    if (qaId) {
+        try {
+            // openEditModal은 내부에서 에러를 삼키므로 직접 fetch 후 처리
+            const qa = await apiGet(`/qa/${qaId}`);
+            document.getElementById('modalTitle').textContent = 'Q&A 수정';
+            document.getElementById('editQaId').value = qa.qa_id;
+            document.getElementById('modalCategory').value = qa.category;
+            document.getElementById('modalQuestion').value = qa.question;
+            document.getElementById('modalAnswer').value = qa.answer;
+            document.getElementById('modalKeywords').value = qa.keywords || '';
+            document.getElementById('modalActive').checked = qa.is_active;
+            resetModalHints();
+            const companyGroup = document.getElementById('modalCompanyGroup');
+            if (currentRole === 'super_admin' && companiesList.length > 0) {
+                companyGroup.style.display = '';
+                document.getElementById('modalCompany').value = qa.company_id;
+            } else {
+                companyGroup.style.display = 'none';
             }
+            document.getElementById('qaModal').classList.add('show');
+            modalOpened = true;
+        } catch {
+            // Q&A 조회 실패 시 새 Q&A 생성으로 전환
         }
-    } catch (e) {
-        // openEditModal 실패 시 새 Q&A 생성으로 전환
+    }
+
+    if (!modalOpened) {
         openCreateModal();
         if (question) {
             document.getElementById('modalQuestion').value = question;

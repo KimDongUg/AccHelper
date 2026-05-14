@@ -242,6 +242,12 @@ async function validateAndStartChat(code) {
             }
         }
 
+        // 우리아파트 당근 (관리비 메뉴 완성 후 오픈 예정 — 주석 해제하여 활성화)
+        // var daangnNavLink = document.getElementById('daangnNavLink');
+        // if (daangnNavLink) {
+        //     daangnNavLink.style.display = company.building_type === '아파트' ? '' : 'none';
+        // }
+
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company);
     } catch (err) {
