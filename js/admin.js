@@ -282,6 +282,7 @@ function switchTab(tab) {
     if (tab === 'statistics') initStatistics();
     if (tab === 'questionViews') initQuestionViews();
     if (tab === 'subscription') loadSubscriptionTab();
+    if (tab === 'residents') loadResidents();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1338,6 +1339,12 @@ async function loadCompanySettings() {
 
         // Sync category dropdowns
         syncCategoryDropdowns(categories);
+
+        // 아파트 타입이면 입주민 관리 탭 표시
+        if (company.building_type === '아파트') {
+            const tabResidents = document.getElementById('tabResidents');
+            if (tabResidents) tabResidents.style.display = '';
+        }
     } catch (e) {
         const sess = AuthSession.get();
         document.getElementById('dashCompanyName').value = sess?.companyName || '';
@@ -2805,5 +2812,66 @@ async function cancelSubscription() {
         }
     } catch (e) {
         showToast('해지 오류: ' + (e.message || e), 'error');
+    }
+}
+
+// ── 입주민 관리 ───────────────────────────────────────────────────────────────
+
+async function loadResidents() {
+    const tbody = document.getElementById('residentsTableBody');
+    const empty = document.getElementById('residentsEmpty');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-400)">불러오는 중...</td></tr>';
+    try {
+        const list = await apiGet('/market/admin/residents');
+        if (!list || list.length === 0) {
+            tbody.innerHTML = '';
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+        if (empty) empty.style.display = 'none';
+        tbody.innerHTML = list.map(r => `
+            <tr>
+                <td>${escapeHtml(r.building)}</td>
+                <td>${escapeHtml(r.unit_number)}</td>
+                <td>${escapeHtml(r.name || '-')}</td>
+                <td>${escapeHtml(r.phone || '-')}</td>
+                <td style="font-size:12px;color:var(--gray-500)">${r.registered_at ? r.registered_at.replace('T', ' ').slice(0, 16) : '-'}</td>
+                <td>${r.is_verified
+                    ? '<span style="color:var(--primary);font-size:12px;font-weight:600">승인됨</span>'
+                    : '<span style="color:var(--warning);font-size:12px;font-weight:600">확인대기</span>'
+                }</td>
+                <td>
+                    <div style="display:flex;gap:6px">
+                        ${!r.is_verified ? `<button class="btn btn-sm btn-primary" onclick="verifyResident(${r.id})">승인</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteResident(${r.id}, '${escapeHtml(r.building)} ${escapeHtml(r.unit_number)}')">삭제</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--danger)">${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+
+async function verifyResident(id) {
+    if (!confirm('이 입주민을 승인하시겠습니까?')) return;
+    try {
+        await apiPatch(`/market/admin/residents/${id}/verify`, {});
+        showToast('승인되었습니다.', 'success');
+        loadResidents();
+    } catch (e) {
+        showToast('오류: ' + e.message, 'error');
+    }
+}
+
+async function deleteResident(id, label) {
+    if (!confirm(`[${label}] 입주민을 삭제하시겠습니까?\n허위 등록으로 판단될 경우 삭제하세요.`)) return;
+    try {
+        await apiDelete(`/market/admin/residents/${id}`);
+        showToast('삭제되었습니다.', 'success');
+        loadResidents();
+    } catch (e) {
+        showToast('오류: ' + e.message, 'error');
     }
 }

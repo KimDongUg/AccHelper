@@ -201,6 +201,7 @@
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="statistics" id="tabStatistics">통계</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="questionViews" id="tabQuestionViews">질문 조회 상세</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="subscription" id="tabSubscription">구독</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="residents" id="tabResidents" style="display:none">입주민 관리</button>
         </div>
 
         <!-- Tab: Q&A Management -->
@@ -605,6 +606,38 @@
                         <p>결제 내역이 없습니다.</p>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Tab: 입주민 관리 -->
+        <div class="tab-content" id="tabContentResidents" role="tabpanel" style="display:none">
+            <div style="padding:16px 0 8px;display:flex;align-items:center;justify-content:space-between">
+                <h3 style="font-size:15px;font-weight:700">자가등록 입주민 목록</h3>
+                <button class="btn btn-outline btn-sm" onclick="loadResidents()">새로고침</button>
+            </div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">
+                당근마켓에서 자가등록한 입주민입니다. 실제 입주민 여부를 확인 후 허위 등록이면 삭제하세요.
+            </p>
+            <div class="table-wrap">
+                <table class="qa-table" id="residentsTable" aria-label="자가등록 입주민 목록">
+                    <thead>
+                        <tr>
+                            <th>동</th>
+                            <th>호수</th>
+                            <th>이름</th>
+                            <th>전화번호</th>
+                            <th>등록일시</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="residentsTableBody">
+                        <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-400)">불러오는 중...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="residentsEmpty" class="empty-state" style="display:none">
+                <p>자가등록 입주민이 없습니다.</p>
             </div>
         </div>
     </main>
