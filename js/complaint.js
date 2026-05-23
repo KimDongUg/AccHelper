@@ -110,12 +110,9 @@ function initCpHeader() {
     const cpNav = document.getElementById('cpComplaintNav');
     if (cpNav && companyId) cpNav.href = `/complaint.html?company=${companyId}`;
 
-    // 당근 링크 표시 여부
-    const daangnNav = document.getElementById('cpDaangnNav');
-    if (daangnNav) {
-        if (companyName || companyId) daangnNav.style.display = '';
-        else daangnNav.style.display = 'none';
-    }
+    // 당근 링크 — 부과내역서 완성 전까지 비활성화
+    // const daangnNav = document.getElementById('cpDaangnNav');
+    // if (daangnNav) daangnNav.style.display = companyName || companyId ? '' : 'none';
 
     // 관리자 버튼 처리
     const loginBtn = document.getElementById('cpHeaderLoginLink');
