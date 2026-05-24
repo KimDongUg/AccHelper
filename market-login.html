@@ -139,10 +139,13 @@ async function doLogin() {
     errEl.style.display = 'none';
 
     try {
+        const companyId = sessionStorage.getItem('market_company_id') ||
+                          sessionStorage.getItem('complaint_company_id') || null;
         const res = await fetch('/api/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ building, unit_number: unit, name, phone }),
+            body: JSON.stringify({ building, unit_number: unit, name, phone,
+                                   company_id: companyId ? parseInt(companyId) : null }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || '인증 실패');
