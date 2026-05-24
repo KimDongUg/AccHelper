@@ -2970,7 +2970,7 @@ async function loadMarketPosts() {
             return;
         }
 
-        tbody.innerHTML = data.items.map(p => {
+        if (tbody) tbody.innerHTML = data.items.map(p => {
             const hiddenBadge = p.is_hidden
                 ? `<span style="background:#FFEBEE;color:#C62828;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600">숨김</span>`
                 : `<span style="background:#E8F5E9;color:#2E7D32;padding:2px 7px;border-radius:4px;font-size:11px">공개</span>`;
@@ -3017,7 +3017,14 @@ async function loadMarketPosts() {
 
         renderMktPagination(data.page, data.pages);
     } catch (e) {
+        console.error('[MARKET] 게시글 로드 실패:', e);
         showToast('당근 게시글 로드 실패: ' + e.message, 'error');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#c62828;font-size:13px">
+                ⚠️ 게시글을 불러오지 못했습니다.<br>
+                <span style="font-size:11px;color:var(--gray-500)">${escapeHtml(e.message)}</span>
+            </td></tr>`;
+        }
     } finally {
         if (loading) loading.classList.remove('show');
     }
