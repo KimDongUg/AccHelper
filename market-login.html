@@ -4,9 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>우리아파트 당근 — 입주민 인증</title>
+<link rel="icon" type="image/png" href="/assets/images/logo.png">
+<link rel="stylesheet" href="/css/common.css?v=13">
 <link rel="stylesheet" href="/css/market.css?v=1">
 </head>
 <body>
+
+<header class="header" role="banner">
+  <div class="header-left">
+    <a href="/" class="header-logo" aria-label="AI Helper 홈으로 이동">
+      <img src="/assets/images/logo.png" alt="AI Helper 로고">
+    </a>
+    <nav class="header-nav">
+      <a href="/"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="#" id="mktComplaintNav" style="display:none"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
+      <a href="/market-login.html" class="active"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <span id="mktHeaderCompanyLabel" class="company-label" style="display:none"></span>
+    <a href="/login.html" class="btn btn-outline btn-sm" id="mktHeaderLoginLink" data-short="🔐">관리자 로그인</a>
+    <a href="/admin.html" class="btn btn-outline btn-sm" id="mktHeaderAdminLink" data-short="관리자" style="display:none">관리자</a>
+  </div>
+</header>
 
 <div class="mkt-header">
   <button class="mkt-back" onclick="history.back()">←</button>
@@ -31,7 +51,7 @@
     </div>
     <div>
       <label>이름 <span style="color:#c62828">*</span></label>
-      <input class="mkt-input" id="name" type="text" placeholder="입주자 또는 소유주명" required>
+      <input class="mkt-input" id="name" type="text" placeholder="입주자명" required>
     </div>
     <div>
       <label>전화번호 <span style="color:#c62828">*</span></label>
@@ -45,13 +65,35 @@
 
   <p style="text-align:center;font-size:12px;color:#aaa;margin-top:20px">
     관리비 납부 시 등록한 정보와 동일하게 입력해주세요.<br>
-    등록된 정보가 없으면 신규 등록 후 관리자 확인 절차가 진행됩니다.<br>
-    동/호수만 게시판에 표시됩니다.
+    이름·전화번호는 서버에 저장되지 않으며 동/호수만 게시됩니다.
   </p>
 </div>
 
 <script src="/js/market.js?v=1"></script>
 <script>
+// ── 공통 헤더 초기화 ─────────────────────────────────────────────────────────
+(function () {
+    var companyName = sessionStorage.getItem('market_company_name') || '';
+    var companyId   = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+
+    var labelEl = document.getElementById('mktHeaderCompanyLabel');
+    if (labelEl && companyName) { labelEl.textContent = companyName; labelEl.style.display = ''; }
+
+    var complaintNav = document.getElementById('mktComplaintNav');
+    if (complaintNav && companyId) { complaintNav.href = '/complaint.html?company=' + companyId; complaintNav.style.display = ''; }
+
+    try {
+        var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
+        var sess = authRaw ? JSON.parse(authRaw) : null;
+        var loginBtn = document.getElementById('mktHeaderLoginLink');
+        var adminBtn = document.getElementById('mktHeaderAdminLink');
+        if (sess && sess.isLoggedIn && sess.token) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (adminBtn) { adminBtn.style.display = ''; adminBtn.textContent = '관리자 (' + (sess.fullName || sess.username || '') + ')'; }
+        }
+    } catch (e) {}
+})();
+
 // 이미 로그인된 경우 바로 이동
 if (MarketAuth.getToken()) location.href = '/market.html';
 
@@ -92,26 +134,21 @@ async function doLogin() {
     btn.textContent = '인증 중...';
     errEl.style.display = 'none';
 
-    const companyId = parseInt(sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '0') || null;
-
     try {
         const res = await fetch('/api/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ building, unit_number: unit, name, phone, company_id: companyId }),
+            body: JSON.stringify({ building, unit_number: unit, name, phone }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || '인증 실패');
 
+        // 이름도 세션에 저장 (수정 시 본인 확인용)
         MarketAuth.save(data.token, {
             unit: data.unit,
             building: data.building,
             name: name,
         });
-
-        if (data.is_new_registration) {
-            alert('등록된 입주민 정보가 없어 신규 등록되었습니다.\n관리자 확인 후 이상이 없으면 정상 이용 가능합니다.');
-        }
         location.href = '/market.html';
     } catch (e) {
         errEl.textContent = e.message;
