@@ -60,13 +60,9 @@ function logout() {
   location.reload();
 }
 
-/** 글쓰기: 인증 없으면 로그인 페이지로 */
+/** 글쓰기: 항상 인증 페이지를 먼저 거침 */
 function goWrite() {
-  if (!MarketAuth.getToken()) {
-    goLogin('/market-write.html');
-    return;
-  }
-  location.href = '/market-write.html';
+  goLogin('/market-write.html');
 }
 
 /** 게시글 클릭: 인증 없으면 로그인 페이지로 */
