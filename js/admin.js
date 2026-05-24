@@ -499,6 +499,7 @@ function renderTable(items) {
             <td>${formatDate(qa.updated_at)}</td>
             <td>
                 <div class="actions">
+                    <button class="btn btn-outline btn-sm" onclick="copyQaLink(${qa.qa_id})" title="챗봇 링크 복사">🔗 링크</button>
                     ${isViewer ? '' : `<button class="btn btn-outline btn-sm" onclick="openEditModal(${qa.qa_id})">수정</button>
                     <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${qa.qa_id}, 'qa')">삭제</button>`}
                 </div>
@@ -531,6 +532,25 @@ function renderPagination(page, pages, total) {
 }
 
 function goToPage(page) { currentPage = page; loadQaList(); }
+
+function copyQaLink(qaId) {
+    const sess = AuthSession.get();
+    const companyId = sess?.company_id || sess?.companyId;
+    const base = location.origin;
+    const url = companyId ? `${base}/?company=${companyId}&qa=${qaId}` : `${base}/?qa=${qaId}`;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('🔗 챗봇 링크가 클립보드에 복사되었습니다.', 'success');
+    }).catch(() => {
+        // 클립보드 API 실패 시 fallback
+        const el = document.createElement('textarea');
+        el.value = url;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast('🔗 챗봇 링크가 복사되었습니다.', 'success');
+    });
+}
 
 async function toggleActive(qaId) {
     if (currentRole === 'viewer') return;
