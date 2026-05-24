@@ -281,8 +281,8 @@ function switchTab(tab) {
     if (tab === 'logs') { logPage = 1; loadActivityLogs(); }
     if (tab === 'statistics') initStatistics();
     if (tab === 'questionViews') initQuestionViews();
+    if (tab === 'complaintPersons') { cpPage = 1; loadComplaintPersons(); }
     if (tab === 'subscription') loadSubscriptionTab();
-    if (tab === 'residents') loadResidents();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1339,12 +1339,6 @@ async function loadCompanySettings() {
 
         // Sync category dropdowns
         syncCategoryDropdowns(categories);
-
-        // 아파트 타입이면 입주민 관리 탭 표시
-        if (company.building_type === '아파트') {
-            const tabResidents = document.getElementById('tabResidents');
-            if (tabResidents) tabResidents.style.display = '';
-        }
     } catch (e) {
         const sess = AuthSession.get();
         document.getElementById('dashCompanyName').value = sess?.companyName || '';
@@ -2815,63 +2809,85 @@ async function cancelSubscription() {
     }
 }
 
-// ── 입주민 관리 ───────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════
+ *  COMPLAINT PERSONS (민원인 목록)
+ * ═══════════════════════════════════════════════ */
+function escHtml(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
-async function loadResidents() {
-    const tbody = document.getElementById('residentsTableBody');
-    const empty = document.getElementById('residentsEmpty');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-400)">불러오는 중...</td></tr>';
+let cpPage = 1;
+const CP_PAGE_SIZE = 20;
+
+async function loadComplaintPersons() {
+    const search = (document.getElementById('cpSearchInput')?.value || '').trim();
+    const sort   = document.getElementById('cpSortSelect')?.value || 'last_complained_at';
+    const loading = document.getElementById('cpTableLoading');
+    const tbody   = document.getElementById('cpTableBody');
+    const empty   = document.getElementById('cpEmptyState');
+
+    if (loading) loading.classList.add('show');
+    if (empty)   empty.style.display = 'none';
+
     try {
-        const list = await apiGet('/market/admin/residents');
-        if (!list || list.length === 0) {
+        const params = new URLSearchParams({ page: cpPage, size: CP_PAGE_SIZE, sort, order: 'desc' });
+        if (search) params.append('search', search);
+
+        const data = await apiGet(`/complaints/persons?${params}`);
+
+        if (!data.items || data.items.length === 0) {
             tbody.innerHTML = '';
             if (empty) empty.style.display = 'block';
+            renderCpPagination(1, 1);
             return;
         }
-        if (empty) empty.style.display = 'none';
-        tbody.innerHTML = list.map(r => `
+
+        tbody.innerHTML = data.items.map(p => `
             <tr>
-                <td>${escapeHtml(r.building)}</td>
-                <td>${escapeHtml(r.unit_number)}</td>
-                <td>${escapeHtml(r.name || '-')}</td>
-                <td>${escapeHtml(r.phone || '-')}</td>
-                <td style="font-size:12px;color:var(--gray-500)">${r.registered_at ? r.registered_at.replace('T', ' ').slice(0, 16) : '-'}</td>
-                <td>${r.is_verified
-                    ? '<span style="color:var(--primary);font-size:12px;font-weight:600">승인됨</span>'
-                    : '<span style="color:var(--warning);font-size:12px;font-weight:600">확인대기</span>'
-                }</td>
-                <td>
-                    <div style="display:flex;gap:6px">
-                        ${!r.is_verified ? `<button class="btn btn-sm btn-primary" onclick="verifyResident(${r.id})">승인</button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteResident(${r.id}, '${escapeHtml(r.building)} ${escapeHtml(r.unit_number)}')">삭제</button>
-                    </div>
+                <td>${escHtml(p.dong)}</td>
+                <td>${escHtml(p.ho)}</td>
+                <td>${escHtml(p.name)}</td>
+                <td>${escHtml(p.phone)}</td>
+                <td style="text-align:center">
+                    <span style="
+                        display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;
+                        background:${p.complaint_count >= 3 ? '#FFEBEE' : '#E8F5E9'};
+                        color:${p.complaint_count >= 3 ? '#C62828' : '#2E7D32'}
+                    ">${p.complaint_count}건</span>
                 </td>
+                <td style="font-size:12px;color:var(--gray-500)">${p.first_complained_at}</td>
+                <td style="font-size:12px;color:var(--gray-500)">${p.last_complained_at}</td>
             </tr>
         `).join('');
+
+        renderCpPagination(data.page, data.pages);
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--danger)">${escapeHtml(e.message)}</td></tr>`;
+        showToast('민원인 목록 로드 실패: ' + e.message, 'error');
+    } finally {
+        if (loading) loading.classList.remove('show');
     }
 }
 
-async function verifyResident(id) {
-    if (!confirm('이 입주민을 승인하시겠습니까?')) return;
-    try {
-        await apiPatch(`/market/admin/residents/${id}/verify`, {});
-        showToast('승인되었습니다.', 'success');
-        loadResidents();
-    } catch (e) {
-        showToast('오류: ' + e.message, 'error');
+function renderCpPagination(page, pages) {
+    const nav = document.getElementById('cpPagination');
+    if (!nav) return;
+    if (pages <= 1) { nav.innerHTML = ''; return; }
+    let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToCpPage(${page - 1})">&laquo;</button>`;
+    const start = Math.max(1, page - 2);
+    const end   = Math.min(pages, page + 2);
+    for (let i = start; i <= end; i++) {
+        html += `<button class="${i === page ? 'active' : ''}" onclick="goToCpPage(${i})">${i}</button>`;
     }
+    html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToCpPage(${page + 1})">&raquo;</button>`;
+    nav.innerHTML = html;
 }
 
-async function deleteResident(id, label) {
-    if (!confirm(`[${label}] 입주민을 삭제하시겠습니까?\n허위 등록으로 판단될 경우 삭제하세요.`)) return;
-    try {
-        await apiDelete(`/market/admin/residents/${id}`);
-        showToast('삭제되었습니다.', 'success');
-        loadResidents();
-    } catch (e) {
-        showToast('오류: ' + e.message, 'error');
-    }
-}
+function goToCpPage(page) { cpPage = page; loadComplaintPersons(); }
+
+// 검색창 Enter 키 지원
+document.addEventListener('DOMContentLoaded', () => {
+    const cpSearchEl = document.getElementById('cpSearchInput');
+    if (cpSearchEl) cpSearchEl.addEventListener('keydown', e => { if (e.key === 'Enter') { cpPage = 1; loadComplaintPersons(); } });
+});
