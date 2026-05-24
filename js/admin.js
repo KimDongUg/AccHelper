@@ -2920,6 +2920,31 @@ document.addEventListener('DOMContentLoaded', () => {
 let mktPage = 1;
 let mktHideTargetId = null;
 
+/* ── 당근 서브탭 전환 ──────────────────────────────────────────────────────── */
+
+let mktCurrentSubTab = 'posts';
+
+function switchMktSubTab(tab) {
+    mktCurrentSubTab = tab;
+    const isPost = tab === 'posts';
+
+    document.getElementById('mktSubPosts').style.display     = isPost ? '' : 'none';
+    document.getElementById('mktSubResidents').style.display = isPost ? 'none' : '';
+
+    const btnP = document.getElementById('mktSubBtnPosts');
+    const btnR = document.getElementById('mktSubBtnResidents');
+
+    btnP.style.borderBottomColor = isPost ? 'var(--primary)' : 'transparent';
+    btnP.style.color             = isPost ? 'var(--primary)' : 'var(--gray-500)';
+    btnP.style.fontWeight        = isPost ? '600' : '500';
+
+    btnR.style.borderBottomColor = !isPost ? 'var(--primary)' : 'transparent';
+    btnR.style.color             = !isPost ? 'var(--primary)' : 'var(--gray-500)';
+    btnR.style.fontWeight        = !isPost ? '600' : '500';
+
+    if (!isPost) loadMarketResidents();
+}
+
 async function loadMarketPosts() {
     const loading = document.getElementById('mktTableLoading');
     const tbody   = document.getElementById('mktTableBody');
@@ -3052,5 +3077,82 @@ async function deleteMktPost(id) {
         await apiDelete(`/market/admin/posts/${id}`);
         showToast('삭제되었습니다.');
         loadMarketPosts();
+    } catch (e) { showToast(e.message, 'error'); }
+}
+
+/* ── 당근회원 관리 ─────────────────────────────────────────────────────────── */
+
+async function loadMarketResidents() {
+    const loading = document.getElementById('mktResTableLoading');
+    const tbody   = document.getElementById('mktResTableBody');
+    const empty   = document.getElementById('mktResEmptyState');
+
+    if (loading) loading.classList.add('show');
+    if (empty)   empty.style.display = 'none';
+    if (tbody)   tbody.innerHTML = '';
+
+    try {
+        const data = await apiGet('/market/admin/residents');
+
+        if (!data || data.length === 0) {
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+
+        tbody.innerHTML = data.map(r => {
+            const typeBadge = r.is_self_registered
+                ? `<span style="background:#E3F2FD;color:#1565C0;padding:2px 7px;border-radius:4px;font-size:11px">자가등록</span>`
+                : `<span style="background:#F3E5F5;color:#6A1B9A;padding:2px 7px;border-radius:4px;font-size:11px">ERP</span>`;
+
+            const verifiedBadge = r.is_verified
+                ? `<span style="background:#E8F5E9;color:#2E7D32;padding:2px 7px;border-radius:4px;font-size:11px">승인</span>`
+                : `<span style="background:#FFF3E0;color:#E65100;padding:2px 7px;border-radius:4px;font-size:11px">대기</span>`;
+
+            const date = r.registered_at
+                ? new Date(r.registered_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+                : '-';
+
+            const approveBtn = !r.is_verified
+                ? `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px" onclick="approveMktResident(${r.id})">승인</button>`
+                : '';
+
+            return `<tr>
+                <td style="font-size:12px;color:var(--gray-400)">${r.id}</td>
+                <td style="font-size:13px;font-weight:500">${escapeHtml(r.building || '')} ${escapeHtml(r.unit_number || '')}</td>
+                <td style="font-size:13px">${escapeHtml(r.name || '-')}</td>
+                <td style="font-size:12px;color:var(--gray-600)">${escapeHtml(r.phone || '-')}</td>
+                <td>${typeBadge}</td>
+                <td>${verifiedBadge}</td>
+                <td style="font-size:11px;color:var(--gray-500)">${date}</td>
+                <td>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap">
+                        ${approveBtn}
+                        <button class="btn btn-sm" style="font-size:11px;padding:2px 8px;background:#555;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="deleteMktResident(${r.id})">삭제</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+
+    } catch (e) {
+        showToast('당근회원 로드 실패: ' + e.message, 'error');
+    } finally {
+        if (loading) loading.classList.remove('show');
+    }
+}
+
+async function approveMktResident(id) {
+    try {
+        await apiPatch(`/market/admin/residents/${id}/verify`, {});
+        showToast('승인되었습니다.');
+        loadMarketResidents();
+    } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function deleteMktResident(id) {
+    if (!confirm('회원을 삭제할까요?\n해당 입주민은 더 이상 당근 서비스를 이용할 수 없습니다.')) return;
+    try {
+        await apiDelete(`/market/admin/residents/${id}`);
+        showToast('삭제되었습니다.');
+        loadMarketResidents();
     } catch (e) { showToast(e.message, 'error'); }
 }
