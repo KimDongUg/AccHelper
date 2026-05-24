@@ -2970,7 +2970,11 @@ async function loadMarketPosts() {
                     <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${previewText}</div>
                     ${reasonRow}
                 </td>
-                <td style="font-size:12px">${escapeHtml(p.writer_unit)}</td>
+                <td style="font-size:12px;line-height:1.6">
+                    <div style="font-weight:500">${escapeHtml((p.writer_building || '') + ' ' + (p.writer_unit || ''))}</div>
+                    ${p.writer_name  ? `<div style="color:var(--gray-600)">${escapeHtml(p.writer_name)}</div>` : ''}
+                    ${p.writer_phone ? `<div style="color:var(--gray-400)">${escapeHtml(p.writer_phone)}</div>` : ''}
+                </td>
                 <td style="text-align:center">${reportBadge}</td>
                 <td>${hiddenBadge}</td>
                 <td style="font-size:11px;color:var(--gray-500)">${date}</td>
