@@ -94,8 +94,12 @@
     } catch (e) {}
 })();
 
-// 이미 로그인된 경우 바로 이동
-if (MarketAuth.getToken()) location.href = '/market.html';
+// 이미 로그인된 경우 바로 이동 (return 파라미터 있으면 그 페이지로)
+(function () {
+  if (!MarketAuth.getToken()) return;
+  const ret = new URLSearchParams(location.search).get('return');
+  location.href = ret || '/market.html';
+})();
 
 // 회사 정보로 동 기본값 설정
 (function () {
@@ -149,7 +153,8 @@ async function doLogin() {
             building: data.building,
             name: name,
         });
-        location.href = '/market.html';
+        const ret = new URLSearchParams(location.search).get('return');
+        location.href = ret || '/market.html';
     } catch (e) {
         errEl.textContent = e.message;
         errEl.style.display = 'block';
