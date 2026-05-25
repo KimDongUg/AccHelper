@@ -16,7 +16,7 @@
       <img src="/assets/images/logo.png" alt="AI Helper 로고">
     </a>
     <nav class="header-nav">
-      <a href="/"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="/" id="mktChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
       <a href="#" id="mktComplaintNav" style="display:none"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
       <a href="/market.html" class="active"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
@@ -65,6 +65,8 @@
     if (labelEl && companyName) { labelEl.textContent = companyName; labelEl.style.display = ''; }
     var complaintNav = document.getElementById('mktComplaintNav');
     if (complaintNav && companyId) { complaintNav.href = '/complaint.html?company=' + companyId; complaintNav.style.display = ''; }
+    var chatbotNav = document.getElementById('mktChatbotNav');
+    if (chatbotNav && companyId) { chatbotNav.href = '/?company=' + companyId; }
     try {
         var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
         var sess = authRaw ? JSON.parse(authRaw) : null;
@@ -173,3 +175,5 @@ loadPosts();
 </script>
 </body>
 </html>
+
+
