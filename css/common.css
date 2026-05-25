@@ -683,12 +683,18 @@ table tr:hover td {
         justify-content: center;
     }
 
-    /* 로고: 캐릭터 이미지만 표시 (AI Helper 텍스트 영역 숨김) */
+    /* 로고: 캐릭터 이미지만 표시 (AI Helper 텍스트 영역 숨김)
+       width 44px: 캐릭터 본체(머리·몸·손) 완전 표시, "AI" 텍스트 완전 차단 */
+    .header-logo {
+        overflow: hidden;
+        max-width: 44px;
+        flex-shrink: 0;
+    }
     .header-logo img {
         height: 48px;
-        width: 48px;
-        object-fit: cover;
-        object-position: left center;
+        width: auto;
+        max-width: none;
+        flex-shrink: 0;
     }
 
     .header-logo span {
