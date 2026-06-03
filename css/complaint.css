@@ -1,9 +1,9 @@
 /* 민원게시판 전용 스타일 */
 :root {
-  --primary: #4F46E5;
-  --primary-dark: #3730A3;
-  --primary-light: #818CF8;
-  --primary-bg: #EEF2FF;
+  --primary: #7DC242;
+  --primary-dark: #4A8A2A;
+  --primary-light: #A8D876;
+  --primary-bg: #EFF8E8;
   --gray-50: #FAFAFA;
   --gray-100: #F5F5F5;
   --gray-200: #EEEEEE;
@@ -13,14 +13,14 @@
   --gray-900: #212121;
   --danger: #E74C3C;
   --radius: 10px;
-  --shadow: 0 1px 6px rgba(79,70,229,0.09);
+  --shadow: 0 1px 6px rgba(0,0,0,0.09);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Noto Sans KR','맑은 고딕', -apple-system, sans-serif;
-  background: #fff;
+  background: var(--gray-50);
   color: var(--gray-900);
   min-height: 100vh;
 }
@@ -32,8 +32,8 @@ body {
 
 /* ── 헤더 ──────────────────────────────────────────────── */
 .cp-header {
-  background: #fff;
-  color: var(--gray-900);
+  background: var(--primary);
+  color: #fff;
   padding: 14px 16px;
   display: flex;
   align-items: center;
@@ -41,11 +41,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid var(--gray-200);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
-.cp-header h1 { font-size: 17px; font-weight: 700; flex: 1; text-align: center; }
-.cp-back { background: none; border: none; color: var(--gray-900); font-size: 20px; cursor: pointer; padding: 0 4px; }
-.cp-header-right { font-size: 20px; color: var(--gray-600); background: none; border: none; cursor: pointer; padding: 0 4px; }
+.cp-header h1 { font-size: 17px; font-weight: 700; flex: 1; }
+.cp-back { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0 4px; }
+.cp-header-right { font-size: 13px; }
 
 /* ── 목록 ──────────────────────────────────────────────── */
 .cp-list { padding: 8px 0; }
@@ -62,15 +62,14 @@ body {
   transition: background 0.12s;
 }
 .cp-item:hover { background: var(--gray-50); }
-.cp-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.cp-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .cp-item-title {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--gray-900);
 }
 .cp-badge {
   font-size: 11px;
@@ -85,44 +84,23 @@ body {
   font-size: 12px;
   color: var(--gray-500);
   display: flex;
-  gap: 6px;
-  margin-bottom: 5px;
+  gap: 8px;
 }
 .cp-item-preview {
   font-size: 13px;
   color: var(--gray-600);
-  margin-top: 3px;
+  margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* 상세 - 작성자 메타 바 */
-.cp-post-info-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--gray-200);
-  font-size: 13px;
-  color: var(--gray-600);
-  background: #fff;
-  flex-wrap: wrap;
-}
-.cp-post-info-bar .info-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.cp-post-info-bar .info-item svg { flex-shrink: 0; }
-.cp-post-info-bar .info-time { margin-left: auto; color: var(--gray-500); }
 .cp-deleted-notice {
   font-size: 13px;
-  color: var(--gray-500);
+  color: var(--danger);
   margin: 0;
-  padding: 14px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--gray-200);
+  padding: 10px 16px;
+  background: #FFEBEE;
+  border-bottom: 1px solid #FFCDD2;
 }
 
 /* FAB 글쓰기 버튼 */
@@ -514,25 +492,25 @@ body {
 /* ── 이미지 표시 (상세) ────────────────────────────────────────────────────── */
 .cp-post-images {
   display: flex;
-  flex-direction: column;
   gap: 10px;
+  flex-wrap: wrap;
   margin-top: 14px;
 }
 .cp-post-images a {
   display: block;
-  width: 100%;
-  border-radius: 12px;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
   overflow: hidden;
-  border: none;
+  border: 1px solid var(--gray-200);
 }
 .cp-post-images img {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
   object-fit: cover;
   transition: opacity 0.15s;
 }
-.cp-post-images a:hover img { opacity: 0.9; }
+.cp-post-images a:hover img { opacity: 0.85; }
 
 /* 토스트 */
 .cp-toast {
