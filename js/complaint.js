@@ -48,7 +48,7 @@ function getDefaultDong(companyName) {
 
 async function cpFetch(path, opts = {}) {
     const headers = { ...(opts.headers || {}) };
-    const token = ComplaintAuth.getToken();
+    const token = ComplaintAuth.getToken() || sessionStorage.getItem('market_token');
     if (token) headers['Authorization'] = `Bearer ${token}`;
     if (opts.body && typeof opts.body === 'object') {
         headers['Content-Type'] = 'application/json';
