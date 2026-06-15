@@ -1345,6 +1345,12 @@ async function loadCompanySettings() {
         document.getElementById('dashChatbotUrl').value = getCompanyChatbotUrl() || '';
         document.getElementById('dashGreeting').value = company.greeting_text || '';
 
+        // Load 관리비 조회 설정
+        const enableFee = !!company.enable_fee;
+        document.getElementById('enableFee').checked = enableFee;
+        document.getElementById('enableFeeLabel').textContent = enableFee ? '활성' : '비활성';
+        document.getElementById('dashCollectorApiKey').value = company.collector_api_key || '';
+
         // Load notice
         const noticeActive = !!company.notice_active;
         document.getElementById('noticeActive').checked = noticeActive;
@@ -1398,6 +1404,7 @@ async function saveCompanySettings() {
     const companyAddress = document.getElementById('dashCompanyAddress').value.trim();
     const greetingText = document.getElementById('dashGreeting').value.trim();
     const categories = getCategoryItems();
+    const enableFee = document.getElementById('enableFee').checked;
     const noticeActive = document.getElementById('noticeActive').checked;
     const noticeText = document.getElementById('noticeText').value.trim();
     const noticeTextLink = document.getElementById('noticeTextLink').value.trim();
@@ -1411,6 +1418,7 @@ async function saveCompanySettings() {
             address: companyAddress || null,
             greeting_text: greetingText || null,
             categories: categories.length > 0 ? categories : null,
+            enable_fee: enableFee,
             notice_active: noticeActive,
             notice_text: noticeText || null,
             notice_text_link: noticeTextLink || null,
@@ -1437,6 +1445,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (toggle) {
         toggle.addEventListener('change', function () {
             document.getElementById('noticeActiveLabel').textContent = this.checked ? '활성' : '비활성';
+        });
+    }
+    const feeToggle = document.getElementById('enableFee');
+    if (feeToggle) {
+        feeToggle.addEventListener('change', function () {
+            document.getElementById('enableFeeLabel').textContent = this.checked ? '활성' : '비활성';
         });
     }
 });
@@ -1680,6 +1694,16 @@ function copyChatbotUrl() {
     if (!url) { showToast('챗봇 주소를 불러올 수 없습니다.', 'error'); return; }
     navigator.clipboard.writeText(url).then(() => {
         showToast('챗봇 주소가 복사되었습니다.', 'success');
+    }).catch(() => {
+        showToast('복사에 실패했습니다.', 'error');
+    });
+}
+
+function copyCollectorApiKey() {
+    const key = document.getElementById('dashCollectorApiKey').value;
+    if (!key) { showToast('API 키를 불러올 수 없습니다.', 'error'); return; }
+    navigator.clipboard.writeText(key).then(() => {
+        showToast('API 키가 복사되었습니다.', 'success');
     }).catch(() => {
         showToast('복사에 실패했습니다.', 'error');
     });
