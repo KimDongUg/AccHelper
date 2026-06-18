@@ -149,7 +149,7 @@ function _avgLabel(avg) {
 }
 
 /* F-03 사용량 카드 */
-const _FC_USAGE_AVG_KEY = { '전기': 'electricity_kwh', '수도': 'water_ton', '온수': 'hotwater_ton' };
+const _FC_USAGE_AVG_KEY = { '전기': 'electricity_kwh', '수도': 'water_ton', '온수': 'hotwater_ton', '난방': 'heating_mcal', '냉방': 'cooling_mcal' };
 
 function _usageCards(meter, avg) {
   const CFGS = [
