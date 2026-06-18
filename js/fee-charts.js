@@ -143,8 +143,8 @@ window._fcTog = function(key) {
 
 /* 평균 비교 기준 라벨 — 전용면적이 같은 세대 평균인지, 단지 전체 평균인지 표시 */
 function _avgLabel(avg) {
-  if (avg && avg.area_match === 'exact') return '동일면적 평균';
-  if (avg && avg.area_match === 'nearby') return '유사면적 평균';
+  if (avg && avg.area_match === 'exact') return '동일면적';
+  if (avg && avg.area_match === 'nearby') return '유사면적';
   return '단지 평균';
 }
 
