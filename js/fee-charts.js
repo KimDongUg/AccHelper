@@ -143,8 +143,8 @@ window._fcTog = function(key) {
 
 /* 평균 비교 기준 라벨 — 전용면적이 같은 세대 평균인지, 단지 전체 평균인지 표시 */
 function _avgLabel(avg) {
-  if (avg && avg.area_match === 'exact') return `동일면적(${avg.area}㎡) 평균`;
-  if (avg && avg.area_match === 'nearby') return `유사면적(${avg.area}㎡) 평균`;
+  if (avg && avg.area_match === 'exact') return '동일면적 평균';
+  if (avg && avg.area_match === 'nearby') return '유사면적 평균';
   return '단지 평균';
 }
 
@@ -245,7 +245,6 @@ function _compareCard(d, avg) {
   if (!rows.length) return '';
   return `<div class="fc-card">
     <div class="fc-card-title">단지 비교 분석</div>
-    ${d.exclusive_area ? `<div style="font-size:11.5px;color:#94a3b8;margin:-4px 0 10px">전용면적 ${d.exclusive_area}㎡ 기준</div>` : ''}
     ${rows.join('')}
   </div>`;
 }
