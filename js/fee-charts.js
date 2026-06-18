@@ -180,7 +180,7 @@ function _usageCards(meter, avg) {
     return `<div class="fc-ucard">
       <div class="fc-uhead"><span>${cfg.icon}</span><span>${cfg.key}</span></div>
       <div class="fc-uval">${usage > 0 ? usage.toLocaleString() : '—'}<span class="fc-uunit"> ${cfg.unit}</span></div>
-      ${fee > 0 ? `<div class="fc-ufee">${fee.toLocaleString()}원</div>` : ''}
+      ${fee > 0 ? `<div class="fc-ufee">단가 ${fee.toLocaleString()}원/${cfg.unit}</div>` : ''}
       <div class="fc-gauge-bg"><div class="fc-gauge-fill" style="width:${pct}%;background:${gColor}"></div></div>
       <div class="fc-usub">${전월.toLocaleString()} → ${당월.toLocaleString()}</div>
       ${avgUsage ? `<div class="fc-uavg">${_avgLabel(avg)} ${avgUsage.toLocaleString()}${cfg.unit}</div>` : ''}
