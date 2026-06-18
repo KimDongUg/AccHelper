@@ -359,7 +359,6 @@
 
     <div class="bill-session">
       <span id="sessionTimer"></span>
-      <button class="btn-link" id="btnNewSearch" type="button">다른 호수 조회</button>
     </div>
 
     <div class="bill-total">
@@ -782,12 +781,6 @@ document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
     btn.disabled = false;
     btn.textContent = '조회하기';
   }
-});
-
-// 다른 호수 조회
-document.getElementById('btnNewSearch').addEventListener('click', () => {
-  document.getElementById('inp-ho').value = '';
-  resetToSearch();
 });
 
 // 엔터키 제출
