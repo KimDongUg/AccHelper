@@ -66,12 +66,16 @@ function _heroCard(d, history) {
 }
 
 /* F-02 도넛 차트
-   discountTotal(할인총계)은 항목별 부과내역에 없는 별도 차감액이므로
-   구성 비율(원형 그래프)에는 포함하지 않고, 중앙 합계와 범례에서만 차감해
-   "이번달 관리비"(히어로, 할인 반영된 최종액)와 합계가 일치하도록 한다. */
+   billing에는 "이주정산/과입금", "바우처할인" 등 음수(차감) 항목이 섞여 있을 수 있다.
+   파이 슬라이스는 양수 항목으로만 구성(음수는 비율로 표현 불가)하고,
+   음수 항목·할인총계는 별도 차감 목록으로 모아 중앙 합계에서 빼서
+   "이번달 관리비"(히어로의 최종 청구액)와 합계가 일치하도록 한다. */
 function _donutChart(billing, vat, discountTotal) {
   const cats = [];
   const used = new Set();
+  let adjustTotal = 0;
+  const adjustItems = {};  // { 항목명: 차감액(양수) }
+  if (discountTotal > 0) { adjustTotal += discountTotal; adjustItems['할인'] = discountTotal; }
 
   for (const cat of _FC_CATS) {
     let sum = 0;
@@ -79,6 +83,7 @@ function _donutChart(billing, vat, discountTotal) {
     for (const k of cat.items) {
       const v = _n(billing[k]);
       if (v > 0) { sum += v; items[k] = v; used.add(k); }
+      else if (v < 0) { used.add(k); adjustTotal += -v; adjustItems[k] = -v; }
     }
     if (sum > 0) cats.push({ ...cat, total: sum, items });
   }
@@ -86,14 +91,17 @@ function _donutChart(billing, vat, discountTotal) {
   let etcSum = 0;
   const etcItems = {};
   for (const [k, v] of Object.entries(billing)) {
-    if (!used.has(k) && _n(v) > 0) { etcSum += _n(v); etcItems[k] = _n(v); }
+    if (used.has(k)) continue;
+    const n = _n(v);
+    if (n > 0) { etcSum += n; etcItems[k] = n; }
+    else if (n < 0) { adjustTotal += -n; adjustItems[k] = -n; }
   }
   if (vat > 0) { etcSum += vat; etcItems['부가가치세'] = vat; }
   if (etcSum > 0) cats.push({ key: '기타', icon: '📦', color: '#94a3b8', total: etcSum, items: etcItems });
 
   const grand = cats.reduce((s, c) => s + c.total, 0);
   if (!grand) return '';
-  const net = grand - (discountTotal > 0 ? discountTotal : 0);
+  const net = grand - adjustTotal;
 
   const R = 70, SW = 28, C = 95, circ = 2 * Math.PI * R;
   let cumPct = 0, slices = '', legendHtml = '';
@@ -123,13 +131,13 @@ function _donutChart(billing, vat, discountTotal) {
     cumPct += pct;
   }
 
-  const discountRow = discountTotal > 0 ? `<div class="fc-leg-row" style="opacity:.8;cursor:default">
+  const adjustRows = Object.entries(adjustItems).map(([k, amt]) => `<div class="fc-leg-row" style="opacity:.8;cursor:default">
       <span class="fc-dot" style="background:#ef4444"></span>
-      <span class="fc-leg-name">💸 할인</span>
-      <span class="fc-leg-amt" style="color:#ef4444">-${discountTotal.toLocaleString()}</span>
+      <span class="fc-leg-name">💸 ${k}</span>
+      <span class="fc-leg-amt" style="color:#ef4444">-${amt.toLocaleString()}</span>
       <span class="fc-leg-pct"></span>
       <span class="fc-chev"></span>
-    </div>` : '';
+    </div>`).join('');
 
   return `<div class="fc-card">
     <div class="fc-card-title">관리비 구성</div>
@@ -139,7 +147,7 @@ function _donutChart(billing, vat, discountTotal) {
         <text x="${C}" y="${C - 6}" text-anchor="middle" font-size="12" fill="#94a3b8">합계</text>
         <text x="${C}" y="${C + 14}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a2e">${net.toLocaleString()}</text>
       </svg>
-      <div class="fc-legend">${legendHtml}${discountRow}</div>
+      <div class="fc-legend">${legendHtml}${adjustRows}</div>
     </div>
   </div>`;
 }
