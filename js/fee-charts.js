@@ -65,8 +65,11 @@ function _heroCard(d, history) {
   </div>`;
 }
 
-/* F-02 도넛 차트 */
-function _donutChart(billing, vat) {
+/* F-02 도넛 차트
+   discountTotal(할인총계)은 항목별 부과내역에 없는 별도 차감액이므로
+   구성 비율(원형 그래프)에는 포함하지 않고, 중앙 합계와 범례에서만 차감해
+   "이번달 관리비"(히어로, 할인 반영된 최종액)와 합계가 일치하도록 한다. */
+function _donutChart(billing, vat, discountTotal) {
   const cats = [];
   const used = new Set();
 
@@ -90,6 +93,7 @@ function _donutChart(billing, vat) {
 
   const grand = cats.reduce((s, c) => s + c.total, 0);
   if (!grand) return '';
+  const net = grand - (discountTotal > 0 ? discountTotal : 0);
 
   const R = 70, SW = 28, C = 95, circ = 2 * Math.PI * R;
   let cumPct = 0, slices = '', legendHtml = '';
@@ -119,15 +123,23 @@ function _donutChart(billing, vat) {
     cumPct += pct;
   }
 
+  const discountRow = discountTotal > 0 ? `<div class="fc-leg-row" style="opacity:.8;cursor:default">
+      <span class="fc-dot" style="background:#ef4444"></span>
+      <span class="fc-leg-name">💸 할인</span>
+      <span class="fc-leg-amt" style="color:#ef4444">-${discountTotal.toLocaleString()}</span>
+      <span class="fc-leg-pct"></span>
+      <span class="fc-chev"></span>
+    </div>` : '';
+
   return `<div class="fc-card">
     <div class="fc-card-title">관리비 구성</div>
     <div class="fc-donut-wrap">
       <svg width="190" height="190" viewBox="0 0 190 190" style="flex-shrink:0">
         ${slices}
         <text x="${C}" y="${C - 6}" text-anchor="middle" font-size="12" fill="#94a3b8">합계</text>
-        <text x="${C}" y="${C + 14}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a2e">${grand.toLocaleString()}</text>
+        <text x="${C}" y="${C + 14}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a2e">${net.toLocaleString()}</text>
       </svg>
-      <div class="fc-legend">${legendHtml}</div>
+      <div class="fc-legend">${legendHtml}${discountRow}</div>
     </div>
   </div>`;
 }
@@ -382,8 +394,9 @@ window.renderDashboard = async function(d, token, companyId, opts) {
 
   function _render(hist, avg) {
     const vat = _n((d.summary || {})['부가가치세']);
+    const discountTotal = _n((d.summary || {})['할인총계']);
     let html = _heroCard(d, hist);
-    html += _donutChart(d.billing_items || {}, vat);
+    html += _donutChart(d.billing_items || {}, vat, discountTotal);
     html += _usageCards(d.meter || {}, avg);
     html += _compareCard(d, avg);
     html += _historyChart(hist);
