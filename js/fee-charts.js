@@ -44,10 +44,12 @@ function _heroCard(d, history) {
     if (prev > 0) {
       const diff = total - prev;
       const pct = ((diff / prev) * 100).toFixed(1);
-      const up = diff >= 0;
-      prevCol = `<div>📈 지난달 대비<br>`
-        + `<b style="color:${up ? '#fca5a5' : '#86efac'}">`
-        + `${up ? '+' : ''}${diff.toLocaleString()}원 (${up ? '+' : ''}${pct}%)</b></div>`;
+      const icon  = diff > 0 ? '📈' : diff < 0 ? '📉' : '➡️';
+      const color = diff > 0 ? '#fca5a5' : diff < 0 ? '#86efac' : 'rgba(255,255,255,0.7)';
+      const sign  = diff > 0 ? '+' : '';
+      prevCol = `<div>${icon} 지난달 대비<br>`
+        + `<b style="color:${color}">`
+        + `${sign}${diff.toLocaleString()}원 (${sign}${pct}%)</b></div>`;
     }
   } else if (history && history.length === 1) {
     prevCol = `<div>📈 지난달 대비<br><b style="opacity:.7">비교 데이터 없음</b></div>`;
@@ -145,7 +147,7 @@ function _donutChart(billing, vat, discountTotal) {
       <svg width="190" height="190" viewBox="0 0 190 190" style="flex-shrink:0">
         ${slices}
         <text x="${C}" y="${C - 6}" text-anchor="middle" font-size="12" fill="#94a3b8">합계</text>
-        <text x="${C}" y="${C + 14}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a2e">${net.toLocaleString()}</text>
+        <text x="${C}" y="${C + 14}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1a2e">${Math.max(0, net).toLocaleString()}</text>
       </svg>
       <div class="fc-legend">${legendHtml}${adjustRows}</div>
     </div>
