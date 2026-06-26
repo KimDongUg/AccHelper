@@ -394,10 +394,14 @@ function _aiCard(d, history, avg) {
 }
 
 /* 메인 대시보드 렌더러
-   opts.historyUrl / opts.averageUrl로 엔드포인트를 바꿀 수 있음
+   opts.container   — 기본 #dashContainer 대신 사용할 Element
+   opts.skipFetch   — true 시 히스토리/평균 API 호출 생략
+   opts.history     — skipFetch 시 사용할 사전 로드 히스토리 배열
+   opts.average     — skipFetch 시 사용할 사전 로드 평균 객체
+   opts.historyUrl / opts.averageUrl — 엔드포인트 오버라이드
    (관리자 화면은 OTP 토큰 대신 관리자 JWT로 인증하는 /admin-history, /admin-average 사용) */
 window.renderDashboard = async function(d, token, companyId, opts) {
-  const container = document.getElementById('dashContainer');
+  const container = (opts && opts.container) || document.getElementById('dashContainer');
   if (!container) return;
   const historyUrl = (opts && opts.historyUrl) || '/api/fee/history';
   const averageUrl = (opts && opts.averageUrl) || '/api/fee/average';
@@ -413,7 +417,8 @@ window.renderDashboard = async function(d, token, companyId, opts) {
     html += _aiCard(d, hist, avg);
     container.innerHTML = html;
     container.style.display = '';
-    _animateCount(document.getElementById('fcHeroAmt'), _n(d.total), 1200);
+    const heroEl = container.querySelector('[id="fcHeroAmt"]');
+    if (heroEl) _animateCount(heroEl, _n(d.total), 1200);
 
     if (hist && hist.length >= 3) {
       const draw = () => _drawHistChart(hist);
@@ -426,6 +431,12 @@ window.renderDashboard = async function(d, token, companyId, opts) {
         document.head.appendChild(s);
       }
     }
+  }
+
+  // skipFetch: 제공된 데이터로 1회 렌더링 후 종료
+  if (opts && opts.skipFetch) {
+    _render(opts.history || null, opts.average || null);
+    return;
   }
 
   _render(null, null); // Phase 1: 즉시 표시

@@ -255,6 +255,19 @@
       .meter-table tr:last-child td { border-bottom: none; }
 
       .no-data { color: #aaa; font-size: 13px; text-align: center; padding: 10px 0; }
+
+      /* 관리비 조회 예시 미리보기 */
+      .preview-section { margin-top: 20px; }
+      .preview-label {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        font-size: 12.5px; font-weight: 700; color: #64748b;
+        margin-bottom: 14px;
+      }
+      .preview-label::before,
+      .preview-label::after {
+        content: ''; flex: 1; height: 1px; background: #e2e8f0;
+      }
+      .preview-container { opacity: 0.88; pointer-events: auto; }
     </style>
 </head>
 <body>
@@ -342,6 +355,12 @@
     <p class="privacy-note">
       <a href="/privacy.html" target="_blank" rel="noopener">개인정보처리방침 보기</a>
     </p>
+  </div>
+
+  <!-- 관리비 조회 예시 미리보기 -->
+  <div class="preview-section" id="previewSection">
+    <div class="preview-label">📋 조회하면 이런 화면이 표시됩니다</div>
+    <div class="preview-container" id="previewContainer"></div>
   </div>
 
   <!-- 대시보드 컨테이너 -->
@@ -452,6 +471,7 @@ function handleConsent() {
       if (!c.enable_fee) {
         document.getElementById('feeDisabledCard').style.display = '';
         document.getElementById('verifyCard').style.display = 'none';
+        document.getElementById('previewSection').style.display = 'none';
       }
     } else {
       // API 실패 시 기본적으로 링크 표시
@@ -557,6 +577,7 @@ function resetToSearch(message) {
   toggleBtn.style.display = 'none';
   toggleBtn.textContent = '상세 고지서 보기 ▼';
   document.getElementById('verifyCard').style.display = '';
+  document.getElementById('previewSection').style.display = '';
   document.getElementById('otpArea').style.display = 'none';
   document.getElementById('inp-code').value = '';
   document.getElementById('inp-code').disabled = false;
@@ -771,6 +792,7 @@ document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
 
     renderBill(fd);
     document.getElementById('verifyCard').style.display = 'none';
+    document.getElementById('previewSection').style.display = 'none';
     document.getElementById('fcToggleBtn').style.display = '';
     window.renderDashboard(fd, vd.token, Number(companyId));
     startSessionCountdown(vd.expires_in || 600);
@@ -795,5 +817,62 @@ document.getElementById('inp-code').addEventListener('keydown', e => {
 });
 </script>
 <script src="/js/fee-charts.js"></script>
+<script>
+/* ── 관리비 조회 예시 데이터 ── */
+(function renderPreview() {
+  const container = document.getElementById('previewContainer');
+  if (!container || typeof window.renderDashboard !== 'function') return;
+
+  const data = {
+    dong: '1', ho: '9999', name: '홍길동',
+    year_month: '202605',
+    total: '184,070',
+    total_after: '186,070',
+    exclusive_area: '84.92',
+    billing_items: {
+      '일반관리비':    113428,
+      '세대전기료':     24814,
+      '세대수도료':     10000,
+      '세대급탕비':      4991,
+      '장기수선충당금': 14238,
+      '세대냉방비':      2627,
+      '제경비':         13968,
+    },
+    billing_구분: {},
+    summary: { '부가가치세': 4 },
+    meter: {
+      '전기': { '전월': '14,080', '당월': '14,205', '요금': '125' },
+      '수도': { '전월': '276',    '당월': '279',    '요금': '4'   },
+      '온수': { '전월': '164',    '당월': '165',    '요금': '1'   },
+      '냉방': { '전월': '1,048',  '당월': '1,054',  '요금': '6'   },
+    },
+    discounts: {},
+  };
+
+  const history = [
+    { year_month: '202604', amount: 123170 },
+    { year_month: '202605', amount: 184070 },
+  ];
+
+  const average = {
+    area_match: 'exact',
+    amount:           { avg: 201543 },
+    electricity_fee:  { avg: 28900  },
+    water_fee:        { avg: 18200  },
+    hotwater_fee:     { avg: 6800   },
+    electricity_kwh:  { avg: 122.6  },
+    water_ton:        { avg: 3.2    },
+    hotwater_ton:     { avg: 2.1    },
+    cooling_mcal:     { avg: 22.7   },
+  };
+
+  window.renderDashboard(data, null, Number(companyId), {
+    container,
+    skipFetch: true,
+    history,
+    average,
+  });
+})();
+</script>
 </body>
 </html>
