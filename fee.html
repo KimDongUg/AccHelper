@@ -309,7 +309,7 @@
     <div class="form-row">
       <div class="form-group" style="flex:0 0 80px">
         <label for="inp-dong">동</label>
-        <input type="number" id="inp-dong" value="1" placeholder="예: 1" inputmode="numeric">
+        <input type="number" id="inp-dong" placeholder="예: 1" inputmode="numeric">
       </div>
       <div class="form-group">
         <label for="inp-ho">호</label>
@@ -416,7 +416,8 @@
 </main>
 
 <script>
-const companyId = new URLSearchParams(location.search).get('company') || '1';
+const companyId = new URLSearchParams(location.search).get('company');
+if (!companyId) location.replace('/');
 
 /* ── 개인정보 동의 (월별 1회) ── */
 function _consentKey() {
@@ -447,6 +448,7 @@ function handleConsent() {
 })();
 
 (async () => {
+  if (!companyId) return;
   // 공통 헤더 상태 (로그인/회사)
   try {
     const r = await fetch('/api/auth/me');
@@ -467,6 +469,16 @@ function handleConsent() {
       // 민원/당근: 비활성화로 명시된 경우만 숨김
       if (c.enable_complaint !== false) document.getElementById('complaintNavLink').style.display = '';
       if (c.enable_market    !== false) document.getElementById('daangnNavLink').style.display = '';
+
+      // 단일동 아파트는 회사 설정값으로 동 자동입력 (이름 하드코딩 아님)
+      if (c.single_building_dong) {
+        const dongDigits = c.single_building_dong.replace(/\D/g, '');
+        if (dongDigits) {
+          const dongInput = document.getElementById('inp-dong');
+          dongInput.value = dongDigits;
+          dongInput.readOnly = true;
+        }
+      }
 
       if (!c.enable_fee) {
         document.getElementById('feeDisabledCard').style.display = '';

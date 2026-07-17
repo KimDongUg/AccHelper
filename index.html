@@ -2,6 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // 기존 챗봇 QR코드/공고문에 인쇄된 "/?company=ID" 주소 호환:
+        // company 파라미터가 있으면 즉시 챗봇 화면(app.html)으로 이동
+        (function () {
+            var params = new URLSearchParams(location.search);
+            if (params.has('company')) {
+                location.replace('/app.html' + location.search);
+            }
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 헬퍼 - 공동주택 최초 AI 관리사무소 서비스</title>
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
