@@ -71,6 +71,11 @@
     if (chatbotNav && companyId) { chatbotNav.href = '/app.html?company=' + companyId; }
     var headerLogo = document.getElementById('headerLogo');
     if (headerLogo && companyId) { headerLogo.href = '/app.html?company=' + companyId; }
+    // 샘플 회사는 데모 목적이므로 글쓰기 버튼 숨김
+    if (Number(companyId) >= 1000) {
+        var fab = document.querySelector('.mkt-fab');
+        if (fab) fab.style.display = 'none';
+    }
     try {
         var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
         var sess = authRaw ? JSON.parse(authRaw) : null;
