@@ -155,9 +155,10 @@ function renderPost(p) {
           ${p.image1_url ? `<a href="${p.image1_url}" target="_blank"><img src="${p.image1_url}" alt="첨부 이미지 1"></a>` : ''}
           ${p.image2_url ? `<a href="${p.image2_url}" target="_blank"><img src="${p.image2_url}" alt="첨부 이미지 2"></a>` : ''}
         </div>` : ''}
+        ${!isSampleCompany ? `
         <div style="margin-top:14px;text-align:right">
           <button onclick="showEditVerifyModal()" style="background:none;border:none;font-size:13px;color:var(--gray-500);cursor:pointer;text-decoration:underline">수정</button>
-        </div>
+        </div>` : ''}
       </div>`;
 
     // 답변 표시
