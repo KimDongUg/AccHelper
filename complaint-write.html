@@ -183,16 +183,15 @@ async function uploadImages() {
 const companyId = getCompanyParam();
 if (!companyId) { alert('잘못된 접근입니다.'); location.href = '/'; }
 
-// 회사명으로 동 기본값 설정
+// 회사별 동 기본값 설정 (single_building_dong 설정 기반, 이름 하드코딩 아님)
 (async () => {
     try {
         const res = await fetch(`/api/companies/public/${encodeURIComponent(companyId)}`);
         if (res.ok) {
             const company = await res.json();
-            const defaultDong = getDefaultDong(company.company_name);
             const dongInput = document.getElementById('dongInput');
-            if (defaultDong) {
-                dongInput.value = defaultDong;
+            if (company.single_building_dong) {
+                dongInput.value = company.single_building_dong;
                 dongInput.readOnly = true;
             }
         }

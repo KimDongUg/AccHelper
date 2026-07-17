@@ -370,51 +370,18 @@ function showChat(companyData) {
             if (noticeArea) noticeArea.style.display = 'none';
         }
 
-        // 업체별 커스텀 설정: API 응답 우선, 없으면 하드코딩 기본값
+        // 업체별 커스텀 설정: 회사 설정(API)에 등록된 값을 그대로 사용
         var apiGreeting = companyData && companyData.greeting_text;
         var apiCategories = companyData && companyData.categories;
 
-        // 하드코딩 기본값 (하위호환)
-        var defaultCustom = {
-            '세종푸르지오시티 2차': {
-                hero: ' AI Helper입니다.<br>무엇이든 물어보세요~',
-                greeting: '안녕하세요! 세종푸르지오시티 2차 AI Helper입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
-                categories: [
-                    { label: '중간관리비 정산', question: '중간관리비 정산 절차가 어떻게 되나요?' },
-                    { label: '입주신고', question: '입주신고 시 필요한 서류는?' },
-                    { label: '각종 시설물 AS', question: '각종 시설물 AS 안내를 알려주세요.' },
-                    { label: '기타', question: '관리사무소 업무 시간과 연락처를 알려주세요.' }
-                ]
-            },
-            '샘플오피스텔': {
-                hero: ' AI Helper입니다.<br>무엇이든 물어보세요~',
-                greeting: '안녕하세요! 샘플오피스텔 AI Helper입니다.<br>중간관리비 정산 절차, 입주신고, 각종 시설물 AS 안내 등 궁금한 점을 물어보세요.',
-                categories: [
-                    { label: '중간관리비 정산', question: '중간관리비 정산 절차가 어떻게 되나요?' },
-                    { label: '입주신고', question: '입주신고 시 필요한 서류는?' },
-                    { label: '각종 시설물 AS', question: '각종 시설물 AS 안내를 알려주세요.' },
-                    { label: '기타', question: '관리사무소 업무 시간과 연락처를 알려주세요.' }
-                ]
-            }
-        };
-        var fallback = defaultCustom[companyName];
-
-        // 인사말 적용: API → 하드코딩 기본값
-        var greetingText = apiGreeting || (fallback && fallback.greeting);
-        if (greetingText) {
+        // 인사말 적용 (회사 설정에 인사말이 없으면 기본 히어로 문구 유지)
+        if (apiGreeting) {
             var bubbleEl = document.querySelector('.message.bot .message-bubble');
-            if (bubbleEl) bubbleEl.innerHTML = greetingText;
+            if (bubbleEl) bubbleEl.innerHTML = apiGreeting;
         }
 
-        // 히어로 텍스트: API 인사말이 있으면 기본 히어로, 없으면 하드코딩
-        var heroSuffix = fallback && fallback.hero;
-        if (heroSuffix && !apiGreeting) {
-            var heroEl = document.querySelector('.chat-hero h1');
-            if (heroEl) heroEl.innerHTML = '<span id="heroCompanyName">' + companyName + '</span>' + heroSuffix;
-        }
-
-        // 카테고리 적용: API → 하드코딩 기본값
-        var categories = (apiCategories && apiCategories.length > 0) ? apiCategories : (fallback && fallback.categories);
+        // 카테고리 적용 (회사 설정에 등록된 빠른 질문 버튼)
+        var categories = (apiCategories && apiCategories.length > 0) ? apiCategories : null;
         if (categories && categories.length > 0) {
             var filterEl = document.querySelector('.category-filters');
             if (filterEl) {

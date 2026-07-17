@@ -131,20 +131,27 @@
   location.href = ret || '/market.html';
 })();
 
-// 회사 정보로 동 기본값 설정
-(function () {
+// 회사 정보로 동 기본값 설정 (회사별 single_building_dong 설정 기반, 이름 하드코딩 아님)
+(async function () {
     const companyName = sessionStorage.getItem('market_company_name') || '';
+    const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
     const buildingInput = document.getElementById('buildingInput');
 
-    if (companyName.includes('세종푸르지오시티') && companyName.includes('2차') ||
-        companyName.includes('세종푸르지오2차')) {
-        buildingInput.value = '1동';
-        buildingInput.readOnly = true;
-        document.getElementById('dongRequired').textContent = '';
-        document.getElementById('aptSubtitle').textContent = companyName + ' 입주민 전용 중고거래·나눔';
-    } else if (companyName) {
+    if (companyName) {
         document.getElementById('aptSubtitle').textContent = companyName + ' 입주민 전용 중고거래·나눔';
     }
+
+    if (!companyId) return;
+    try {
+        const res = await fetch('/api/companies/public/' + encodeURIComponent(companyId));
+        if (!res.ok) return;
+        const company = await res.json();
+        if (company.single_building_dong) {
+            buildingInput.value = company.single_building_dong;
+            buildingInput.readOnly = true;
+            document.getElementById('dongRequired').textContent = '';
+        }
+    } catch (e) {}
 })();
 
 async function doLogin() {

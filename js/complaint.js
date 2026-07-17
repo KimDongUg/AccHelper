@@ -35,15 +35,6 @@ function setCompanyParam(id) {
     sessionStorage.setItem('complaint_company_id', id);
 }
 
-// 회사명 → 동 기본값
-function getDefaultDong(companyName) {
-    if (!companyName) return '';
-    const name = companyName.trim();
-    if (name.includes('세종푸르지오시티') && name.includes('2차')) return '1동';
-    if (name.includes('세종푸르지오2차')) return '1동';
-    return '';
-}
-
 // ── fetch helper ──────────────────────────────────────────────────────────────
 
 async function cpFetch(path, opts = {}) {
