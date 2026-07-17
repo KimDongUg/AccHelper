@@ -57,7 +57,7 @@
 
 <a href="#" class="mkt-fab" title="글쓰기" onclick="goWrite(); return false;">+</a>
 
-<script src="/js/market.js?v=2"></script>
+<script src="/js/market.js?v=3"></script>
 <script>
 // ── 공통 헤더 초기화 ────────────────────────────────────────────────────────
 (function () {
@@ -120,7 +120,7 @@ function goWrite() {
 }
 
 function goPost(id) {
-  if (!MarketAuth.getToken()) {
+  if (!MarketAuth.getToken() && !isSampleCompanyContext()) {
     goLogin('/market-post.html?id=' + id);
     return;
   }

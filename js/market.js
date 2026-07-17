@@ -4,6 +4,12 @@ const API = '/api/market';
 
 // ── 토큰 관리 ─────────────────────────────────────────────────────────────────
 
+// 현재 둘러보고 있는 회사가 샘플(company_id >= 1000)인지 확인
+function isSampleCompanyContext() {
+  const id = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id');
+  return Number(id) >= 1000;
+}
+
 const MarketAuth = {
   getToken: () => sessionStorage.getItem('market_token'),
   getUser:  () => { try { return JSON.parse(sessionStorage.getItem('market_user') || 'null'); } catch { return null; } },
@@ -17,6 +23,7 @@ const MarketAuth = {
   },
   required() {
     if (!this.getToken()) {
+      if (isSampleCompanyContext()) return null; // 샘플 회사는 인증 없이 열람 허용
       location.href = '/market-login.html';
       throw new Error('not logged in');
     }
@@ -51,8 +58,16 @@ async function mktFetch(path, opts = {}) {
     headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(opts.body);
   }
+  // 샘플 회사는 토큰 없이도 조회 가능하도록 company_id를 함께 전달
+  if (!token && isSampleCompanyContext()) {
+    const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id');
+    path += (path.includes('?') ? '&' : '?') + 'company_id=' + companyId;
+  }
   const res = await fetch(API + path, { ...opts, headers });
-  if (res.status === 401) { MarketAuth.clear(); location.href = '/market-login.html'; throw new Error('401'); }
+  if (res.status === 401) {
+    if (isSampleCompanyContext()) throw new Error('샘플에서는 이용할 수 없습니다.');
+    MarketAuth.clear(); location.href = '/market-login.html'; throw new Error('401');
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: '오류가 발생했습니다.' }));
     throw new Error(err.detail || '오류가 발생했습니다.');
