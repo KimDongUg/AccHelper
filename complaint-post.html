@@ -98,7 +98,10 @@ document.getElementById('backBtn').onclick = () => {
 
 if (!postId) { location.href = '/'; }
 
-if (!ComplaintAuth.isAdmin() && !sessionStorage.getItem('market_token')) {
+// 샘플 회사(company_id >= 1000)는 데모 목적이므로 입주민 인증 없이 바로 열람 가능
+const isSampleCompany = Number(companyId) >= 1000;
+
+if (!isSampleCompany && !ComplaintAuth.isAdmin() && !sessionStorage.getItem('market_token')) {
     location.href = `/market-login.html?return=${encodeURIComponent(location.href)}`;
 }
 

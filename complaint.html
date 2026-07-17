@@ -58,8 +58,12 @@ if (!companyId) {
     location.href = '/';
 }
 
-// 글쓰기 버튼 → company 파라미터 유지
-document.getElementById('writeBtn').href = `/complaint-write.html?company=${companyId}`;
+// 글쓰기 버튼 → company 파라미터 유지 (샘플 회사는 데모 목적이므로 숨김)
+if (Number(companyId) >= 1000) {
+    document.getElementById('writeBtn').style.display = 'none';
+} else {
+    document.getElementById('writeBtn').href = `/complaint-write.html?company=${companyId}`;
+}
 
 
 let currentPage = 1;
