@@ -43,6 +43,83 @@
     align-items: center;
 }
 
+/* ── Hamburger (모바일 전용) ──────────────────── */
+.lp-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+
+.lp-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--gray-700);
+    border-radius: 1px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.lp-hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.lp-hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+.lp-hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.lp-mobile-menu {
+    display: none;
+    position: sticky;
+    top: 56px;
+    z-index: 99;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+
+.lp-mobile-menu.open {
+    max-height: 400px;
+}
+
+.lp-mobile-menu nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 1.25rem 1rem;
+}
+
+.lp-mobile-menu nav a {
+    padding: 0.75rem 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.lp-mobile-menu nav a:last-child {
+    border-bottom: none;
+}
+
+.lp-mobile-menu nav hr {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 0.25rem 0;
+}
+
 .lp-btn-outline {
     display: inline-flex;
     align-items: center;
@@ -976,6 +1053,18 @@
         white-space: nowrap;
         padding: 8px 14px;
         font-size: 0.8rem;
+    }
+    .lp-header {
+        justify-content: flex-start;
+    }
+    .lp-header-actions {
+        margin-left: auto;
+    }
+    .lp-hamburger {
+        display: flex;
+    }
+    .lp-mobile-menu {
+        display: block;
     }
     .lp-hero {
         padding: 2.5rem 1.25rem 3rem;

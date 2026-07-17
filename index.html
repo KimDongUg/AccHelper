@@ -17,7 +17,7 @@
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/common.css?v=16">
-    <link rel="stylesheet" href="/css/landing.css?v=7">
+    <link rel="stylesheet" href="/css/landing.css?v=8">
 </head>
 <body>
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
@@ -39,7 +39,24 @@
             <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
             <a href="https://acchelper.kr/?company=1000" class="lp-btn-primary">체험하기</a>
         </div>
+        <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
+            <span></span><span></span><span></span>
+        </button>
     </header>
+
+    <!-- Mobile menu drawer -->
+    <div class="lp-mobile-menu" id="lpMobileMenu">
+        <nav aria-label="모바일 메뉴">
+            <a href="#features-section">서비스 소개</a>
+            <a href="#features-section">주요 기능</a>
+            <a href="#effects-section">도입 효과</a>
+            <a href="#case-section">도입 사례</a>
+            <a href="#pricing-section">요금 안내</a>
+            <hr>
+            <a href="/contact.html">도입 문의</a>
+            <a href="/company-register.html">신청하기</a>
+        </nav>
+    </div>
 
     <main id="main-content">
 
@@ -431,6 +448,34 @@
                 gtag('event', eventName, { position: position });
             }
         };
+    </script>
+    <script>
+        (function () {
+            var btn = document.getElementById('lpHamburgerBtn');
+            var menu = document.getElementById('lpMobileMenu');
+            if (!btn || !menu) return;
+
+            function closeMenu() {
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+            function toggleMenu() {
+                var isOpen = menu.classList.toggle('open');
+                btn.classList.toggle('open', isOpen);
+                btn.setAttribute('aria-expanded', String(isOpen));
+            }
+
+            btn.addEventListener('click', toggleMenu);
+            menu.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', closeMenu);
+            });
+            document.addEventListener('click', function (e) {
+                if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
