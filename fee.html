@@ -418,6 +418,7 @@
 <script>
 const companyId = new URLSearchParams(location.search).get('company');
 if (!companyId) location.replace('/');
+let feeEnabled = true;
 
 // 로고/AI챗봇 링크가 우리 회사 챗봇 화면으로 가도록 설정 (랜딩페이지로 새지 않게)
 document.getElementById('headerLogo').href = '/app.html?company=' + companyId;
@@ -484,11 +485,7 @@ function handleConsent() {
         }
       }
 
-      if (!c.enable_fee) {
-        document.getElementById('feeDisabledCard').style.display = '';
-        document.getElementById('verifyCard').style.display = 'none';
-        document.getElementById('previewSection').style.display = 'none';
-      }
+      feeEnabled = !!c.enable_fee;
     } else {
       // API 실패 시 기본적으로 링크 표시
       document.getElementById('complaintNavLink').style.display = '';
@@ -719,6 +716,11 @@ document.getElementById('btnSendSms').addEventListener('click', async () => {
   const dong = document.getElementById('inp-dong').value.trim();
   const ho = document.getElementById('inp-ho').value.trim();
   clearError();
+
+  if (!feeEnabled) {
+    alert('샘플에서는 관리비가 조회되지 않습니다!');
+    return;
+  }
 
   if (!dong || !ho) {
     showError('동, 호를 입력해 주세요.');

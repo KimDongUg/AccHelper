@@ -253,10 +253,11 @@ async function validateAndStartChat(code) {
             }
         }
 
-        // 관리비 조회 (회사별 enable_fee 설정에 따라 노출)
+        // 관리비 조회 (관리비 데이터가 연동 안 된 회사도 메뉴는 노출하고,
+        // 실제 조회 시도 시 fee.html에서 안내 메시지로 막음)
         var feeNavLink = document.getElementById('feeNavLink');
         if (feeNavLink) {
-            feeNavLink.style.display = company.enable_fee ? '' : 'none';
+            feeNavLink.style.display = '';
             feeNavLink.href = '/fee.html?company=' + company.company_id;
         }
 
@@ -273,16 +274,12 @@ async function validateAndStartChat(code) {
             }
         }
 
-        // 민원게시판 (아파트 타입에만 표시)
+        // 민원게시판 (아파트·오피스텔 모두 표시)
         var complaintNavLink = document.getElementById('complaintNavLink');
         if (complaintNavLink) {
-            if (company.building_type === '아파트') {
-                complaintNavLink.style.display = '';
-                complaintNavLink.href = '/complaint.html?company=' + company.company_id;
-                sessionStorage.setItem('complaint_company_id', company.company_id);
-            } else {
-                complaintNavLink.style.display = 'none';
-            }
+            complaintNavLink.style.display = '';
+            complaintNavLink.href = '/complaint.html?company=' + company.company_id;
+            sessionStorage.setItem('complaint_company_id', company.company_id);
         }
 
         // Show chat (로그인 없이 누구나 이용 가능)
