@@ -97,9 +97,11 @@ function initCpHeader() {
         labelEl.style.display = '';
     }
 
-    // 챗봇 링크에 company 파라미터 삽입
+    // 챗봇 링크에 company 파라미터 삽입 (랜딩페이지로 새지 않고 우리 회사 챗봇으로 바로 이동)
     const chatbotNav = document.getElementById('cpChatbotNav');
-    if (chatbotNav && companyId) chatbotNav.href = `/?company=${companyId}`;
+    if (chatbotNav && companyId) chatbotNav.href = `/app.html?company=${companyId}`;
+    const headerLogo = document.getElementById('headerLogo');
+    if (headerLogo && companyId) headerLogo.href = `/app.html?company=${companyId}`;
 
     // 민원게시판 링크에 company 파라미터 삽입
     const cpNav = document.getElementById('cpComplaintNav');

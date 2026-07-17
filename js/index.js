@@ -121,13 +121,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // href 자체도 우리 회사 챗봇으로 설정 (새 탭으로 열거나 클릭 이벤트가 못 붙는 경우 대비)
+    var homeHref = (sess && sess.isLoggedIn && sess.role === 'super_admin') ? '/'
+        : (sess && sess.isLoggedIn && sess.companyId) ? '/app.html?company=' + sess.companyId
+        : code ? '/app.html?company=' + code
+        : '/';
+
     var headerLogo = document.getElementById('headerLogo');
     if (headerLogo) {
+        headerLogo.href = homeHref;
         headerLogo.addEventListener('click', handleChatNavClick);
     }
 
     var chatBotNavLink = document.getElementById('chatBotNavLink');
     if (chatBotNavLink) {
+        chatBotNavLink.href = homeHref;
         chatBotNavLink.addEventListener('click', handleChatNavClick);
     }
 

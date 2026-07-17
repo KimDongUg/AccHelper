@@ -280,7 +280,7 @@
             <span class="logo-text">AI Helper</span>
         </a>
         <nav class="header-nav" aria-label="메인 내비게이션">
-            <a href="/">AI 챗봇</a>
+            <a href="/" id="chatBotNavLink">AI 챗봇</a>
             <a href="/fee.html" class="active">관리비</a>
             <a href="/complaint.html" id="complaintNavLink" style="display:none"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
             <a href="/market.html" id="daangnNavLink" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
@@ -418,6 +418,10 @@
 <script>
 const companyId = new URLSearchParams(location.search).get('company');
 if (!companyId) location.replace('/');
+
+// 로고/AI챗봇 링크가 우리 회사 챗봇 화면으로 가도록 설정 (랜딩페이지로 새지 않게)
+document.getElementById('headerLogo').href = '/app.html?company=' + companyId;
+document.getElementById('chatBotNavLink').href = '/app.html?company=' + companyId;
 
 /* ── 개인정보 동의 (월별 1회) ── */
 function _consentKey() {

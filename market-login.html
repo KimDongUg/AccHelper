@@ -12,7 +12,7 @@
 
 <header class="header" role="banner">
   <div class="header-left">
-    <a href="/" class="header-logo" aria-label="AI Helper 홈으로 이동">
+    <a href="/" id="headerLogo" class="header-logo" aria-label="AI Helper 홈으로 이동">
       <img src="/assets/images/robot.png" alt="AI Helper 로고">
       <span class="logo-text">AI Helper</span>
     </a>
@@ -110,7 +110,9 @@
     var complaintNav = document.getElementById('mktComplaintNav');
     if (complaintNav && companyId) { complaintNav.href = '/complaint.html?company=' + companyId; complaintNav.style.display = ''; }
     var chatbotNav = document.getElementById('mktChatbotNav');
-    if (chatbotNav && companyId) { chatbotNav.href = '/?company=' + companyId; }
+    if (chatbotNav && companyId) { chatbotNav.href = '/app.html?company=' + companyId; }
+    var headerLogo = document.getElementById('headerLogo');
+    if (headerLogo && companyId) { headerLogo.href = '/app.html?company=' + companyId; }
 
     try {
         var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
