@@ -139,7 +139,11 @@ async function loadPosts() {
   const empty = document.getElementById('emptyState');
   list.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa">불러오는 중...</div>';
   try {
-    const params = currentCat !== '전체' ? `?category=${encodeURIComponent(currentCat)}` : '';
+    const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+    const qs = new URLSearchParams();
+    if (currentCat !== '전체') qs.set('category', currentCat);
+    if (companyId) qs.set('company_id', companyId);
+    const params = qs.toString() ? '?' + qs.toString() : '';
     const data = await mktFetchPublic('/posts' + params);
     list.innerHTML = '';
     if (!data.items || data.items.length === 0) {
