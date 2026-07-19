@@ -6,21 +6,47 @@
     <title>도입 문의 - AI Helper</title>
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/common.css?v=16">
+    <link rel="stylesheet" href="/css/landing.css?v=9">
     <link rel="stylesheet" href="/css/policy.css?v=8">
 </head>
 <body class="contact-page">
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
 
-    <header class="header" role="banner">
-        <div class="header-left">
-            <a href="/" class="header-logo" aria-label="AI Helper 홈으로 이동">
-                <img src="/assets/images/logo.png" alt="AI Helper 로고" aria-hidden="true">
-            </a>
+    <!-- Header -->
+    <header class="lp-header" role="banner">
+        <a href="/" class="header-logo" aria-label="AI 헬퍼 홈으로 이동">
+            <img src="/assets/images/logo.png" alt="AI Helper 로고" style="height:32px">
+        </a>
+        <nav class="lp-nav" aria-label="메인 내비게이션">
+            <a href="/#features-section">서비스 소개</a>
+            <a href="/#features-section">주요 기능</a>
+            <a href="/#effects-section">도입 효과</a>
+            <a href="/#case-section">도입 사례</a>
+            <a href="/#pricing-section">요금 안내</a>
+        </nav>
+        <div class="lp-header-actions">
+            <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
+            <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
+            <a href="https://acchelper.kr/?company=1000" class="lp-btn-primary">체험하기</a>
         </div>
-        <div class="header-right">
-            <a href="/" class="btn btn-outline btn-sm" onclick="var c=sessionStorage.getItem('last_company');if(c){this.href='/?company='+c}">챗봇으로 돌아가기</a>
-        </div>
+        <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
+            <span></span><span></span><span></span>
+        </button>
     </header>
+
+    <!-- Mobile menu drawer -->
+    <div class="lp-mobile-menu" id="lpMobileMenu">
+        <nav aria-label="모바일 메뉴">
+            <a href="/#features-section">서비스 소개</a>
+            <a href="/#features-section">주요 기능</a>
+            <a href="/#effects-section">도입 효과</a>
+            <a href="/#case-section">도입 사례</a>
+            <a href="/#pricing-section">요금 안내</a>
+            <hr>
+            <a href="/contact.html">도입 문의</a>
+            <a href="/company-register.html">신청하기</a>
+        </nav>
+    </div>
 
     <main id="main-content" class="policy-container">
         <h1 class="policy-title">도입 문의</h1>
@@ -96,6 +122,35 @@
             <p class="footer-business-info">보듬누리 | 통신판매업 신고 제 2026-세종-0130 호 | 세종시 다정남로 22, 122-1203</p>
         </div>
     </footer>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('lpHamburgerBtn');
+            var menu = document.getElementById('lpMobileMenu');
+            if (!btn || !menu) return;
+
+            function closeMenu() {
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+            function toggleMenu() {
+                var isOpen = menu.classList.toggle('open');
+                btn.classList.toggle('open', isOpen);
+                btn.setAttribute('aria-expanded', String(isOpen));
+            }
+
+            btn.addEventListener('click', toggleMenu);
+            menu.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', closeMenu);
+            });
+            document.addEventListener('click', function (e) {
+                if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
 
