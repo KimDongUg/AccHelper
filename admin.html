@@ -68,6 +68,17 @@
                     </div>
                 </div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon blue" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="stat-info">
+                    <h4>오늘의 관리비 조회</h4>
+                    <div class="stat-value" id="statFeeToday" aria-live="polite">
+                        <span class="stat-loading" aria-label="로딩 중"></span>
+                    </div>
+                </div>
+            </div>
             <div class="stat-card stat-card-link" id="feedbackCard" onclick="switchTab('feedback')" title="불만족 피드백 탭으로 이동">
                 <div class="stat-icon yellow" aria-hidden="true">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
@@ -1198,6 +1209,6 @@
     <script>if(typeof marked!=='undefined')marked.setOptions({breaks:true});</script>
     <script src="/js/api.js?v=15"></script>
     <script src="/js/fee-charts.js"></script>
-    <script src="/js/admin.js?v=16"></script>
+    <script src="/js/admin.js?v=17"></script>
 </body>
 </html>
