@@ -10,6 +10,11 @@
     flex: 1;
 }
 
+/* Contact page: bright, soft background */
+body.contact-page {
+    background: linear-gradient(160deg, #EEF2FF 0%, #F7F5FF 45%, #FFF6FA 100%);
+}
+
 .policy-title {
     font-size: var(--text-2xl);
     font-weight: var(--font-bold);
