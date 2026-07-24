@@ -139,11 +139,11 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 </div>
                 <div class="stat-info">
-                    <h4>ERP 수집기</h4>
+                    <h4>ERP 수집기 (확장프로그램)</h4>
                     <div class="stat-value">
-                        <a class="btn btn-outline btn-sm" href="https://github.com/KimDongUg/AIHelperCollector/releases/download/v5.18.2/AIHelperCollector-v5.18.2-win.zip" download style="font-size:0.75rem;padding:0.2rem 0.6rem;text-decoration:none">다운로드</a>
+                        <a class="btn btn-outline btn-sm" href="https://github.com/KimDongUg/AIHelperCollector/releases/download/extension-v1.6.0/AIHelperCollector-extension-v1.6.0.zip" download style="font-size:0.75rem;padding:0.2rem 0.6rem;text-decoration:none">다운로드</a>
                     </div>
-                    <div style="font-size:0.7rem;color:#888;margin-top:2px">v5.18.2 · Windows 10+</div>
+                    <div style="font-size:0.7rem;color:#888;margin-top:2px">v1.6.0 · Chrome/Edge 확장프로그램 — 압축 해제 후 "확장프로그램 → 개발자 모드 → 압축 풀린 확장프로그램 로드"로 설치, 아래 API 키를 확장프로그램 설정에 입력하세요.</div>
                 </div>
             </div>
         </div>
@@ -172,13 +172,13 @@
                     <textarea id="dashGreeting" class="form-control" rows="2" placeholder="예: 안녕하세요! OOO AI Helper입니다. 궁금한 점을 물어보세요."></textarea>
                     <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">챗봇 첫 화면에 표시되는 인사말입니다.</div>
                 </div>
-                <div class="form-group" style="grid-column:1/-1;display:none">
+                <div class="form-group" style="grid-column:1/-1">
                     <label for="dashCollectorApiKey">ERP 수집기 API 키</label>
                     <div style="display:flex;gap:0.5rem;align-items:center">
                         <input type="text" id="dashCollectorApiKey" class="form-control" readonly style="background:#f5f5f5;cursor:default">
                         <button type="button" class="btn btn-outline btn-sm" onclick="copyCollectorApiKey()" style="white-space:nowrap">복사</button>
                     </div>
-                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">AIHelperCollector(ERP 수집기) 설정의 AIHELPER_API_KEY 값으로 입력하세요.</div>
+                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">ERP 수집기(확장프로그램) 설치 후, 브라우저 툴바의 확장프로그램 아이콘을 눌러 이 키를 붙여넣고 저장하세요.</div>
                 </div>
                 <!-- 공지사항 -->
                 <div class="form-group notice-admin-group" style="grid-column:1/-1">
