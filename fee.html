@@ -71,6 +71,13 @@
       .error-msg.show { display: block; }
 
       /* 인증번호 영역 */
+      .sms-guide {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #888;
+      }
+
       .otp-info {
         font-size: 12.5px;
         color: #1565c0;
@@ -333,6 +340,11 @@
     </div>
 
     <button class="btn-verify" id="btnSendSms" disabled>인증번호 받기</button>
+
+    <div class="sms-guide">
+      인증번호 받기를 클릭하신 후 카카오톡 알림이 안오면 요청하신 동호수가 맞는지 그리고 입주시 등록한 전화번호가 맞는지 다시 확인해 주세요!<br>
+      입주시 전화번호 확인이 필요하시면 관리실 전화(044-862-7793)로 문자를 주세요!
+    </div>
 
     <!-- 인증번호 입력 영역 -->
     <div id="otpArea" style="display:none; margin-top:14px;">
