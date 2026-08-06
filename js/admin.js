@@ -322,7 +322,7 @@ async function loadStats() {
         document.getElementById('statTotal').textContent = s.total_qa;
         document.getElementById('statActive').textContent = s.active_qa;
         document.getElementById('statToday').textContent = s.today_chats;
-        document.getElementById('statFeeToday').textContent = s.today_fee_queries;
+        document.getElementById('statFeeToday').textContent = `${s.today_fee_total}(${s.today_fee_fail})`;
     } catch (e) {
         console.error('Stats load error:', e);
     }
