@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>민원 작성</title>
+<title>답변예약 작성</title>
 <link rel="icon" type="image/png" href="/assets/images/logo.png">
 <link rel="stylesheet" href="/css/common.css?v=13">
 <link rel="stylesheet" href="/css/complaint.css?v=7">
@@ -18,7 +18,7 @@
     </a>
     <nav class="header-nav">
       <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
-      <a href="#" id="cpComplaintNav"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
+      <a href="#" id="cpComplaintNav"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
       <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
   </div>
@@ -33,7 +33,7 @@
 
 <div class="cp-header">
   <button class="cp-back" onclick="history.back()">&#8249;</button>
-  <h1>민원 작성</h1>
+  <h1>답변예약 작성</h1>
   <div style="width:28px"></div>
 </div>
 
@@ -64,7 +64,7 @@
 
   <div class="cp-section">
     <div class="cp-section-title">내용 <span style="color:#E74C3C">*</span></div>
-    <textarea class="cp-textarea" id="contentInput" placeholder="민원 내용을 상세히 작성해주세요." maxlength="3000"></textarea>
+    <textarea class="cp-textarea" id="contentInput" placeholder="문의하실 내용을 상세히 작성해주세요." maxlength="3000"></textarea>
   </div>
 
   <div class="cp-section">
@@ -89,11 +89,11 @@
           </tr>
           <tr>
             <th>수집 목적</th>
-            <td>민원 접수·처리 및 민원인 본인 확인</td>
+            <td>답변예약 접수·처리 및 신청인 본인 확인</td>
           </tr>
           <tr>
             <th>보유 기간</th>
-            <td>민원 처리 완료 후 1년, 이후 즉시 파기</td>
+            <td>답변예약 처리 완료 후 1년, 이후 즉시 파기</td>
           </tr>
           <tr>
             <th>제3자 제공</th>
@@ -103,7 +103,7 @@
       </table>
       <p class="cp-privacy-note">
         ※ 위 개인정보 수집·이용에 동의하지 않을 권리가 있으나,<br>
-        동의하지 않으실 경우 민원 등록이 제한될 수 있습니다.
+        동의하지 않으실 경우 답변예약 등록이 제한될 수 있습니다.
       </p>
     </div>
     <label class="cp-checkbox-label" id="privacyLabel" for="privacyAgree">
@@ -114,18 +114,18 @@
 
   <p style="font-size:12px;color:#9E9E9E;margin-bottom:12px;line-height:1.6">
     ※ 이름·전화번호는 저장되지만 게시판에는 동/호수만 표시됩니다.<br>
-    ※ 허위 민원이나 욕설 등 부적절한 글은 관리자에 의해 삭제될 수 있습니다.
+    ※ 허위 신청이나 욕설 등 부적절한 글은 관리자에 의해 삭제될 수 있습니다.
   </p>
 
   <div id="errMsg" class="cp-error"></div>
 
-  <button class="cp-btn" id="submitBtn" onclick="submitComplaint()">민원 등록</button>
+  <button class="cp-btn" id="submitBtn" onclick="submitComplaint()">답변예약 등록</button>
 
 </div>
 
 </div><!-- /.cp-page -->
 
-<script src="/js/complaint.js?v=3"></script>
+<script src="/js/complaint.js?v=4"></script>
 <script>initCpHeader();</script>
 <script>
 // ── 이미지 업로드 처리 ────────────────────────────────────────────────────────
@@ -182,6 +182,15 @@ async function uploadImages() {
 
 const companyId = getCompanyParam();
 if (!companyId) { alert('잘못된 접근입니다.'); location.href = '/'; }
+
+// 챗봇 미답변 화면에서 "답변예약"으로 넘어온 경우 질문 내용 자동 채움 (1회성)
+(function () {
+    var prefill = sessionStorage.getItem('cp_prefill_content');
+    if (prefill) {
+        document.getElementById('contentInput').value = prefill;
+        sessionStorage.removeItem('cp_prefill_content');
+    }
+})();
 
 // 회사별 동 기본값 설정 (single_building_dong 설정 기반, 이름 하드코딩 아님)
 (async () => {
@@ -241,7 +250,7 @@ async function submitComplaint() {
         errEl.textContent = e.message;
         errEl.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = '민원 등록';
+        btn.textContent = '답변예약 등록';
     }
 }
 </script>

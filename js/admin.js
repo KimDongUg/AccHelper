@@ -283,6 +283,7 @@ function switchTab(tab) {
     if (tab === 'statistics') initStatistics();
     if (tab === 'questionViews') initQuestionViews();
     if (tab === 'complaintPersons') { cpPage = 1; loadComplaintPersons(); }
+    if (tab === 'chatTalk') { ctPage = 1; loadChatTalkThreads(); }
     if (tab === 'market') { mktPage = 1; loadMarketPosts(); }
     if (tab === 'subscription') loadSubscriptionTab();
     if (tab === 'fee') { loadFeeStats(); loadFeeAccessLog(); }
@@ -2422,7 +2423,7 @@ async function loadComplaintStats() {
         _renderCpTrendChart(data.items || [], period);
         _renderCpTable(data.items || [], period);
     } catch (e) {
-        showToast('민원 통계를 불러오지 못했습니다.', 'error');
+        showToast('답변예약 통계를 불러오지 못했습니다.', 'error');
     }
 }
 
@@ -3132,6 +3133,152 @@ document.addEventListener('DOMContentLoaded', () => {
     const cpSearchEl = document.getElementById('cpSearchInput');
     if (cpSearchEl) cpSearchEl.addEventListener('keydown', e => { if (e.key === 'Enter') { cpPage = 1; loadComplaintPersons(); } });
 });
+
+/* ═══════════════════════════════════════════════
+ *  1:1 톡 (CHAT TALK) TAB
+ * ═══════════════════════════════════════════════ */
+
+let ctPage = 1;
+const CT_PAGE_SIZE = 20;
+let ctCurrentThreadId = null;
+
+async function loadChatTalkThreads() {
+    const loading = document.getElementById('ctTableLoading');
+    const tbody   = document.getElementById('ctTableBody');
+    const empty   = document.getElementById('ctEmptyState');
+
+    if (loading) loading.classList.add('show');
+    if (empty)   empty.style.display = 'none';
+
+    try {
+        const data = await apiGet(`/chat-talk/admin/threads?page=${ctPage}`);
+
+        if (!data.items || data.items.length === 0) {
+            tbody.innerHTML = '';
+            if (empty) empty.style.display = 'block';
+            renderCtPagination(1, 1);
+            return;
+        }
+
+        tbody.innerHTML = data.items.map(t => {
+            const unclaimed = !t.claimed_admin_id;
+            const rowStyle = unclaimed ? 'font-weight:700;background:#FFF8E1' : '';
+            const statusLabel = t.status === 'closed'
+                ? '<span style="color:var(--gray-500)">종료</span>'
+                : '<span style="color:#2E7D32;font-weight:600">진행중</span>';
+            return `
+                <tr style="${rowStyle};cursor:pointer" onclick="openCtThreadModal(${t.id})">
+                    <td>${escHtml(t.dong)}</td>
+                    <td>${escHtml(t.ho)}</td>
+                    <td>${escHtml(t.resident_name)}</td>
+                    <td style="text-align:center">${statusLabel}</td>
+                    <td>${t.claimed_admin_name ? escHtml(t.claimed_admin_name) : '<span style="color:#E65100">미배정</span>'}</td>
+                    <td style="text-align:center">
+                        ${t.unread_count > 0 ? `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;background:#FFEBEE;color:#C62828">${t.unread_count}</span>` : '-'}
+                    </td>
+                    <td style="font-size:12px;color:var(--gray-600)">${escHtml(t.last_message_preview)}</td>
+                    <td style="font-size:12px;color:var(--gray-500)">${escHtml(t.last_message_at)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        renderCtPagination(data.page, data.pages);
+    } catch (e) {
+        showToast('1:1 톡 목록 로드 실패: ' + e.message, 'error');
+    } finally {
+        if (loading) loading.classList.remove('show');
+    }
+}
+
+function renderCtPagination(page, pages) {
+    const nav = document.getElementById('ctPagination');
+    if (!nav) return;
+    if (pages <= 1) { nav.innerHTML = ''; return; }
+    let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToCtPage(${page - 1})">&laquo;</button>`;
+    const start = Math.max(1, page - 2);
+    const end   = Math.min(pages, page + 2);
+    for (let i = start; i <= end; i++) {
+        html += `<button class="${i === page ? 'active' : ''}" onclick="goToCtPage(${i})">${i}</button>`;
+    }
+    html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToCtPage(${page + 1})">&raquo;</button>`;
+    nav.innerHTML = html;
+}
+
+function goToCtPage(page) { ctPage = page; loadChatTalkThreads(); }
+
+async function openCtThreadModal(threadId) {
+    ctCurrentThreadId = threadId;
+    const modal = document.getElementById('ctThreadModal');
+    modal.style.display = 'flex';
+    document.getElementById('ctModalMessages').innerHTML = '';
+    document.getElementById('ctModalMeta').textContent = '불러오는 중...';
+
+    try {
+        // GET 호출 자체가 서버에서 담당자 자동 선점 + 안읽음 처리를 수행함
+        const thread = await apiGet(`/chat-talk/admin/threads/${threadId}`);
+
+        document.getElementById('ctModalTitle').textContent = `${thread.dong} ${thread.ho} — ${thread.resident_name}`;
+        document.getElementById('ctModalMeta').textContent =
+            `담당자: ${thread.claimed_admin_name || '미배정'} · 상태: ${thread.status === 'closed' ? '종료' : '진행중'}`;
+
+        const closeBtn = document.getElementById('ctCloseThreadBtn');
+        closeBtn.textContent = thread.status === 'closed' ? '다시 열기' : '스레드 종료';
+
+        const msgsEl = document.getElementById('ctModalMessages');
+        msgsEl.innerHTML = (thread.messages || []).map(m => {
+            const isResident = m.sender_type === 'resident';
+            return `
+                <div style="align-self:${isResident ? 'flex-start' : 'flex-end'};max-width:80%">
+                    <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
+                        background:${isResident ? 'var(--gray-100)' : 'var(--primary)'};color:${isResident ? 'var(--gray-900)' : '#fff'}">
+                        ${escHtml(m.content)}
+                    </div>
+                    <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${escHtml(m.created_at)}</div>
+                </div>
+            `;
+        }).join('');
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+
+        // 목록의 안읽음 배지를 즉시 반영하기 위해 백그라운드로 재조회
+        loadChatTalkThreads();
+    } catch (e) {
+        showToast('스레드 조회 실패: ' + e.message, 'error');
+        closeCtThreadModal();
+    }
+}
+
+function closeCtThreadModal() {
+    document.getElementById('ctThreadModal').style.display = 'none';
+    ctCurrentThreadId = null;
+}
+
+async function sendCtReply() {
+    if (!ctCurrentThreadId) return;
+    const input = document.getElementById('ctReplyInput');
+    const content = input.value.trim();
+    if (!content) return;
+
+    try {
+        await apiPost(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`, { content });
+        input.value = '';
+        await openCtThreadModal(ctCurrentThreadId);
+    } catch (e) {
+        showToast('답장 전송 실패: ' + e.message, 'error');
+    }
+}
+
+async function closeCtThreadStatus() {
+    if (!ctCurrentThreadId) return;
+    try {
+        const modal = document.getElementById('ctModalTitle');
+        const reopening = document.getElementById('ctCloseThreadBtn').textContent === '다시 열기';
+        await apiPatch(`/chat-talk/admin/threads/${ctCurrentThreadId}/status`, { status: reopening ? 'open' : 'closed' });
+        showToast(reopening ? '스레드를 다시 열었습니다' : '스레드를 종료했습니다');
+        await openCtThreadModal(ctCurrentThreadId);
+    } catch (e) {
+        showToast('상태 변경 실패: ' + e.message, 'error');
+    }
+}
 
 /* ═══════════════════════════════════════════════
  *  MARKET (🥕 당근) MANAGEMENT TAB

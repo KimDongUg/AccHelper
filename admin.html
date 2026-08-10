@@ -225,6 +225,7 @@
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="questionViews" id="tabQuestionViews">질문 조회 상세</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="fee" id="tabFee" style="display:none">관리비 조회</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="complaintPersons" id="tabComplaintPersons">민원인 목록</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="chatTalk" id="tabChatTalk">💬 1:1 톡</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="market" id="tabMarket">🥕 당근 관리</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="admins" id="tabAdmins" style="display:none">관리자 관리</button>
             <button class="tab-btn" role="tab" aria-selected="false" data-tab="subscription" id="tabSubscription">구독</button>
@@ -412,7 +413,7 @@
                 </button>
                 <button id="stSubBtnComplaint" onclick="switchStatsSubTab('complaint')"
                     style="padding:8px 18px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;font-size:14px;font-weight:500;color:var(--gray-500);cursor:pointer">
-                    📋 민원 통계
+                    📋 답변예약 통계
                 </button>
                 <button id="stSubBtnMarket" onclick="switchStatsSubTab('market')"
                     style="padding:8px 18px;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;font-size:14px;font-weight:500;color:var(--gray-500);cursor:pointer">
@@ -485,10 +486,10 @@
                 </div>
             </div>
 
-            <!-- ── 서브탭: 민원 통계 ── -->
+            <!-- ── 서브탭: 답변예약 통계 ── -->
             <div id="stSubComplaint" style="display:none">
                 <div class="toolbar" style="flex-wrap:wrap;gap:0.75rem">
-                    <h3 style="margin:0;font-size:var(--text-base)">민원 통계</h3>
+                    <h3 style="margin:0;font-size:var(--text-base)">답변예약 통계</h3>
                     <div style="display:flex;gap:0.5rem;align-items:center;margin-left:auto">
                         <select id="cpStatsPeriodType" class="form-control" style="min-width:100px">
                             <option value="daily">일별</option>
@@ -504,7 +505,7 @@
                 </div>
                 <div class="stats-summary-grid" style="margin-top:1rem">
                     <div class="stats-summary-card">
-                        <div class="stats-summary-label">기간 내 총 민원</div>
+                        <div class="stats-summary-label">기간 내 총 답변예약</div>
                         <div class="stats-summary-value" id="cpStatTotal">-</div>
                     </div>
                     <div class="stats-summary-card">
@@ -516,19 +517,19 @@
                         <div class="stats-summary-value" id="cpStatUnanswered">-</div>
                     </div>
                     <div class="stats-summary-card">
-                        <div class="stats-summary-label">전체 누적 민원</div>
+                        <div class="stats-summary-label">전체 누적 답변예약</div>
                         <div class="stats-summary-value" id="cpStatAllTime">-</div>
                     </div>
                 </div>
                 <div class="stats-charts-grid" style="margin-top:1rem">
                     <div class="stats-chart-card" style="grid-column:1/-1">
-                        <h4 class="stats-chart-title">민원 접수 추이</h4>
+                        <h4 class="stats-chart-title">답변예약 접수 추이</h4>
                         <div class="stats-chart-wrap"><canvas id="cpTrendChart"></canvas></div>
                     </div>
                 </div>
                 <div class="qa-table-wrap" style="margin-top:1rem">
                     <div class="table-wrap">
-                        <table class="qa-table" aria-label="민원 통계 상세">
+                        <table class="qa-table" aria-label="답변예약 통계 상세">
                             <thead><tr>
                                 <th scope="col" id="cpStatsColPeriod">기간</th>
                                 <th scope="col" style="width:120px;text-align:right">신규 접수</th>
@@ -540,7 +541,7 @@
                     </div>
                     <div id="cpStatsEmptyState" class="empty-state" style="display:none" role="status">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 3v18h18"/><polyline points="18 9 13 14 9 10 3 16"/></svg>
-                        <p>해당 기간의 민원 데이터가 없습니다.</p>
+                        <p>해당 기간의 답변예약 데이터가 없습니다.</p>
                     </div>
                 </div>
             </div>
@@ -715,6 +716,41 @@
                     <p>등록된 민원인이 없습니다.</p>
                 </div>
                 <nav class="pagination" id="cpPagination" aria-label="민원인 목록 페이지 내비게이션"></nav>
+            </div>
+        </div>
+
+        <!-- Tab: 1:1 톡 -->
+        <div class="tab-content" id="tabContentChatTalk" role="tabpanel" style="display:none">
+            <div class="toolbar" style="flex-wrap:wrap;gap:0.5rem">
+                <h3 style="margin:0;font-size:var(--text-base)">1:1 톡 스레드 목록</h3>
+                <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="loadChatTalkThreads()">새로고침</button>
+            </div>
+            <div class="qa-table-wrap">
+                <div class="table-loading" id="ctTableLoading" role="status" aria-label="데이터 로딩 중">
+                    <div class="table-spinner" aria-hidden="true"></div>
+                </div>
+                <div class="table-wrap">
+                    <table class="qa-table" aria-label="1:1 톡 스레드 목록">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width:70px">동</th>
+                                <th scope="col" style="width:70px">호수</th>
+                                <th scope="col" style="width:90px">입주민</th>
+                                <th scope="col" style="width:70px;text-align:center">상태</th>
+                                <th scope="col" style="width:100px">담당자</th>
+                                <th scope="col" style="width:70px;text-align:center">안읽음</th>
+                                <th scope="col">최근 메시지</th>
+                                <th scope="col" style="width:130px">최근 메시지 시각</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ctTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="ctEmptyState" class="empty-state" style="display:none" role="status">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <p>진행 중인 1:1 톡이 없습니다.</p>
+                </div>
+                <nav class="pagination" id="ctPagination" aria-label="1:1 톡 목록 페이지 내비게이션"></nav>
             </div>
         </div>
 
@@ -1186,6 +1222,27 @@
         </div>
     </div>
 
+    <!-- 1:1 톡 스레드 상세 모달 -->
+    <div class="modal-overlay" id="ctThreadModal" role="dialog" aria-modal="true" style="display:none" onclick="if(event.target===this)closeCtThreadModal()">
+        <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="ctModalTitle">1:1 톡</h3>
+                <button class="modal-close" onclick="closeCtThreadModal()" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="ctModalMeta" style="font-size:12px;color:var(--gray-500);margin:0 0 10px"></p>
+                <div id="ctModalMessages" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;margin-bottom:12px"></div>
+                <div class="form-group">
+                    <textarea id="ctReplyInput" class="form-control" rows="3" placeholder="답장을 입력하세요"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="ctCloseThreadBtn" onclick="closeCtThreadStatus()">스레드 종료</button>
+                <button class="btn btn-primary" onclick="sendCtReply()">답장 보내기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
@@ -1213,6 +1270,6 @@
     <script>if(typeof marked!=='undefined')marked.setOptions({breaks:true});</script>
     <script src="/js/api.js?v=15"></script>
     <script src="/js/fee-charts.js"></script>
-    <script src="/js/admin.js?v=17"></script>
+    <script src="/js/admin.js?v=18"></script>
 </body>
 </html>

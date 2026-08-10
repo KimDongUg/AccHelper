@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>1:1 톡 — AI Helper</title>
+<link rel="icon" type="image/png" href="/assets/images/logo.png">
+<link rel="stylesheet" href="/css/common.css?v=13">
+<style>
+  .ct-wrap { max-width: 640px; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; height: calc(100vh - 60px); }
+  .ct-header { padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200); margin-bottom: 0.75rem; }
+  .ct-header h1 { font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--gray-900); }
+  .ct-header p { font-size: 0.8rem; color: var(--gray-600); margin: 0; }
+  .ct-banner { display: none; background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; border-radius: 8px; padding: 0.625rem 0.875rem; font-size: 0.8rem; margin-bottom: 0.75rem; line-height: 1.5; }
+  .ct-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.625rem; padding: 0.5rem 0; }
+  .ct-empty { text-align: center; color: var(--gray-500); font-size: 0.85rem; margin-top: 2rem; }
+  .ct-msg { max-width: 78%; padding: 0.625rem 0.875rem; border-radius: 12px; font-size: 0.875rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .ct-msg-resident { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+  .ct-msg-admin { align-self: flex-start; background: var(--gray-100); color: var(--gray-900); border-bottom-left-radius: 4px; }
+  .ct-msg-time { font-size: 0.6875rem; color: var(--gray-500); margin-top: 0.2rem; align-self: flex-end; }
+  .ct-msg-admin + .ct-msg-time { align-self: flex-start; }
+  .ct-input-row { display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200); }
+  .ct-input { flex: 1; padding: 0.625rem 0.875rem; border: 1px solid var(--gray-300); border-radius: 999px; font-size: 0.875rem; }
+  .ct-send-btn { padding: 0.625rem 1.25rem; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
+  .ct-send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<header class="header" role="banner">
+  <div class="header-left">
+    <a href="/" id="headerLogo" class="header-logo" aria-label="AI Helper 홈으로 이동">
+      <img src="/assets/images/robot.png" alt="AI Helper 로고">
+      <span class="logo-text">AI Helper</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/" id="ctChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <span id="ctHeaderCompanyLabel" class="company-label" style="display:none"></span>
+  </div>
+</header>
+
+<div class="ct-wrap">
+  <div class="ct-header">
+    <h1>💬 1:1 톡</h1>
+    <p id="ctSubtitle">관리사무소 담당자와 1:1로 문의하실 수 있습니다.</p>
+  </div>
+
+  <div class="ct-banner" id="ctBanner"></div>
+
+  <div class="ct-messages" id="ctMessages">
+    <div class="ct-empty" id="ctEmpty">아직 대화 내역이 없습니다. 메시지를 보내 상담을 시작해 보세요.</div>
+  </div>
+
+  <div class="ct-input-row">
+    <input type="text" class="ct-input" id="ctInput" placeholder="메시지를 입력하세요" maxlength="2000">
+    <button type="button" class="ct-send-btn" id="ctSendBtn">전송</button>
+  </div>
+</div>
+
+<script src="/js/market.js?v=3"></script>
+<script src="/js/chat-talk.js?v=1"></script>
+</body>
+</html>

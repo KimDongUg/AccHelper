@@ -1,4 +1,4 @@
-/* 민원게시판 공통 JS */
+/* 답변예약(구 민원게시판) 공통 JS */
 
 const COMPLAINT_API = '/api/complaints';
 

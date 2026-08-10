@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>민원게시판</title>
+<title>답변예약</title>
 <link rel="icon" type="image/png" href="/assets/images/logo.png">
 <link rel="stylesheet" href="/css/common.css?v=13">
 <link rel="stylesheet" href="/css/complaint.css?v=7">
@@ -19,7 +19,7 @@
     <nav class="header-nav">
       <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
       <a href="/fee.html" id="cpFeeNav"><span class="nav-long">관리비</span><span class="nav-short">관리비</span></a>
-      <a href="#" id="cpComplaintNav" class="active"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
+      <a href="#" id="cpComplaintNav" class="active"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
       <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
   </div>
@@ -34,7 +34,7 @@
 
 <div class="cp-header">
   <button class="cp-back" onclick="history.back()">&#8249;</button>
-  <h1>민원</h1>
+  <h1>답변예약</h1>
   <div id="adminBadge" style="width:28px"></div>
 </div>
 
@@ -42,14 +42,14 @@
 
 <div id="emptyState" class="cp-empty" style="display:none">
   <span class="emoji">📋</span>
-  <p>아직 민원글이 없어요.<br>첫 번째 민원을 남겨보세요!</p>
+  <p>아직 등록된 답변예약이 없어요.<br>첫 번째 문의를 남겨보세요!</p>
 </div>
 
-<a href="#" class="cp-fab" id="writeBtn" title="민원 작성">+</a>
+<a href="#" class="cp-fab" id="writeBtn" title="답변예약 작성">+</a>
 
 </div><!-- /.cp-page -->
 
-<script src="/js/complaint.js?v=3"></script>
+<script src="/js/complaint.js?v=4"></script>
 <script>
 initCpHeader();
 const companyId = getCompanyParam();

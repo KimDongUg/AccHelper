@@ -1015,6 +1015,100 @@
     background: var(--primary-bg);
 }
 
+/* ── 미답변 대안 안내 (유사 QA + 1:1톡/문자문의/답변예약) ───── */
+.unanswered-options {
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--gray-200);
+    padding-top: 0.625rem;
+}
+
+.unanswered-qa-heading {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.unanswered-qa-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
+}
+
+.unanswered-qa-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: var(--text-xs);
+    color: var(--gray-900);
+    cursor: pointer;
+}
+
+.unanswered-qa-link:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-bg);
+}
+
+.unanswered-qa-answer {
+    margin-top: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--primary-bg);
+    border-radius: 6px;
+    font-size: var(--text-xs);
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.unanswered-action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.unanswered-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    width: fit-content;
+    padding: 0.5rem 0.875rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--primary);
+    background: var(--primary-bg);
+    border: 1px solid var(--primary);
+    border-radius: 999px;
+    text-decoration: none;
+}
+
+.unanswered-action-link:hover {
+    opacity: 0.85;
+}
+
+.unanswered-sms-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+}
+
+.unanswered-sms-note {
+    margin: 0;
+    font-size: 0.6875rem;
+    color: var(--gray-600);
+}
+
+.unanswered-reserve-msg {
+    margin: 0 0 0.375rem;
+    font-size: var(--text-xs);
+    color: var(--gray-900);
+}
+
 /* ── Toast notifications ───────────────────── */
 .toast-container {
     position: fixed;

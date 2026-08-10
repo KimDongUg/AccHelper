@@ -49,6 +49,7 @@ function escapeAttr(s) {
 /* ── State ──────────────────────────────────── */
 let currentCompanyId = null;
 let currentCompanyCode = null;
+let currentCompanyPhone = null;
 let sessionId = generateSessionId();
 sessionStorage.setItem('chatSessionId', sessionId);
 let selectedCategory = null;
@@ -233,6 +234,7 @@ async function validateAndStartChat(code) {
         const company = await apiGet(`/companies/public/${encodeURIComponent(code)}`);
         currentCompanyId = company.company_id;
         currentCompanyCode = code;
+        currentCompanyPhone = company.phone || null;
 
         // Show company name in header
         companyLabel.textContent = company.company_name;
@@ -598,16 +600,18 @@ function showChat(companyData) {
             });
         }
 
-        // 미답변 판정: evidences·qa_ids 모두 없고 답변이 미답변 패턴일 때만 저장
+        // 미답변 판정: 답변이 미답변 패턴이면 저장 (evidences가 있어도 LLM이 "모른다"고
+        // 답했을 수 있으므로 hasEvidences/qaIds 여부와 무관하게 문구로만 판정)
         var answerText = result.answer || '';
         var looksUnanswered = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없/.test(answerText);
-        var isUnanswered = !hasEvidences && qaIds.length === 0 && looksUnanswered;
+        var isUnanswered = looksUnanswered;
         if (isUnanswered) {
             apiPost('/unanswered-questions', {
                 question: question,
                 company_id: currentCompanyId,
                 session_id: sessionId,
             }).catch(function () { /* 저장 실패해도 무시 */ });
+            bubble.appendChild(buildUnansweredOptions(question, result.evidences || []));
         }
         bubble.appendChild(buildFeedbackButtons(question, result.answer, qaIds));
 
@@ -667,6 +671,101 @@ function showChat(companyData) {
         section.appendChild(toggle);
         section.appendChild(list);
         return section;
+    }
+
+    /* ── 미답변 시 대안 안내: 유사 QA 5개 + 1:1톡/문자문의(영업시간 내) 또는 답변예약(영업시간 외) ── */
+    function buildUnansweredOptions(question, evidences) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'unanswered-options';
+
+        if (evidences && evidences.length > 0) {
+            var qaHeading = document.createElement('div');
+            qaHeading.className = 'unanswered-qa-heading';
+            qaHeading.textContent = '혹시 이런 질문을 찾으셨나요?';
+            wrapper.appendChild(qaHeading);
+
+            var qaList = document.createElement('div');
+            qaList.className = 'unanswered-qa-list';
+            evidences.slice(0, 5).forEach(function (ev) {
+                var item = document.createElement('div');
+                item.className = 'unanswered-qa-item';
+
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'unanswered-qa-link';
+                btn.textContent = ev.question;
+
+                var answerDiv = document.createElement('div');
+                answerDiv.className = 'unanswered-qa-answer';
+                answerDiv.style.display = 'none';
+                answerDiv.textContent = ev.answer;
+
+                btn.addEventListener('click', function () {
+                    var isHidden = answerDiv.style.display === 'none';
+                    answerDiv.style.display = isHidden ? '' : 'none';
+                });
+
+                item.appendChild(btn);
+                item.appendChild(answerDiv);
+                qaList.appendChild(item);
+            });
+            wrapper.appendChild(qaList);
+        }
+
+        var actionArea = document.createElement('div');
+        actionArea.className = 'unanswered-action-area';
+        wrapper.appendChild(actionArea);
+
+        apiGet('/chat-talk/availability').then(function (avail) {
+            actionArea.innerHTML = '';
+            if (avail && avail.available) {
+                var hasMarketToken = !!sessionStorage.getItem('market_token');
+                var talkUrl = '/chat-talk.html?company=' + currentCompanyId;
+
+                var talkLink = document.createElement('a');
+                talkLink.className = 'unanswered-action-link';
+                talkLink.href = hasMarketToken ? talkUrl : ('/market-login.html?return=' + encodeURIComponent(talkUrl));
+                talkLink.textContent = '💬 1:1 톡으로 문의하기';
+                actionArea.appendChild(talkLink);
+
+                if (currentCompanyPhone) {
+                    var smsWrap = document.createElement('div');
+                    smsWrap.className = 'unanswered-sms-wrap';
+
+                    var smsLink = document.createElement('a');
+                    smsLink.className = 'unanswered-action-link';
+                    smsLink.href = 'sms:' + currentCompanyPhone;
+                    smsLink.textContent = '📱 문자로 문의하기';
+                    smsWrap.appendChild(smsLink);
+
+                    var smsNote = document.createElement('p');
+                    smsNote.className = 'unanswered-sms-note';
+                    smsNote.textContent = '이 번호는 문자 가능한 번호입니다. 문자로 문의해 주세요: ' + currentCompanyPhone;
+                    smsWrap.appendChild(smsNote);
+
+                    actionArea.appendChild(smsWrap);
+                }
+            } else {
+                var reserveMsg = document.createElement('p');
+                reserveMsg.className = 'unanswered-reserve-msg';
+                reserveMsg.textContent = '질문하신 내용에 대한 답변을 예약하시겠습니까?';
+                actionArea.appendChild(reserveMsg);
+
+                var reserveBtn = document.createElement('button');
+                reserveBtn.type = 'button';
+                reserveBtn.className = 'btn btn-primary btn-sm';
+                reserveBtn.textContent = '답변예약';
+                reserveBtn.addEventListener('click', function () {
+                    sessionStorage.setItem('cp_prefill_content', question);
+                    window.location.href = '/complaint-write.html?company=' + currentCompanyId;
+                });
+                actionArea.appendChild(reserveBtn);
+            }
+        }).catch(function () {
+            actionArea.innerHTML = '';
+        });
+
+        return wrapper;
     }
 
     /* ── Build feedback buttons ── */

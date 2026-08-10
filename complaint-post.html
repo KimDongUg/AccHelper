@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>민원 상세</title>
+<title>답변예약 상세</title>
 <link rel="icon" type="image/png" href="/assets/images/logo.png">
 <link rel="stylesheet" href="/css/common.css?v=13">
 <link rel="stylesheet" href="/css/complaint.css?v=7">
@@ -18,7 +18,7 @@
     </a>
     <nav class="header-nav">
       <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
-      <a href="#" id="cpComplaintNav" class="active"><span class="nav-long">민원게시판</span><span class="nav-short">민원</span></a>
+      <a href="#" id="cpComplaintNav" class="active"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
       <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
   </div>
@@ -59,7 +59,7 @@
 <!-- 수정 폼 모달 -->
 <div class="cp-modal-overlay" id="editFormModal" style="display:none" onclick="closeEditFormModal(event)">
   <div class="cp-modal" onclick="event.stopPropagation()">
-    <h3>민원 수정</h3>
+    <h3>답변예약 수정</h3>
     <input class="cp-write-input" id="editTitle" type="text" placeholder="제목" maxlength="255" style="width:100%;margin-bottom:8px">
     <textarea class="cp-write-textarea" id="editContent" placeholder="내용" maxlength="3000" style="width:100%;min-height:140px;margin-bottom:8px"></textarea>
     <div id="editFormErr" style="color:#c62828;font-size:13px;margin-bottom:8px;display:none"></div>
@@ -74,7 +74,7 @@
 <div class="cp-modal-overlay" id="deleteModal" style="display:none" onclick="closeDeleteModal(event)">
   <div class="cp-modal" onclick="event.stopPropagation()">
     <h3>삭제 사유를 입력하세요</h3>
-    <textarea id="deleteReasonInput" placeholder="삭제 사유">민원글이 아니어서 삭제 되었습니다!</textarea>
+    <textarea id="deleteReasonInput" placeholder="삭제 사유">답변예약 글이 아니어서 삭제 되었습니다!</textarea>
     <div class="cp-modal-btns">
       <button style="background:#E0E0E0;color:#212121" onclick="closeDeleteModal()">취소</button>
       <button style="background:#E74C3C;color:#fff" onclick="confirmDelete()">삭제</button>
@@ -84,7 +84,7 @@
 
 </div><!-- /.cp-page -->
 
-<script src="/js/complaint.js?v=3"></script>
+<script src="/js/complaint.js?v=4"></script>
 <script>
 initCpHeader();
 const companyId = getCompanyParam();
@@ -296,7 +296,7 @@ function closeDeleteModal(e) {
     }
 }
 async function confirmDelete() {
-    const reason = document.getElementById('deleteReasonInput').value.trim() || '민원글이 아니어서 삭제 되었습니다!';
+    const reason = document.getElementById('deleteReasonInput').value.trim() || '답변예약 글이 아니어서 삭제 되었습니다!';
     try {
         await cpFetch(`/${postId}`, { method: 'DELETE', body: { reason } });
         showCpToast('삭제되었습니다.');
