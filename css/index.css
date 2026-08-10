@@ -1109,6 +1109,58 @@
     color: var(--gray-900);
 }
 
+/* ── 1:1 톡 바로가기 (프롬프트 입력창 하단) ───────────────── */
+.chat-talk-quicklink {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0 0.25rem;
+}
+
+.chat-talk-quicklink-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), #7C6EF2);
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chat-talk-quicklink-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.chat-talk-quicklink-btn .ctql-icon {
+    font-size: 1.1rem;
+}
+
+.chat-talk-quicklink-btn.ctql-disabled {
+    background: var(--gray-300);
+    color: var(--gray-600);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.chat-talk-quicklink-btn.ctql-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.ctql-note {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-align: center;
+}
+
 /* ── Toast notifications ───────────────────── */
 .toast-container {
     position: fixed;

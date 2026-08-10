@@ -83,6 +83,44 @@ function showToast(message, duration) {
     }, duration);
 }
 
+/* ── 1:1 톡 가용성(영업시간) 조회 — 공통 사용 ── */
+function getChatTalkAvailability() {
+    return apiGet('/chat-talk/availability').catch(function () {
+        return { available: false, reason: 'error', message: '' };
+    });
+}
+
+/* ── 1:1 톡 바로가기 (프롬프트 입력창 하단) ── */
+function setupChatTalkQuickLink(companyId) {
+    var wrap = document.getElementById('chatTalkQuickLink');
+    var anchor = document.getElementById('chatTalkQuickLinkAnchor');
+    var textEl = anchor ? anchor.querySelector('.ctql-text') : null;
+    var note = document.getElementById('chatTalkQuickLinkNote');
+    if (!wrap || !anchor || !textEl || !note) return;
+
+    wrap.style.display = '';
+
+    getChatTalkAvailability().then(function (avail) {
+        var hasMarketToken = !!sessionStorage.getItem('market_token');
+        var talkUrl = '/chat-talk.html?company=' + companyId;
+
+        if (avail && avail.available) {
+            anchor.classList.remove('ctql-disabled');
+            anchor.href = hasMarketToken ? talkUrl : ('/market-login.html?return=' + encodeURIComponent(talkUrl));
+            anchor.onclick = null;
+            textEl.textContent = '1:1 톡으로 상담하기';
+            note.style.display = 'none';
+        } else {
+            anchor.classList.add('ctql-disabled');
+            anchor.href = '#';
+            anchor.onclick = function (e) { e.preventDefault(); };
+            textEl.textContent = '1:1 톡 (현재 상담 시간 아님)';
+            note.textContent = (avail && avail.message) || '현재 상담 가능 시간이 아닙니다.';
+            note.style.display = '';
+        }
+    });
+}
+
 /* ── Initialization ────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
     // 로그인 상태면 헤더 버튼 텍스트 변경
@@ -283,6 +321,9 @@ async function validateAndStartChat(code) {
             complaintNavLink.href = '/complaint.html?company=' + company.company_id;
             sessionStorage.setItem('complaint_company_id', company.company_id);
         }
+
+        // 1:1 톡 바로가기 (활성/비활성 조건은 챗봇 미답변 안내와 동일)
+        setupChatTalkQuickLink(company.company_id);
 
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company);
@@ -716,7 +757,7 @@ function showChat(companyData) {
         actionArea.className = 'unanswered-action-area';
         wrapper.appendChild(actionArea);
 
-        apiGet('/chat-talk/availability').then(function (avail) {
+        getChatTalkAvailability().then(function (avail) {
             actionArea.innerHTML = '';
             if (avail && avail.available) {
                 var hasMarketToken = !!sessionStorage.getItem('market_token');
@@ -761,8 +802,6 @@ function showChat(companyData) {
                 });
                 actionArea.appendChild(reserveBtn);
             }
-        }).catch(function () {
-            actionArea.innerHTML = '';
         });
 
         return wrapper;
