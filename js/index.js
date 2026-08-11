@@ -108,7 +108,7 @@ function setupChatTalkQuickLink(companyId) {
             anchor.classList.remove('ctql-disabled');
             anchor.href = hasMarketToken ? talkUrl : ('/market-login.html?return=' + encodeURIComponent(talkUrl));
             anchor.onclick = null;
-            textEl.textContent = '1:1 톡으로 상담하기';
+            textEl.textContent = '관리실에 톡으로 문의하기';
             note.style.display = 'none';
         } else {
             anchor.classList.add('ctql-disabled');
