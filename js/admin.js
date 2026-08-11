@@ -3261,7 +3261,7 @@ function startCtModalPolling() {
     stopCtModalPolling();
     ctModalPollTimer = setInterval(() => {
         if (ctCurrentThreadId) refreshCtThreadModal(ctCurrentThreadId, true);
-    }, 6000);
+    }, 3000);
 }
 
 function stopCtModalPolling() {
