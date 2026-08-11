@@ -106,7 +106,7 @@ function setupChatTalkQuickLink(companyId) {
 
         if (avail && avail.available) {
             anchor.classList.remove('ctql-disabled');
-            anchor.href = hasMarketToken ? talkUrl : ('/market-login.html?return=' + encodeURIComponent(talkUrl));
+            anchor.href = hasMarketToken ? talkUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(talkUrl));
             anchor.onclick = null;
             textEl.textContent = '관리실에 톡으로 직접 문의하기';
             note.style.display = 'none';
@@ -765,7 +765,7 @@ function showChat(companyData) {
 
                 var talkLink = document.createElement('a');
                 talkLink.className = 'unanswered-action-link';
-                talkLink.href = hasMarketToken ? talkUrl : ('/market-login.html?return=' + encodeURIComponent(talkUrl));
+                talkLink.href = hasMarketToken ? talkUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(talkUrl));
                 talkLink.textContent = '💬 1:1 톡으로 문의하기';
                 actionArea.appendChild(talkLink);
 

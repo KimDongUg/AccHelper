@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>1:1 톡 — 입주민 인증</title>
+<link rel="icon" type="image/png" href="/assets/images/logo.png">
+<link rel="stylesheet" href="/css/common.css?v=16">
+<link rel="stylesheet" href="/css/market.css?v=4">
+</head>
+<body>
+
+<header class="header" role="banner">
+  <div class="header-left">
+    <a href="/" id="headerLogo" class="header-logo" aria-label="AI Helper 홈으로 이동">
+      <img src="/assets/images/robot.png" alt="AI Helper 로고">
+      <span class="logo-text">AI Helper</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/" id="ctlChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="#" id="ctlComplaintNav" style="display:none"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <span id="ctlHeaderCompanyLabel" class="company-label" style="display:none"></span>
+    <a href="/login.html" class="btn btn-outline btn-sm" id="ctlHeaderLoginLink" data-short="🔐">관리자 로그인</a>
+    <a href="/admin.html" class="btn btn-outline btn-sm" id="ctlHeaderAdminLink" data-short="관리자" style="display:none">관리자</a>
+  </div>
+</header>
+
+<div class="mkt-header">
+  <button class="mkt-back" onclick="history.back()">&#8249;</button>
+  <h1>입주민 인증</h1>
+  <div style="width:28px"></div>
+</div>
+
+<div class="mkt-login-wrap">
+  <div class="mkt-login-logo">
+    <span class="emoji">💬</span>
+    <h2>1:1 톡</h2>
+    <p id="aptSubtitle">관리사무소 담당자와의 1:1 상담을 위한 입주민 인증입니다.</p>
+  </div>
+
+  <form class="mkt-form" id="loginForm" onsubmit="return false">
+    <div class="mkt-form-row">
+      <div>
+        <label>동 <span id="dongRequired" style="color:#c62828">*</span></label>
+        <input class="mkt-input" id="buildingInput" type="text" placeholder="1동" maxlength="10">
+      </div>
+      <div>
+        <label>호수 <span style="color:#c62828">*</span></label>
+        <input class="mkt-input" id="unit" type="text" placeholder="예: 501호" required>
+      </div>
+    </div>
+
+    <div>
+      <label>이름 <span style="color:#c62828">*</span></label>
+      <input class="mkt-input" id="name" type="text" placeholder="이름을 입력하세요" required>
+    </div>
+
+    <div>
+      <label>전화번호 <span style="color:#c62828">*</span></label>
+      <input class="mkt-input" id="phone" type="tel" placeholder="예: 010-1234-5678" required>
+    </div>
+
+    <!-- 개인정보 수집·이용 동의 -->
+    <div>
+      <div class="mkt-privacy-section-title">개인정보 수집·이용 동의 <span style="color:#c62828">*</span></div>
+      <div class="mkt-privacy-box">
+        <table class="mkt-privacy-table">
+          <tr><th>수집 항목</th><td>동/호수, 이름, 전화번호</td></tr>
+          <tr><th>수집 목적</th><td>입주민 자격 인증 및 1:1 톡 상담 서비스 이용</td></tr>
+          <tr><th>보유 기간</th><td>서비스 탈퇴 또는 회사 계약 종료 시까지</td></tr>
+          <tr><th>제3자 제공</th><td>없음 (관리사무소 입주민 확인 목적으로만 사용)</td></tr>
+        </table>
+        <p class="mkt-privacy-note">
+          ※ 위 개인정보 수집·이용에 동의하지 않을 권리가 있으나,<br>
+          동의하지 않으실 경우 서비스 이용이 제한될 수 있습니다.
+        </p>
+      </div>
+      <label class="mkt-checkbox-label" id="privacyLabel" for="ctlPrivacyAgree">
+        <input type="checkbox" id="ctlPrivacyAgree" onchange="this.closest('label').classList.toggle('is-checked', this.checked)">
+        <span>위 개인정보 수집·이용에 <strong>동의합니다</strong>. (필수)</span>
+      </label>
+    </div>
+
+    <div id="errMsg" class="mkt-error" style="display:none"></div>
+
+    <button class="mkt-btn" id="loginBtn" type="submit" onclick="doLogin()">인증하기</button>
+  </form>
+</div>
+
+<script src="/js/market.js?v=3"></script>
+<script>
+// ── 공통 헤더 초기화 ─────────────────────────────────────────────────────────
+(function () {
+    var companyName = sessionStorage.getItem('market_company_name') || '';
+    var companyId   = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+
+    var labelEl = document.getElementById('ctlHeaderCompanyLabel');
+    if (labelEl && companyName) { labelEl.textContent = companyName; labelEl.style.display = ''; }
+
+    var complaintNav = document.getElementById('ctlComplaintNav');
+    if (complaintNav && companyId) { complaintNav.href = '/complaint.html?company=' + companyId; complaintNav.style.display = ''; }
+    var chatbotNav = document.getElementById('ctlChatbotNav');
+    if (chatbotNav && companyId) { chatbotNav.href = '/app.html?company=' + companyId; }
+    var headerLogo = document.getElementById('headerLogo');
+    if (headerLogo && companyId) { headerLogo.href = '/app.html?company=' + companyId; }
+
+    try {
+        var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
+        var sess = authRaw ? JSON.parse(authRaw) : null;
+        var loginBtn = document.getElementById('ctlHeaderLoginLink');
+        var adminBtn = document.getElementById('ctlHeaderAdminLink');
+        if (sess && sess.isLoggedIn && sess.token) {
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (adminBtn) { adminBtn.style.display = ''; adminBtn.textContent = '관리자 (' + (sess.fullName || sess.username || '') + ')'; }
+        }
+    } catch (e) {}
+})();
+
+// 이미 로그인된 경우 바로 이동
+(function () {
+  if (!MarketAuth.getToken()) return;
+  const ret = new URLSearchParams(location.search).get('return');
+  location.href = ret || '/chat-talk.html';
+})();
+
+// 회사 정보로 동 기본값 설정 (회사별 single_building_dong 설정 기반, 이름 하드코딩 아님)
+(async function () {
+    const companyName = sessionStorage.getItem('market_company_name') || '';
+    const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+    const buildingInput = document.getElementById('buildingInput');
+
+    if (companyName) {
+        document.getElementById('aptSubtitle').textContent = companyName + ' 담당자와의 1:1 상담을 위한 입주민 인증입니다.';
+    }
+
+    if (!companyId) return;
+    try {
+        const res = await fetch('/api/companies/public/' + encodeURIComponent(companyId));
+        if (!res.ok) return;
+        const company = await res.json();
+        if (company.single_building_dong) {
+            buildingInput.value = company.single_building_dong;
+            buildingInput.readOnly = true;
+            document.getElementById('dongRequired').textContent = '';
+        }
+    } catch (e) {}
+})();
+
+async function doLogin() {
+    const building = document.getElementById('buildingInput').value.trim();
+    const unit = document.getElementById('unit').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const errEl = document.getElementById('errMsg');
+    const btn = document.getElementById('loginBtn');
+
+    if (!building || !unit || !name || !phone) {
+        errEl.textContent = '모든 항목을 입력해주세요.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (!document.getElementById('ctlPrivacyAgree').checked) {
+        errEl.textContent = '개인정보 수집·이용에 동의해주세요.';
+        errEl.style.display = 'block';
+        document.getElementById('privacyLabel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '인증 중...';
+    errEl.style.display = 'none';
+
+    try {
+        const companyId = sessionStorage.getItem('market_company_id') ||
+                          sessionStorage.getItem('complaint_company_id') || null;
+        const res = await fetch('/api/market/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ building, unit_number: unit, name, phone,
+                                   company_id: companyId ? parseInt(companyId) : null }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || '인증 실패');
+
+        MarketAuth.save(data.token, {
+            unit: data.unit,
+            building: data.building,
+            name: name,
+        });
+        const ret = new URLSearchParams(location.search).get('return');
+        location.href = ret || '/chat-talk.html';
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '인증하기';
+    }
+}
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ const CT_API = '/api/chat-talk';
 (function () {
   if (MarketAuth.getToken()) return;
   var back = location.pathname + location.search;
-  location.href = '/market-login.html?return=' + encodeURIComponent(back);
+  location.href = '/chat-talk-login.html?return=' + encodeURIComponent(back);
 })();
 
 // ── fetch helper ─────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ async function ctFetch(path, opts) {
   var res = await fetch(CT_API + path, Object.assign({}, opts, { headers: headers }));
   if (res.status === 401) {
     MarketAuth.clear();
-    location.href = '/market-login.html?return=' + encodeURIComponent(location.pathname + location.search);
+    location.href = '/chat-talk-login.html?return=' + encodeURIComponent(location.pathname + location.search);
     throw new Error('401');
   }
   if (!res.ok) {
