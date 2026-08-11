@@ -3120,13 +3120,16 @@ function renderCpPagination(page, pages) {
     const nav = document.getElementById('cpPagination');
     if (!nav) return;
     if (pages <= 1) { nav.innerHTML = ''; return; }
-    let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToCpPage(${page - 1})">&laquo;</button>`;
+    let html = `<span style="font-size:12px;color:var(--gray-500);margin-right:8px">${page} / ${pages} 페이지</span>`;
+    html += `<button ${page <= 1 ? 'disabled' : ''} onclick="goToCpPage(1)">&laquo;&laquo;</button>`;
+    html += `<button ${page <= 1 ? 'disabled' : ''} onclick="goToCpPage(${page - 1})">&laquo;</button>`;
     const start = Math.max(1, page - 2);
     const end   = Math.min(pages, page + 2);
     for (let i = start; i <= end; i++) {
         html += `<button class="${i === page ? 'active' : ''}" onclick="goToCpPage(${i})">${i}</button>`;
     }
     html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToCpPage(${page + 1})">&raquo;</button>`;
+    html += `<button ${page >= pages ? 'disabled' : ''} onclick="goToCpPage(${pages})">&raquo;&raquo;</button>`;
     nav.innerHTML = html;
 }
 
