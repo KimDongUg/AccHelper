@@ -3268,6 +3268,17 @@ function stopCtModalPolling() {
     if (ctModalPollTimer) { clearInterval(ctModalPollTimer); ctModalPollTimer = null; }
 }
 
+// 탭이 백그라운드로 가면 폴링 중지, 다시 돌아오면(모달이 열려있을 때만) 재개
+document.addEventListener('visibilitychange', function () {
+    if (!ctCurrentThreadId) return;
+    if (document.hidden) {
+        stopCtModalPolling();
+    } else {
+        refreshCtThreadModal(ctCurrentThreadId, true);
+        startCtModalPolling();
+    }
+});
+
 function closeCtThreadModal() {
     document.getElementById('ctThreadModal').classList.remove('show');
     ctCurrentThreadId = null;
