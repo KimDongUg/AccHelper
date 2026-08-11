@@ -3065,7 +3065,7 @@ const CP_PAGE_SIZE = 20;
 
 async function loadComplaintPersons() {
     const search = (document.getElementById('cpSearchInput')?.value || '').trim();
-    const sort   = document.getElementById('cpSortSelect')?.value || 'last_complained_at';
+    const sort   = document.getElementById('cpSortSelect')?.value || 'fee_last_query_at';
     const loading = document.getElementById('cpTableLoading');
     const tbody   = document.getElementById('cpTableBody');
     const empty   = document.getElementById('cpEmptyState');
@@ -3077,7 +3077,7 @@ async function loadComplaintPersons() {
         const params = new URLSearchParams({ page: cpPage, size: CP_PAGE_SIZE, sort, order: 'desc' });
         if (search) params.append('search', search);
 
-        const data = await apiGet(`/complaints/persons?${params}`);
+        const data = await apiGet(`/fee/residents?${params}`);
 
         if (!data.items || data.items.length === 0) {
             tbody.innerHTML = '';
@@ -3086,27 +3086,30 @@ async function loadComplaintPersons() {
             return;
         }
 
+        const countBadge = (count, colorOk) => {
+            if (!count) return '';
+            return `<span style="
+                display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;
+                background:${colorOk};color:${colorOk === '#E8F5E9' ? '#2E7D32' : '#1565C0'}
+            ">${count}건</span>`;
+        };
+
         tbody.innerHTML = data.items.map(p => `
             <tr>
                 <td>${escHtml(p.dong)}</td>
                 <td>${escHtml(p.ho)}</td>
                 <td>${escHtml(p.name)}</td>
                 <td>${escHtml(p.phone)}</td>
-                <td style="text-align:center">
-                    <span style="
-                        display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;
-                        background:${p.complaint_count >= 3 ? '#FFEBEE' : '#E8F5E9'};
-                        color:${p.complaint_count >= 3 ? '#C62828' : '#2E7D32'}
-                    ">${p.complaint_count}건</span>
-                </td>
-                <td style="font-size:12px;color:var(--gray-500)">${p.first_complained_at}</td>
-                <td style="font-size:12px;color:var(--gray-500)">${p.last_complained_at}</td>
+                <td style="text-align:center">${countBadge(p.chat_count, '#E8F5E9')}</td>
+                <td style="font-size:12px;color:var(--gray-500)">${escHtml(p.chat_last_at)}</td>
+                <td style="text-align:center">${countBadge(p.fee_query_count, '#E3F2FD')}</td>
+                <td style="font-size:12px;color:var(--gray-500)">${escHtml(p.fee_last_query_at)}</td>
             </tr>
         `).join('');
 
         renderCpPagination(data.page, data.pages);
     } catch (e) {
-        showToast('민원인 목록 로드 실패: ' + e.message, 'error');
+        showToast('입주민 목록 로드 실패: ' + e.message, 'error');
     } finally {
         if (loading) loading.classList.remove('show');
     }
