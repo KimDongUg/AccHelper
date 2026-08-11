@@ -3206,16 +3206,24 @@ function renderCtPagination(page, pages) {
 
 function goToCtPage(page) { ctPage = page; loadChatTalkThreads(); }
 
+let ctModalPollTimer = null;
+
 async function openCtThreadModal(threadId) {
     ctCurrentThreadId = threadId;
-    const modal = document.getElementById('ctThreadModal');
-    modal.classList.add('show');
+    document.getElementById('ctThreadModal').classList.add('show');
     document.getElementById('ctModalMessages').innerHTML = '';
     document.getElementById('ctModalMeta').textContent = '불러오는 중...';
 
+    await refreshCtThreadModal(threadId, false);
+    startCtModalPolling();
+}
+
+/* silent=true면 폴링용 — 로딩 문구 초기화나 목록 새로고침 없이 메시지만 조용히 갱신 */
+async function refreshCtThreadModal(threadId, silent) {
     try {
         // GET 호출 자체가 서버에서 담당자 자동 선점 + 안읽음 처리를 수행함
         const thread = await apiGet(`/chat-talk/admin/threads/${threadId}`);
+        if (ctCurrentThreadId !== threadId) return; // 그 사이 모달이 닫혔거나 다른 스레드로 이동함
 
         document.getElementById('ctModalTitle').textContent = `${thread.dong} ${thread.ho} — ${thread.resident_name}`;
         document.getElementById('ctModalMeta').textContent =
@@ -3225,6 +3233,7 @@ async function openCtThreadModal(threadId) {
         closeBtn.textContent = thread.status === 'closed' ? '다시 열기' : '스레드 종료';
 
         const msgsEl = document.getElementById('ctModalMessages');
+        const wasNearBottom = msgsEl.scrollTop + msgsEl.clientHeight >= msgsEl.scrollHeight - 30;
         msgsEl.innerHTML = (thread.messages || []).map(m => {
             const isResident = m.sender_type === 'resident';
             return `
@@ -3237,19 +3246,32 @@ async function openCtThreadModal(threadId) {
                 </div>
             `;
         }).join('');
-        msgsEl.scrollTop = msgsEl.scrollHeight;
+        if (!silent || wasNearBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
 
-        // 목록의 안읽음 배지를 즉시 반영하기 위해 백그라운드로 재조회
-        loadChatTalkThreads();
+        // 목록의 안읽음 배지를 즉시 반영 (최초 오픈 시에만 — 폴링마다 목록 전체를 다시 그릴 필요는 없음)
+        if (!silent) loadChatTalkThreads();
     } catch (e) {
+        if (silent) return; // 폴링 중 일시적 오류는 무시하고 다음 tick에 재시도
         showToast('스레드 조회 실패: ' + e.message, 'error');
         closeCtThreadModal();
     }
 }
 
+function startCtModalPolling() {
+    stopCtModalPolling();
+    ctModalPollTimer = setInterval(() => {
+        if (ctCurrentThreadId) refreshCtThreadModal(ctCurrentThreadId, true);
+    }, 6000);
+}
+
+function stopCtModalPolling() {
+    if (ctModalPollTimer) { clearInterval(ctModalPollTimer); ctModalPollTimer = null; }
+}
+
 function closeCtThreadModal() {
     document.getElementById('ctThreadModal').classList.remove('show');
     ctCurrentThreadId = null;
+    stopCtModalPolling();
 }
 
 async function sendCtReply() {
@@ -3261,7 +3283,7 @@ async function sendCtReply() {
     try {
         await apiPost(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`, { content });
         input.value = '';
-        await openCtThreadModal(ctCurrentThreadId);
+        await refreshCtThreadModal(ctCurrentThreadId, false);
     } catch (e) {
         showToast('답장 전송 실패: ' + e.message, 'error');
     }
@@ -3270,11 +3292,10 @@ async function sendCtReply() {
 async function closeCtThreadStatus() {
     if (!ctCurrentThreadId) return;
     try {
-        const modal = document.getElementById('ctModalTitle');
         const reopening = document.getElementById('ctCloseThreadBtn').textContent === '다시 열기';
         await apiPatch(`/chat-talk/admin/threads/${ctCurrentThreadId}/status`, { status: reopening ? 'open' : 'closed' });
         showToast(reopening ? '스레드를 다시 열었습니다' : '스레드를 종료했습니다');
-        await openCtThreadModal(ctCurrentThreadId);
+        await refreshCtThreadModal(ctCurrentThreadId, false);
     } catch (e) {
         showToast('상태 변경 실패: ' + e.message, 'error');
     }
