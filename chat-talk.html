@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="/assets/images/logo.png">
 <link rel="stylesheet" href="/css/common.css?v=13">
 <style>
-  .ct-wrap { max-width: 640px; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; height: calc(100vh - 60px); }
+  .ct-wrap { max-width: 640px; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; height: calc(100vh - 64px); height: calc(100dvh - 64px); min-height: 320px; }
   .ct-header { padding: 0.75rem 0; border-bottom: 1px solid var(--gray-200); margin-bottom: 0.75rem; }
   .ct-header h1 { font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--gray-900); }
   .ct-header p { font-size: 0.8rem; color: var(--gray-600); margin: 0; }
@@ -34,11 +34,16 @@
       <span class="logo-text">AI Helper</span>
     </a>
     <nav class="header-nav">
-      <a href="/" id="ctChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="/fee.html" id="cpFeeNav"><span class="nav-long">관리비</span><span class="nav-short">관리비</span></a>
+      <a href="#" id="cpComplaintNav"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
+      <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
   </div>
   <div class="header-right">
-    <span id="ctHeaderCompanyLabel" class="company-label" style="display:none"></span>
+    <span id="cpCompanyLabel" class="company-label" style="display:none"></span>
+    <a href="/login.html" class="btn btn-outline btn-sm" id="cpHeaderLoginLink" data-short="🔐">관리자 로그인</a>
+    <a href="/admin.html" class="btn btn-outline btn-sm" id="cpAdminLink" data-short="관리자" style="display:none">관리자</a>
   </div>
 </header>
 
@@ -61,6 +66,8 @@
 </div>
 
 <script src="/js/market.js?v=3"></script>
-<script src="/js/chat-talk.js?v=2"></script>
+<script src="/js/complaint.js?v=4"></script>
+<script>initCpHeader();</script>
+<script src="/js/chat-talk.js?v=3"></script>
 </body>
 </html>

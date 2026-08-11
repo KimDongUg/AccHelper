@@ -34,18 +34,7 @@ async function ctFetch(path, opts) {
   return res.json();
 }
 
-// ── 헤더: 회사 라벨/챗봇 링크 ──────────────────────────────────────────────────
-(function () {
-  var companyId = new URLSearchParams(location.search).get('company') ||
-                  sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id');
-  var companyName = sessionStorage.getItem('market_company_name') || '';
-  var labelEl = document.getElementById('ctHeaderCompanyLabel');
-  if (labelEl && companyName) { labelEl.textContent = companyName; labelEl.style.display = ''; }
-  var chatbotNav = document.getElementById('ctChatbotNav');
-  if (chatbotNav && companyId) { chatbotNav.href = '/app.html?company=' + companyId; }
-  var headerLogo = document.getElementById('headerLogo');
-  if (headerLogo && companyId) { headerLogo.href = '/app.html?company=' + companyId; }
-})();
+// 헤더(회사 라벨/메뉴/관리자 버튼)는 js/complaint.js의 initCpHeader()가 처리 (chat-talk.html에서 호출)
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 var ctMessagesEl = document.getElementById('ctMessages');

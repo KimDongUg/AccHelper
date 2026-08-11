@@ -7,6 +7,16 @@
 <link rel="icon" type="image/png" href="/assets/images/logo.png">
 <link rel="stylesheet" href="/css/common.css?v=16">
 <link rel="stylesheet" href="/css/market.css?v=4">
+<style>
+  /* 모바일에서 세로로 잘리지 않도록 이 페이지에서만 여백/아이콘 크기 축소 */
+  .mkt-login-wrap { padding: 12px 16px 20px; }
+  .mkt-login-logo { margin-bottom: 12px; }
+  .mkt-login-logo .emoji { font-size: 28px; }
+  .mkt-login-logo h2 { margin-top: 6px; font-size: 16px; }
+  .mkt-form { gap: 12px; }
+  .mkt-privacy-box { padding: 10px 12px; margin-bottom: 8px; }
+  .mkt-checkbox-label { padding: 8px 12px; margin-bottom: 8px; }
+</style>
 </head>
 <body>
 
@@ -17,14 +27,16 @@
       <span class="logo-text">AI Helper</span>
     </a>
     <nav class="header-nav">
-      <a href="/" id="ctlChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
-      <a href="#" id="ctlComplaintNav" style="display:none"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
+      <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="/fee.html" id="cpFeeNav"><span class="nav-long">관리비</span><span class="nav-short">관리비</span></a>
+      <a href="#" id="cpComplaintNav"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
+      <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
     </nav>
   </div>
   <div class="header-right">
-    <span id="ctlHeaderCompanyLabel" class="company-label" style="display:none"></span>
-    <a href="/login.html" class="btn btn-outline btn-sm" id="ctlHeaderLoginLink" data-short="🔐">관리자 로그인</a>
-    <a href="/admin.html" class="btn btn-outline btn-sm" id="ctlHeaderAdminLink" data-short="관리자" style="display:none">관리자</a>
+    <span id="cpCompanyLabel" class="company-label" style="display:none"></span>
+    <a href="/login.html" class="btn btn-outline btn-sm" id="cpHeaderLoginLink" data-short="🔐">관리자 로그인</a>
+    <a href="/admin.html" class="btn btn-outline btn-sm" id="cpAdminLink" data-short="관리자" style="display:none">관리자</a>
   </div>
 </header>
 
@@ -91,33 +103,9 @@
 </div>
 
 <script src="/js/market.js?v=3"></script>
+<script src="/js/complaint.js?v=4"></script>
 <script>
-// ── 공통 헤더 초기화 ─────────────────────────────────────────────────────────
-(function () {
-    var companyName = sessionStorage.getItem('market_company_name') || '';
-    var companyId   = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
-
-    var labelEl = document.getElementById('ctlHeaderCompanyLabel');
-    if (labelEl && companyName) { labelEl.textContent = companyName; labelEl.style.display = ''; }
-
-    var complaintNav = document.getElementById('ctlComplaintNav');
-    if (complaintNav && companyId) { complaintNav.href = '/complaint.html?company=' + companyId; complaintNav.style.display = ''; }
-    var chatbotNav = document.getElementById('ctlChatbotNav');
-    if (chatbotNav && companyId) { chatbotNav.href = '/app.html?company=' + companyId; }
-    var headerLogo = document.getElementById('headerLogo');
-    if (headerLogo && companyId) { headerLogo.href = '/app.html?company=' + companyId; }
-
-    try {
-        var authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
-        var sess = authRaw ? JSON.parse(authRaw) : null;
-        var loginBtn = document.getElementById('ctlHeaderLoginLink');
-        var adminBtn = document.getElementById('ctlHeaderAdminLink');
-        if (sess && sess.isLoggedIn && sess.token) {
-            if (loginBtn) loginBtn.style.display = 'none';
-            if (adminBtn) { adminBtn.style.display = ''; adminBtn.textContent = '관리자 (' + (sess.fullName || sess.username || '') + ')'; }
-        }
-    } catch (e) {}
-})();
+initCpHeader();
 
 // 이미 로그인된 경우 바로 이동
 (function () {
