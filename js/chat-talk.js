@@ -135,7 +135,7 @@ function ctStartPolling() {
   ctPollTimer = setInterval(function () {
     ctLoadThread();
     ctCheckAvailability();
-  }, 7000);
+  }, 3500);
 }
 
 function ctStopPolling() {
