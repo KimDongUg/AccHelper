@@ -38,7 +38,7 @@
   <div class="mkt-login-logo">
     <span class="emoji">💬</span>
     <h2>1:1 톡</h2>
-    <p id="aptSubtitle">관리사무소 담당자와의 1:1 상담을 위한 입주민 인증입니다.</p>
+    <p id="aptSubtitle">관리실과 1:1 톡으로 대화하기 위한 입주민 인증입니다.</p>
   </div>
 
   <form class="mkt-form" id="loginForm" onsubmit="return false">
@@ -128,13 +128,8 @@
 
 // 회사 정보로 동 기본값 설정 (회사별 single_building_dong 설정 기반, 이름 하드코딩 아님)
 (async function () {
-    const companyName = sessionStorage.getItem('market_company_name') || '';
     const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
     const buildingInput = document.getElementById('buildingInput');
-
-    if (companyName) {
-        document.getElementById('aptSubtitle').textContent = companyName + ' 담당자와의 1:1 상담을 위한 입주민 인증입니다.';
-    }
 
     if (!companyId) return;
     try {
