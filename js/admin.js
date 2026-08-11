@@ -210,6 +210,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 800);
     }
 
+    // 알림톡 URL에서 threadId 파라미터 처리: 1:1 톡 탭으로 자동 전환 후 해당 스레드 오픈
+    const targetThreadId = urlParams2.get('threadId');
+    if (targetThreadId) {
+        switchTab('chatTalk');
+        setTimeout(() => openCtThreadModal(Number(targetThreadId)), 500);
+    }
+
     // Load data
     loadCompanySettings();
     loadStats();
