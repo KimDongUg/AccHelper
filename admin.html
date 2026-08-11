@@ -684,11 +684,11 @@
                     <input type="text" id="cpSearchInput" class="form-control search-input" placeholder="동/호수·이름·전화번호 검색..." aria-label="입주민 검색">
                 </div>
                 <select id="cpSortSelect" class="form-control" style="min-width:130px" aria-label="정렬 기준">
+                    <option value="dong" selected>동/호수순</option>
                     <option value="fee_last_query_at">최근 조회일시순</option>
                     <option value="fee_query_count">관리비 조회수순</option>
                     <option value="chat_last_at">최근 톡 날짜순</option>
                     <option value="chat_count">1:1 톡 수순</option>
-                    <option value="dong">동/호수순</option>
                 </select>
                 <button class="btn btn-primary btn-sm" onclick="loadComplaintPersons()">조회</button>
             </div>
@@ -1272,6 +1272,6 @@
     <script>if(typeof marked!=='undefined')marked.setOptions({breaks:true});</script>
     <script src="/js/api.js?v=15"></script>
     <script src="/js/fee-charts.js"></script>
-    <script src="/js/admin.js?v=24"></script>
+    <script src="/js/admin.js?v=25"></script>
 </body>
 </html>

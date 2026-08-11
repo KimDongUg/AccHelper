@@ -3065,7 +3065,8 @@ const CP_PAGE_SIZE = 20;
 
 async function loadComplaintPersons() {
     const search = (document.getElementById('cpSearchInput')?.value || '').trim();
-    const sort   = document.getElementById('cpSortSelect')?.value || 'fee_last_query_at';
+    const sort   = document.getElementById('cpSortSelect')?.value || 'dong';
+    const order  = sort === 'dong' ? 'asc' : 'desc';
     const loading = document.getElementById('cpTableLoading');
     const tbody   = document.getElementById('cpTableBody');
     const empty   = document.getElementById('cpEmptyState');
@@ -3074,7 +3075,7 @@ async function loadComplaintPersons() {
     if (empty)   empty.style.display = 'none';
 
     try {
-        const params = new URLSearchParams({ page: cpPage, size: CP_PAGE_SIZE, sort, order: 'desc' });
+        const params = new URLSearchParams({ page: cpPage, size: CP_PAGE_SIZE, sort, order });
         if (search) params.append('search', search);
 
         const data = await apiGet(`/fee/residents?${params}`);
