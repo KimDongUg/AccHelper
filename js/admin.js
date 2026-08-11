@@ -3230,7 +3230,7 @@ async function refreshCtThreadModal(threadId, silent) {
             `담당자: ${thread.claimed_admin_name || '미배정'} · 상태: ${thread.status === 'closed' ? '종료' : '진행중'}`;
 
         const closeBtn = document.getElementById('ctCloseThreadBtn');
-        closeBtn.textContent = thread.status === 'closed' ? '다시 열기' : '스레드 종료';
+        closeBtn.textContent = thread.status === 'closed' ? '다시 열기' : '대화 종료';
 
         const msgsEl = document.getElementById('ctModalMessages');
         const wasNearBottom = msgsEl.scrollTop + msgsEl.clientHeight >= msgsEl.scrollHeight - 30;
