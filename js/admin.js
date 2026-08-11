@@ -3209,7 +3209,7 @@ function goToCtPage(page) { ctPage = page; loadChatTalkThreads(); }
 async function openCtThreadModal(threadId) {
     ctCurrentThreadId = threadId;
     const modal = document.getElementById('ctThreadModal');
-    modal.style.display = 'flex';
+    modal.classList.add('show');
     document.getElementById('ctModalMessages').innerHTML = '';
     document.getElementById('ctModalMeta').textContent = '불러오는 중...';
 
@@ -3248,7 +3248,7 @@ async function openCtThreadModal(threadId) {
 }
 
 function closeCtThreadModal() {
-    document.getElementById('ctThreadModal').style.display = 'none';
+    document.getElementById('ctThreadModal').classList.remove('show');
     ctCurrentThreadId = null;
 }
 
