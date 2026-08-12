@@ -114,8 +114,9 @@ function setupChatTalkQuickLink(companyId) {
             anchor.classList.add('ctql-disabled');
             anchor.href = '#';
             anchor.onclick = function (e) { e.preventDefault(); };
-            textEl.textContent = '1:1 톡 (현재 상담 시간 아님)';
-            note.textContent = (avail && avail.message) || '현재 상담 가능 시간이 아닙니다.';
+            textEl.textContent = '관리실에 톡으로 직접 문의하기 (현재 업무 시간 아님)';
+            var unavailMsg = (avail && avail.message) || '현재 상담 가능 시간이 아닙니다.';
+            note.textContent = unavailMsg.replace(/^현재 상담 가능 시간이 아닙니다\.\s*/, '');
             note.style.display = '';
         }
     });
