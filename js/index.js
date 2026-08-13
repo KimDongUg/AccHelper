@@ -695,9 +695,23 @@ function showChat(companyData) {
             }
 
             if (ev.answer) {
-                var a = document.createElement('p');
-                // Show first 200 chars as summary
-                a.textContent = ev.answer.length > 200 ? ev.answer.substring(0, 200) + '...' : ev.answer;
+                var a = document.createElement('div');
+                a.className = 'message-answer';
+                // Show first 200 chars as summary (이미지 마크다운이 있으면 잘리지 않도록 전체 표시)
+                var hasMedia = /!\[.*?\]\(.*?\)|<img\b/i.test(ev.answer);
+                var summaryText = (!hasMedia && ev.answer.length > 200) ? ev.answer.substring(0, 200) + '...' : ev.answer;
+                if (typeof marked !== 'undefined' && marked.parse) {
+                    a.innerHTML = marked.parse(summaryText);
+                    a.querySelectorAll('a').forEach(function (link) {
+                        link.setAttribute('target', '_blank');
+                        link.setAttribute('rel', 'noopener noreferrer');
+                    });
+                    a.querySelectorAll('img').forEach(function (img) {
+                        img.addEventListener('click', function () { openLightbox(img.src); });
+                    });
+                } else {
+                    a.textContent = summaryText;
+                }
                 item.appendChild(a);
             }
 
@@ -738,9 +752,20 @@ function showChat(companyData) {
                 btn.textContent = ev.question;
 
                 var answerDiv = document.createElement('div');
-                answerDiv.className = 'unanswered-qa-answer';
+                answerDiv.className = 'unanswered-qa-answer message-answer';
                 answerDiv.style.display = 'none';
-                answerDiv.textContent = ev.answer;
+                if (typeof marked !== 'undefined' && marked.parse) {
+                    answerDiv.innerHTML = marked.parse(ev.answer);
+                    answerDiv.querySelectorAll('a').forEach(function (link) {
+                        link.setAttribute('target', '_blank');
+                        link.setAttribute('rel', 'noopener noreferrer');
+                    });
+                    answerDiv.querySelectorAll('img').forEach(function (img) {
+                        img.addEventListener('click', function () { openLightbox(img.src); });
+                    });
+                } else {
+                    answerDiv.textContent = ev.answer;
+                }
 
                 btn.addEventListener('click', function () {
                     var isHidden = answerDiv.style.display === 'none';
