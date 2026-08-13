@@ -3232,6 +3232,17 @@ async function openCtThreadModal(threadId) {
     startCtModalPolling();
 }
 
+// 모바일에서 답장 입력창 포커스 시 자판 위로 스크롤 (모달이 자판에 가려지는 문제 방지)
+(function () {
+    const el = document.getElementById('ctReplyInput');
+    if (!el) return;
+    el.addEventListener('focus', function () {
+        setTimeout(function () {
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 300);
+    });
+})();
+
 /* silent=true면 폴링용 — 로딩 문구 초기화나 목록 새로고침 없이 메시지만 조용히 갱신 */
 async function refreshCtThreadModal(threadId, silent) {
     try {
