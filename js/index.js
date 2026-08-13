@@ -645,7 +645,7 @@ function showChat(companyData) {
         // 미답변 판정: 답변이 미답변 패턴이면 저장 (evidences가 있어도 LLM이 "모른다"고
         // 답했을 수 있으므로 hasEvidences/qaIds 여부와 무관하게 문구로만 판정)
         var answerText = result.answer || '';
-        var looksUnanswered = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없/.test(answerText);
+        var looksUnanswered = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없|확인이 필요|관리사무소에 문의/.test(answerText);
         var isUnanswered = looksUnanswered;
         if (isUnanswered) {
             apiPost('/unanswered-questions', {
