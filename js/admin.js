@@ -3250,6 +3250,10 @@ async function refreshCtThreadModal(threadId, silent) {
         const wasNearBottom = msgsEl.scrollTop + msgsEl.clientHeight >= msgsEl.scrollHeight - 30;
         msgsEl.innerHTML = (thread.messages || []).map(m => {
             const isResident = m.sender_type === 'resident';
+            const alimtalkNotice = m.alimtalk_sent ? `
+                    <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">
+                        🔔 ${isResident ? '관리자에게' : '입주민에게'} 카카오 알림톡이 전달되었습니다
+                    </div>` : '';
             return `
                 <div style="align-self:${isResident ? 'flex-start' : 'flex-end'};max-width:80%">
                     <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
@@ -3257,6 +3261,7 @@ async function refreshCtThreadModal(threadId, silent) {
                         ${escHtml(m.content)}
                     </div>
                     <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${escHtml(m.created_at)}</div>
+                    ${alimtalkNotice}
                 </div>
             `;
         }).join('');

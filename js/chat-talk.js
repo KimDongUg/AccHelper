@@ -70,6 +70,15 @@ function ctRenderMessages(messages) {
 
     ctMessagesEl.appendChild(bubble);
     ctMessagesEl.appendChild(time);
+
+    if (m.alimtalk_sent) {
+      var notice = document.createElement('div');
+      notice.className = 'ct-msg-alimtalk';
+      notice.textContent = m.sender_type === 'resident'
+        ? '🔔 관리사무소에 카카오 알림톡이 전달되었습니다'
+        : '🔔 입주민에게 카카오 알림톡이 전달되었습니다';
+      ctMessagesEl.appendChild(notice);
+    }
   });
   ctMessagesEl.scrollTop = ctMessagesEl.scrollHeight;
 }
