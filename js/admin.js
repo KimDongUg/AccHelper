@@ -3336,7 +3336,12 @@ async function closeCtThreadStatus() {
         const reopening = document.getElementById('ctCloseThreadBtn').textContent === '다시 열기';
         await apiPatch(`/chat-talk/admin/threads/${ctCurrentThreadId}/status`, { status: reopening ? 'open' : 'closed' });
         showToast(reopening ? '스레드를 다시 열었습니다' : '스레드를 종료했습니다');
-        await refreshCtThreadModal(ctCurrentThreadId, false);
+        if (reopening) {
+            await refreshCtThreadModal(ctCurrentThreadId, false);
+        } else {
+            closeCtThreadModal();
+            loadChatTalkThreads();
+        }
     } catch (e) {
         showToast('상태 변경 실패: ' + e.message, 'error');
     }

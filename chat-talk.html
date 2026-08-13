@@ -12,7 +12,7 @@
   .ct-header h1 { font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--gray-900); }
   .ct-header p { font-size: 0.8rem; color: var(--gray-600); margin: 0; }
   .ct-banner { display: none; background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; border-radius: 8px; padding: 0.625rem 0.875rem; font-size: 0.8rem; margin-bottom: 0.75rem; line-height: 1.5; }
-  .ct-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.625rem; padding: 0.5rem 0; }
+  .ct-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.625rem; padding: 0.5rem 0 4.5rem; }
   .ct-empty { text-align: center; color: var(--gray-500); font-size: 0.85rem; margin-top: 2rem; }
   .ct-msg { max-width: 78%; padding: 0.625rem 0.875rem; border-radius: 12px; font-size: 0.875rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
   .ct-msg-resident { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
@@ -21,7 +21,10 @@
   .ct-msg-admin + .ct-msg-time { align-self: flex-start; }
   .ct-msg-alimtalk { font-size: 0.6875rem; color: var(--gray-500); margin-top: -0.35rem; align-self: flex-end; }
   .ct-msg-admin + .ct-msg-time + .ct-msg-alimtalk { align-self: flex-start; }
-  .ct-input-row { display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200); }
+  /* 카카오톡 인앱 브라우저 등 일부 웹뷰는 키보드가 올라와도 레이아웃 뷰포트를 줄이지 않아서
+     문서 흐름상의 하단 입력창이 키보드에 가려짐 — position:fixed로 뷰포트에 직접 고정하고,
+     JS(visualViewport)로 키보드 높이만큼 bottom을 올려서 항상 자판 위에 보이게 함. */
+  .ct-input-row { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 640px; box-sizing: border-box; display: flex; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--white); border-top: 1px solid var(--gray-200); z-index: 20; }
   .ct-input { flex: 1; padding: 0.625rem 0.875rem; border: 1px solid var(--gray-300); border-radius: 999px; font-size: 0.875rem; }
   .ct-send-btn { padding: 0.625rem 1.25rem; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
   .ct-send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }

@@ -42,6 +42,29 @@ var ctEmptyEl = document.getElementById('ctEmpty');
 var ctBannerEl = document.getElementById('ctBanner');
 var ctInputEl = document.getElementById('ctInput');
 var ctSendBtnEl = document.getElementById('ctSendBtn');
+var ctInputRowEl = document.querySelector('.ct-input-row');
+
+// ── 카카오톡 인앱 브라우저 등에서 키보드가 입력창을 가리는 문제 방지 ──────────
+// 일부 웹뷰는 키보드가 올라와도 layout viewport를 안 줄여서 position:fixed 하단
+// 요소가 키보드 뒤로 숨는다. visualViewport로 실제 보이는 높이를 추적해서
+// 입력창을 그 위로 밀어 올린다.
+function ctSyncKeyboardOffset() {
+  if (!ctInputRowEl || !window.visualViewport) return;
+  var vv = window.visualViewport;
+  var keyboardOffset = window.innerHeight - vv.height - vv.offsetTop;
+  ctInputRowEl.style.bottom = Math.max(keyboardOffset, 0) + 'px';
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', ctSyncKeyboardOffset);
+  window.visualViewport.addEventListener('scroll', ctSyncKeyboardOffset);
+  ctSyncKeyboardOffset();
+}
+
+// 포커스 직후 키보드 애니메이션이 끝난 뒤 한 번 더 보정
+ctInputEl.addEventListener('focus', function () {
+  setTimeout(ctSyncKeyboardOffset, 300);
+});
 
 var ctAvailable = false;
 var ctPollTimer = null;
