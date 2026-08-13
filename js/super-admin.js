@@ -155,6 +155,7 @@ function renderSubscribers(items) {
             <td class="col-date" style="white-space:nowrap">${s.last_paid_at || s.last_payment_date ? formatDate(s.last_paid_at || s.last_payment_date) : '-'}</td>
             <td><div class="action-btn-group">
                 <button class="btn-admin-view" onclick="goToCompanyAdmin(${s.company_id})" title="${escapeHtml(s.company_name)} 관리자 화면으로 이동">관리자화면</button>
+                <button class="btn-outline btn-sm" onclick="rebuildEmbeddings(${s.company_id}, '${escapeHtml(s.company_name)}')" title="Q&A 임베딩을 다시 생성해 챗봇 RAG 검색을 갱신합니다">임베딩 재생성</button>
                 ${showActions ? `<button class="btn-validate" onclick="validateCompanyData(${s.company_id}, '${escapeHtml(s.company_name)}')">검증</button>
                 <button class="btn-approve" onclick="approveCompany(${s.company_id}, '${escapeHtml(s.company_name)}')">승인</button>
                 <button class="btn-reject" onclick="openRejectModal(${s.company_id}, '${escapeHtml(s.company_name)}')">반려</button>` : ''}
@@ -163,6 +164,19 @@ function renderSubscribers(items) {
             </div></td>
         </tr>`;
     }).join('');
+}
+
+/* ── Rebuild Q&A Embeddings (RAG) ────────────── */
+async function rebuildEmbeddings(companyId, companyName) {
+    if (!confirm('[' + companyName + ']의 Q&A 임베딩을 재생성하시겠습니까?\n\nQ&A 개수에 따라 몇 분 정도 걸릴 수 있습니다.')) return;
+
+    showToast(companyName + ' 임베딩 재생성 중...', 'info');
+    try {
+        const result = await apiPost('/super/embeddings/rebuild?company_id=' + companyId, {});
+        showToast(companyName + ' 임베딩 재생성 완료 (성공 ' + result.success + '건 / 실패 ' + result.failed + '건 / 전체 ' + result.total + '건)', 'success');
+    } catch (e) {
+        showToast('임베딩 재생성 실패: ' + e.message, 'error');
+    }
 }
 
 /* ═══════════════════════════════════════════════
