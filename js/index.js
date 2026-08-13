@@ -93,6 +93,12 @@ function getChatTalkAvailability() {
 /* ── 1:1 톡 바로가기 (프롬프트 입력창 하단) ── */
 function setupChatTalkQuickLink(companyId) {
     var wrap = document.getElementById('chatTalkQuickLink');
+
+    // TEMP (2026-08-13): 1:1톡 바로가기 버튼 임시 비활성화 — 사용자 요청으로 잠시 숨김.
+    // 다시 켤 때는 아래 두 줄만 지우면 됨.
+    if (wrap) wrap.style.display = 'none';
+    return;
+
     var anchor = document.getElementById('chatTalkQuickLinkAnchor');
     var textEl = anchor ? anchor.querySelector('.ctql-text') : null;
     var note = document.getElementById('chatTalkQuickLinkNote');
