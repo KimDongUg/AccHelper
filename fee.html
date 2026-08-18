@@ -512,6 +512,32 @@ function handleConsent() {
 let otpCountdownTimer = null;
 let sessionCountdownTimer = null;
 let sessionHideTimer = null;
+let currentFeeToken = null;
+
+// 히어로 카드의 월 선택 select 변경 시 (fee-charts.js에서 호출)
+window.onFeeMonthChange = async function (yearMonth) {
+  if (!currentFeeToken || !yearMonth) return;
+  const dong = document.getElementById('inp-dong').value.trim();
+  const ho = document.getElementById('inp-ho').value.trim();
+  clearError();
+
+  try {
+    const fres = await fetch(`/api/fee?dong=${encodeURIComponent(dong)}&ho=${encodeURIComponent(ho)}&company_id=${encodeURIComponent(companyId)}&year_month=${encodeURIComponent(yearMonth)}`, {
+      headers: { 'Authorization': `Bearer ${currentFeeToken}` },
+    });
+    const fd = await fres.json().catch(() => ({}));
+
+    if (!fres.ok) {
+      showError(messageFrom(fd, '조회에 실패했습니다.'));
+      return;
+    }
+
+    renderBill(fd);
+    window.renderDashboard(fd, currentFeeToken, Number(companyId));
+  } catch (e) {
+    showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+  }
+};
 
 const errEl = document.getElementById('errorMsg');
 
@@ -594,6 +620,7 @@ function resetToSearch(message) {
   clearInterval(otpCountdownTimer);
   clearInterval(sessionCountdownTimer);
   clearTimeout(sessionHideTimer);
+  currentFeeToken = null;
 
   document.getElementById('billCard').classList.remove('show');
   document.getElementById('dashContainer').style.display = 'none';
@@ -820,6 +847,7 @@ document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
       return;
     }
 
+    currentFeeToken = vd.token;
     renderBill(fd);
     document.getElementById('verifyCard').style.display = 'none';
     document.getElementById('previewSection').style.display = 'none';

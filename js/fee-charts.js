@@ -31,12 +31,26 @@ function _animateCount(el, end, ms) {
   requestAnimationFrame(step);
 }
 
+function _monthLabel(ym6) {
+  ym6 = String(ym6 || '');
+  return ym6.length >= 6 ? `${ym6.slice(0, 4)}년 ${parseInt(ym6.slice(4, 6))}월분` : '';
+}
+
 /* F-01 히어로 카드 */
 function _heroCard(d, history) {
   const total = _n(d.total);
   const ym = d.year_month || '';
-  const ymLabel = ym.length >= 6
-    ? `${ym.slice(0, 4)}년 ${parseInt(ym.slice(4, 6))}월분` : '';
+  const ymLabel = _monthLabel(ym);
+
+  // 조회 가능한 월(데이터가 있는 최근 최대 12개월)이 2개 이상이면 select로 전환
+  let periodHtml = ymLabel;
+  if (history && history.length > 1) {
+    const options = [...history].reverse().map(h => {
+      const hym = String(h.year_month || '');
+      return `<option value="${hym}" ${hym === ym ? 'selected' : ''}>${_monthLabel(hym)}</option>`;
+    }).join('');
+    periodHtml = `<select class="fc-month-select" onchange="window.onFeeMonthChange && window.onFeeMonthChange(this.value)">${options}</select>`;
+  }
 
   let prevCol = '';
   if (history && history.length >= 2) {
@@ -60,7 +74,7 @@ function _heroCard(d, history) {
     : '';
 
   return `<div class="fc-hero">
-    <div style="font-size:13px;opacity:.75;margin-bottom:6px">🏠 ${d.dong}동 ${d.ho}호 · ${ymLabel}</div>
+    <div style="font-size:13px;opacity:.75;margin-bottom:6px">🏠 ${d.dong}동 ${d.ho}호 · ${periodHtml}</div>
     <div style="font-size:13px;opacity:.8;margin-bottom:2px">이번달 관리비</div>
     <div class="fc-hero-amt" id="fcHeroAmt">0원</div>
     ${compareHtml}
