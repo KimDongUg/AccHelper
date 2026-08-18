@@ -514,6 +514,33 @@ let sessionCountdownTimer = null;
 let sessionHideTimer = null;
 let currentFeeToken = null;
 
+/* ── 인증 세션 유지 (새로고침해도 재인증 없이 유지) ──
+   토큰 자체는 서버에서 FEE_TOKEN_TTL_MINUTES(기본 30분) 후 만료되므로,
+   그 안에서만 sessionStorage에 저장해두고 새로고침 시 자동으로 이어서 조회한다. */
+function _sessionKey() { return `fee_session_${companyId}`; }
+function _saveSession(token, dong, ho, expiresInSec) {
+  sessionStorage.setItem(_sessionKey(), JSON.stringify({
+    token, dong, ho, expiresAt: Date.now() + expiresInSec * 1000,
+  }));
+}
+function _clearSession() {
+  sessionStorage.removeItem(_sessionKey());
+}
+function _loadSession() {
+  try {
+    const raw = sessionStorage.getItem(_sessionKey());
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s.token || !s.expiresAt || s.expiresAt <= Date.now()) {
+      _clearSession();
+      return null;
+    }
+    return s;
+  } catch {
+    return null;
+  }
+}
+
 // 히어로 카드의 월 선택 select 변경 시 (fee-charts.js에서 호출)
 window.onFeeMonthChange = async function (yearMonth) {
   if (!currentFeeToken || !yearMonth) return;
@@ -621,6 +648,7 @@ function resetToSearch(message) {
   clearInterval(sessionCountdownTimer);
   clearTimeout(sessionHideTimer);
   currentFeeToken = null;
+  _clearSession();
 
   document.getElementById('billCard').classList.remove('show');
   document.getElementById('dashContainer').style.display = 'none';
@@ -848,12 +876,13 @@ document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
     }
 
     currentFeeToken = vd.token;
+    _saveSession(vd.token, dong, ho, vd.expires_in || 1800);
     renderBill(fd);
     document.getElementById('verifyCard').style.display = 'none';
     document.getElementById('previewSection').style.display = 'none';
     document.getElementById('fcToggleBtn').style.display = '';
     window.renderDashboard(fd, vd.token, Number(companyId));
-    startSessionCountdown(vd.expires_in || 600);
+    startSessionCountdown(vd.expires_in || 1800);
 
   } catch (e) {
     showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -873,6 +902,31 @@ document.getElementById('inp-ho').addEventListener('keydown', e => {
 document.getElementById('inp-code').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btnVerifyOtp').click();
 });
+
+/* ── 새로고침 시 인증 세션 복원 ── */
+(async () => {
+  const s = _loadSession();
+  if (!s) return;
+  try {
+    const fres = await fetch(`/api/fee?dong=${encodeURIComponent(s.dong)}&ho=${encodeURIComponent(s.ho)}&company_id=${encodeURIComponent(companyId)}`, {
+      headers: { 'Authorization': `Bearer ${s.token}` },
+    });
+    if (!fres.ok) { _clearSession(); return; }
+    const fd = await fres.json();
+
+    document.getElementById('inp-dong').value = s.dong;
+    document.getElementById('inp-ho').value = s.ho;
+    currentFeeToken = s.token;
+    renderBill(fd);
+    document.getElementById('verifyCard').style.display = 'none';
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('fcToggleBtn').style.display = '';
+    window.renderDashboard(fd, s.token, Number(companyId));
+    startSessionCountdown(Math.max(1, Math.round((s.expiresAt - Date.now()) / 1000)));
+  } catch {
+    _clearSession();
+  }
+})();
 </script>
 <script src="/js/fee-charts.js"></script>
 <script>
