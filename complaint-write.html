@@ -183,8 +183,13 @@ async function uploadImages() {
 const companyId = getCompanyParam();
 if (!companyId) { alert('잘못된 접근입니다.'); location.href = '/'; }
 
-// 챗봇 미답변 화면에서 "답변예약"으로 넘어온 경우 질문 내용 자동 채움 (1회성)
+// 챗봇 미답변/업무시간 외 화면에서 "답변예약"으로 넘어온 경우 질문 내용 자동 채움 (1회성)
 (function () {
+    var prefillTitle = sessionStorage.getItem('cp_prefill_title');
+    if (prefillTitle) {
+        document.getElementById('titleInput').value = prefillTitle;
+        sessionStorage.removeItem('cp_prefill_title');
+    }
     var prefill = sessionStorage.getItem('cp_prefill_content');
     if (prefill) {
         document.getElementById('contentInput').value = prefill;
