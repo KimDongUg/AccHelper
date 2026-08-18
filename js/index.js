@@ -55,7 +55,6 @@ sessionStorage.setItem('chatSessionId', sessionId);
 let selectedCategory = null;
 let quotaRemaining = null;
 let lastAskedQuestion = null;
-let lastChatTalkAvail = null;
 
 /* ── DOM refs (chat section — may not exist until shown) ── */
 const chatSection     = document.getElementById('chatSection');
@@ -101,9 +100,9 @@ function setupChatTalkQuickLink(companyId) {
     if (!wrap || !anchor || !textEl || !note) return;
 
     wrap.style.display = '';
+    refreshReserveButton(companyId);
 
     getChatTalkAvailability().then(function (avail) {
-        lastChatTalkAvail = avail;
         var hasMarketToken = !!sessionStorage.getItem('market_token');
         var talkUrl = '/chat-talk.html?company=' + companyId;
 
@@ -122,25 +121,23 @@ function setupChatTalkQuickLink(companyId) {
             note.textContent = unavailMsg.replace(/^현재 상담 가능 시간이 아닙니다\.\s*/, '');
             note.style.display = '';
         }
-        refreshReserveButton(companyId);
     });
 }
 
-/* 업무시간 외 상태에서, 방금 물어본 질문을 답변예약 작성폼(제목+내용)에 그대로 넘겨 예약할 수 있는 버튼 */
+/* 답변예약 바로가기 버튼 — 언제나 노출. 직전에 물어본 질문이 있으면 제목/내용에 그대로 채워서 이동,
+   없으면 작성폼으로만 이동. */
 function refreshReserveButton(companyId) {
     var reserveBtn = document.getElementById('chatTalkReserveBtn');
     if (!reserveBtn) return;
 
-    if (lastChatTalkAvail && !lastChatTalkAvail.available && lastAskedQuestion) {
-        reserveBtn.style.display = '';
-        reserveBtn.onclick = function () {
+    reserveBtn.style.display = '';
+    reserveBtn.onclick = function () {
+        if (lastAskedQuestion) {
             sessionStorage.setItem('cp_prefill_title', lastAskedQuestion.slice(0, 100));
             sessionStorage.setItem('cp_prefill_content', lastAskedQuestion);
-            window.location.href = '/complaint-write.html?company=' + companyId;
-        };
-    } else {
-        reserveBtn.style.display = 'none';
-    }
+        }
+        window.location.href = '/complaint-write.html?company=' + companyId;
+    };
 }
 
 /* ── Initialization ────────────────────────── */
@@ -536,7 +533,6 @@ function showChat(companyData) {
         sendBtn.disabled = true;
         lastQuestion = text;
         lastAskedQuestion = text;
-        refreshReserveButton(currentCompanyId);
 
         // Hide quick questions after first message
         if (quickQuestions) quickQuestions.style.display = 'none';
