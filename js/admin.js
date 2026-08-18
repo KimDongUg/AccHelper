@@ -3620,6 +3620,17 @@ function toggleAdminFeeDetail() {
     if (!shown) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+let _adminFeeLastDong = '';
+let _adminFeeLastHo = '';
+
+function _adminFeeShowMsg(text, isError) {
+    const msgEl = document.getElementById('adminFeeMsg');
+    msgEl.textContent = text;
+    msgEl.style.display = '';
+    msgEl.style.background = isError ? '#ffebee' : '#e3f2fd';
+    msgEl.style.color = isError ? '#c62828' : '#1565c0';
+}
+
 async function adminFeeSearch() {
     const dong = (document.getElementById('adminFeeDong').value || '').trim();
     const ho   = (document.getElementById('adminFeeHo').value   || '').trim();
@@ -3629,17 +3640,9 @@ async function adminFeeSearch() {
     const toggleBtn   = document.getElementById('adminFcToggleBtn');
     const btn         = document.getElementById('adminFeeSearchBtn');
 
-    function showMsg(text, isError) {
-        msgEl.textContent = text;
-        msgEl.style.display = '';
-        msgEl.style.background = isError ? '#ffebee' : '#e3f2fd';
-        msgEl.style.color = isError ? '#c62828' : '#1565c0';
-    }
-    function clearMsg() { msgEl.style.display = 'none'; }
+    if (!dong || !ho) { _adminFeeShowMsg('동과 호수를 모두 입력하세요.', true); return; }
 
-    if (!dong || !ho) { showMsg('동과 호수를 모두 입력하세요.', true); return; }
-
-    clearMsg();
+    msgEl.style.display = 'none';
     dashEl.style.display = 'none';
     toggleBtn.style.display = 'none';
     resultEl.style.display = 'none';
@@ -3650,6 +3653,8 @@ async function adminFeeSearch() {
     try {
         const params = new URLSearchParams({ dong, ho });
         const data = await apiGet(`/fee/admin-search?${params}`);
+        _adminFeeLastDong = dong;
+        _adminFeeLastHo = ho;
         renderAdminFeeResult(data, resultEl);
         resultEl.style.display = 'none';
         toggleBtn.style.display = '';
@@ -3664,12 +3669,33 @@ async function adminFeeSearch() {
     } catch (e) {
         resultEl.innerHTML = '';
         const msg = e.message || '데이터를 조회하지 못했습니다.';
-        showMsg(msg, true);
+        _adminFeeShowMsg(msg, true);
     } finally {
         btn.disabled = false;
         loadFeeAccessLog();
     }
 }
+
+// 히어로 카드의 월 선택 select 변경 시 (fee-charts.js에서 호출) — 관리자 모드용
+window.onFeeMonthChange = async function (yearMonth) {
+    if (!_adminFeeLastDong || !_adminFeeLastHo || !yearMonth) return;
+    const resultEl = document.getElementById('adminFeeResult');
+
+    try {
+        const params = new URLSearchParams({ dong: _adminFeeLastDong, ho: _adminFeeLastHo, year_month: yearMonth });
+        const data = await apiGet(`/fee/admin-search?${params}`);
+        renderAdminFeeResult(data, resultEl);
+
+        const sess = AuthSession.get();
+        const companyId = sess?.company_id || sess?.companyId;
+        window.renderDashboard(data, AuthSession.getToken(), companyId, {
+            historyUrl: '/api/fee/admin-history',
+            averageUrl: '/api/fee/admin-average',
+        });
+    } catch (e) {
+        _adminFeeShowMsg(e.message || '조회에 실패했습니다.', true);
+    }
+};
 
 function renderAdminFeeResult(d, container) {
     const has구분 = Object.keys(d.billing_구분 || {}).length > 0;
