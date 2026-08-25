@@ -91,6 +91,9 @@ function getChatTalkAvailability() {
     });
 }
 
+/* 샘플회사(company_id >= 1000)는 실제 관리실이 없으므로 클릭 시 안내만 표시 */
+var SAMPLE_COMPANY_FEATURE_ALERT = '실제 운영하는 아파트에만 사용 가능한 기능입니다.';
+
 /* ── 1:1 톡 바로가기 (프롬프트 입력창 하단) ── */
 function setupChatTalkQuickLink(companyId) {
     var wrap = document.getElementById('chatTalkQuickLink');
@@ -101,6 +104,18 @@ function setupChatTalkQuickLink(companyId) {
 
     wrap.style.display = '';
     refreshReserveButton(companyId);
+
+    if (companyId >= 1000) {
+        anchor.classList.remove('ctql-disabled');
+        anchor.href = '#';
+        anchor.onclick = function (e) {
+            e.preventDefault();
+            alert(SAMPLE_COMPANY_FEATURE_ALERT);
+        };
+        textEl.textContent = '관리실에 톡으로 직접 문의하기';
+        note.style.display = 'none';
+        return;
+    }
 
     getChatTalkAvailability().then(function (avail) {
         var hasMarketToken = !!sessionStorage.getItem('market_token');
@@ -131,6 +146,14 @@ function refreshReserveButton(companyId) {
     if (!reserveBtn) return;
 
     reserveBtn.style.display = '';
+
+    if (companyId >= 1000) {
+        reserveBtn.onclick = function () {
+            alert(SAMPLE_COMPANY_FEATURE_ALERT);
+        };
+        return;
+    }
+
     reserveBtn.onclick = function () {
         if (lastAskedQuestion) {
             sessionStorage.setItem('cp_prefill_title', lastAskedQuestion.slice(0, 100));
