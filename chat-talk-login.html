@@ -42,7 +42,7 @@
 
 <div class="mkt-header">
   <button class="mkt-back" onclick="history.back()">&#8249;</button>
-  <h1>입주민 인증</h1>
+  <h1 id="mktHeaderTitle">입주민 인증</h1>
   <div style="width:28px"></div>
 </div>
 
@@ -54,7 +54,7 @@
   </div>
 
   <form class="mkt-form" id="loginForm" onsubmit="return false">
-    <div class="mkt-form-row">
+    <div class="mkt-form-row" id="dongHoRow">
       <div>
         <label>동 <span id="dongRequired" style="color:#c62828">*</span></label>
         <input class="mkt-input" id="buildingInput" type="text" placeholder="1동" maxlength="10">
@@ -80,7 +80,7 @@
       <div class="mkt-privacy-section-title">개인정보 수집·이용 동의 <span style="color:#c62828">*</span></div>
       <div class="mkt-privacy-box">
         <table class="mkt-privacy-table">
-          <tr><th>수집 항목</th><td>동/호수, 이름, 전화번호</td></tr>
+          <tr><th>수집 항목</th><td id="privacyItemsCell">동/호수, 이름, 전화번호</td></tr>
           <tr><th>수집 목적</th><td>입주민 인증 및 상담 서비스 이용</td></tr>
           <tr><th>보유 기간</th><td>회사 계약 종료 시 까지</td></tr>
           <tr><th>제3자 제공</th><td>없음</td></tr>
@@ -114,14 +114,25 @@ initCpHeader();
   location.href = ret || '/chat-talk.html';
 })();
 
+// 샘플아파트(company_id>=1000, acchelper.kr 메인화면 "1:1 톡 문의") 여부 — 동/호수 없이 간단 인증
+const marketCompanyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+const isSampleChatTalk = parseInt(marketCompanyId, 10) >= 1000;
+
+if (isSampleChatTalk) {
+    document.title = '1:1 톡 — 1:1 톡 인증';
+    document.getElementById('mktHeaderTitle').textContent = '1:1 톡 인증';
+    document.getElementById('aptSubtitle').textContent = '1:1 톡 상담을 위해 이름과 전화번호를 입력해주세요.';
+    document.getElementById('dongHoRow').style.display = 'none';
+    document.getElementById('privacyItemsCell').textContent = '이름, 전화번호';
+}
+
 // 회사 정보로 동 기본값 설정 (회사별 single_building_dong 설정 기반, 이름 하드코딩 아님)
 (async function () {
-    const companyId = sessionStorage.getItem('market_company_id') || sessionStorage.getItem('complaint_company_id') || '';
+    if (isSampleChatTalk || !marketCompanyId) return;
     const buildingInput = document.getElementById('buildingInput');
 
-    if (!companyId) return;
     try {
-        const res = await fetch('/api/companies/public/' + encodeURIComponent(companyId));
+        const res = await fetch('/api/companies/public/' + encodeURIComponent(marketCompanyId));
         if (!res.ok) return;
         const company = await res.json();
         if (company.single_building_dong) {
@@ -133,10 +144,12 @@ initCpHeader();
 })();
 
 async function doLogin() {
-    const building = document.getElementById('buildingInput').value.trim();
-    const unit = document.getElementById('unit').value.trim();
+    const building = isSampleChatTalk ? '샘플' : document.getElementById('buildingInput').value.trim();
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
+    // 샘플아파트는 동/호수를 입력받지 않고, 전화번호 기반으로 고유한 호수값을 자동 생성해
+    // 방문자마다 서로 다른 1:1 톡 대화방으로 연결되도록 함
+    const unit = isSampleChatTalk ? phone.replace(/\D/g, '') : document.getElementById('unit').value.trim();
     const errEl = document.getElementById('errMsg');
     const btn = document.getElementById('loginBtn');
 
@@ -157,13 +170,11 @@ async function doLogin() {
     errEl.style.display = 'none';
 
     try {
-        const companyId = sessionStorage.getItem('market_company_id') ||
-                          sessionStorage.getItem('complaint_company_id') || null;
         const res = await fetch('/api/market/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ building, unit_number: unit, name, phone,
-                                   company_id: companyId ? parseInt(companyId) : null }),
+                                   company_id: marketCompanyId ? parseInt(marketCompanyId, 10) : null }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || '인증 실패');
