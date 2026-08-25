@@ -17,7 +17,7 @@
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/common.css?v=16">
-    <link rel="stylesheet" href="/css/landing.css?v=9">
+    <link rel="stylesheet" href="/css/landing.css?v=10">
 </head>
 <body>
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
@@ -426,6 +426,12 @@
 
     </main>
 
+    <!-- 1:1 톡 문의 (플로팅, 샘플아파트 체험) -->
+    <a href="#" id="lpChatTalkFab" class="lp-chat-talk-fab" onclick="gaEvent('chat_talk_click','fab')">
+        <span class="lp-ctf-icon" aria-hidden="true">💬</span>
+        <span id="lpChatTalkFabText">1:1 톡 문의</span>
+    </a>
+
     <!-- Footer -->
     <footer class="landing-footer">
         <div class="footer-links">
@@ -475,6 +481,44 @@
                     closeMenu();
                 }
             });
+        })();
+    </script>
+
+    <!-- 1:1 톡 문의 FAB — 샘플아파트(company_id=1000) 대상, 챗봇 화면의 "관리실에 톡으로 직접
+         문의하기"와 동일한 알림톡 플로우(영업시간 확인 → 입주민 인증 → 1:1 톡)를 그대로 사용 -->
+    <script>
+        (function () {
+            var SAMPLE_COMPANY_ID = 1000;
+            var fab = document.getElementById('lpChatTalkFab');
+            var textEl = document.getElementById('lpChatTalkFabText');
+            if (!fab || !textEl) return;
+
+            var talkUrl = '/chat-talk.html?company=' + SAMPLE_COMPANY_ID;
+
+            function goToTalk(e) {
+                e.preventDefault();
+                sessionStorage.setItem('market_company_id', SAMPLE_COMPANY_ID);
+                var hasMarketToken = !!sessionStorage.getItem('market_token');
+                location.href = hasMarketToken ? talkUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(talkUrl));
+            }
+
+            fetch('/api/chat-talk/availability')
+                .then(function (res) { return res.json(); })
+                .then(function (avail) {
+                    if (avail && avail.available) {
+                        fab.classList.remove('lp-ctf-disabled');
+                        fab.onclick = goToTalk;
+                        textEl.textContent = '1:1 톡 문의';
+                    } else {
+                        fab.classList.add('lp-ctf-disabled');
+                        fab.onclick = function (e) { e.preventDefault(); };
+                        textEl.textContent = '1:1 톡 문의 (현재 업무 시간 아님)';
+                    }
+                })
+                .catch(function () {
+                    fab.classList.add('lp-ctf-disabled');
+                    fab.onclick = function (e) { e.preventDefault(); };
+                });
         })();
     </script>
 </body>

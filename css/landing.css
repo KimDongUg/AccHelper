@@ -1170,3 +1170,53 @@
         padding: 0 1rem;
     }
 }
+
+/* ── 1:1 톡 문의 (플로팅 버튼, 샘플아파트 체험) ── */
+.lp-chat-talk-fab {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 90;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: var(--font-medium);
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), #7C6EF2);
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lp-chat-talk-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+}
+
+.lp-chat-talk-fab .lp-ctf-icon {
+    font-size: 1.1rem;
+}
+
+.lp-chat-talk-fab.lp-ctf-disabled {
+    background: var(--gray-300);
+    color: var(--gray-600);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.lp-chat-talk-fab.lp-ctf-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 480px) {
+    .lp-chat-talk-fab {
+        right: 1rem;
+        bottom: 1rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.8125rem;
+    }
+}
