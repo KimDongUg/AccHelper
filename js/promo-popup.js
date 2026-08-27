@@ -30,7 +30,6 @@
 
         function openPopup() {
             overlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
         }
 
         function closePopup() {
@@ -38,7 +37,6 @@
                 localStorage.setItem(STORAGE_KEY, today);
             }
             overlay.classList.remove('show');
-            document.body.style.overflow = '';
             // 팝업 닫힘 알림 (도입글 등 대기 중인 요소에 전달)
             document.dispatchEvent(new Event('promoPopupClosed'));
         }
@@ -54,11 +52,6 @@
         // 닫기 버튼
         if (closeBtn) closeBtn.addEventListener('click', closePopup);
         if (confirmBtn) confirmBtn.addEventListener('click', closePopup);
-
-        // 오버레이 배경 클릭
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) closePopup();
-        });
 
         // ESC 키
         document.addEventListener('keydown', function (e) {
