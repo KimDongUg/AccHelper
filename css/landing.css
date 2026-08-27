@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 2rem;
-    height: 64px;
+    height: 88px;
     background: var(--white);
     border-bottom: 1px solid var(--gray-200);
     position: sticky;
@@ -81,7 +81,7 @@
 .lp-mobile-menu {
     display: none;
     position: sticky;
-    top: 56px;
+    top: 88px;
     z-index: 99;
     background: var(--white);
     border-bottom: 1px solid var(--gray-200);
@@ -192,7 +192,7 @@
 /* ── Hero Section ────────────────────────────── */
 .lp-hero {
     background: linear-gradient(160deg, #e8f0fb 0%, #d4e4f7 40%, #c8d8f0 100%);
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - 88px);
     display: flex;
     align-items: center;
     padding: 3rem 2rem 4rem;
@@ -1041,7 +1041,7 @@
 @media (max-width: 767px) {
     .lp-header {
         padding: 0 1rem;
-        height: 56px;
+        height: 88px;
     }
     .lp-nav {
         display: none;
