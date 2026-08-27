@@ -16,7 +16,7 @@
     <title>AI 헬퍼 - 공동주택 최초 AI 관리사무소 서비스</title>
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
-    <link rel="stylesheet" href="/css/common.css?v=17">
+    <link rel="stylesheet" href="/css/common.css?v=18">
     <link rel="stylesheet" href="/css/landing.css?v=10">
 </head>
 <body>
@@ -426,29 +426,34 @@
 
     </main>
 
-    <!-- 이벤트 팝업 -->
+    <!-- 이벤트 팝업 (윈도우 창처럼 보이는 팝업) -->
     <div class="promo-popup-overlay" id="promoPopup" role="dialog" aria-modal="false" aria-label="AI 헬퍼 도입 이벤트">
         <div class="promo-popup">
-            <button class="promo-popup-close" id="promoPopupClose" aria-label="닫기">&times;</button>
+            <div class="promo-popup-titlebar">
+                <span class="promo-popup-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="promo-popup-titlebar-label">AI 헬퍼 도입 이벤트</span>
+                <button class="promo-popup-close" id="promoPopupClose" aria-label="닫기">&times;</button>
+            </div>
             <div class="promo-popup-body">
                 <div class="promo-popup-logo">
                     <img src="/assets/images/robot.png" alt="AI 헬퍼 로봇 캐릭터">
                 </div>
                 <div class="promo-popup-event">
                     <div class="promo-popup-badge">AI 헬퍼 도입 이벤트</div>
-                    <h3 class="promo-popup-title">최초 <em>5개 아파트(오피스텔)</em> 한정!</h3>
+                    <h3 class="promo-popup-title">최초 <em>5개 아파트</em> 한정!</h3>
                     <p class="promo-popup-note"><strong>이용료 + 운영지원 6개월 전액 무료</strong></p>
                     <ul class="promo-popup-benefits">
                         <li>이용료 6개월 무료</li>
                         <li>도입 초기 운영지원 무료</li>
                     </ul>
                 </div>
-                <p class="promo-popup-cta">우리 아파트에 6개월간 도입해 보시고 결정하세요!</p>
+                <p class="promo-popup-cta">우리 아파트에 6개월간 사용하신 후 정식 도입하셔도 됩니다!</p>
             </div>
-            <a href="#" id="promoPopupChatTalk" class="promo-popup-chat-tab" onclick="gaEvent('chat_talk_click','promo_popup')">
-                <span class="promo-popup-chat-emoji" aria-hidden="true">💬</span>
-                <span class="promo-popup-chat-label">1:1 톡<br>연결</span>
-            </a>
+            <div class="promo-popup-chatrow">
+                <a href="#" id="promoPopupChatTalk" class="promo-popup-chat-btn" onclick="gaEvent('chat_talk_click','promo_popup')">
+                    <span aria-hidden="true">💬</span> 1:1 톡 연결
+                </a>
+            </div>
             <div class="promo-popup-footer">
                 <label class="promo-popup-today">
                     <input type="checkbox" id="promoTodayCheck">

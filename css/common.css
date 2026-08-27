@@ -904,64 +904,95 @@ table tr:hover td {
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.promo-popup-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+    background: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.promo-popup-dots {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.promo-popup-dots i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+    background: #FF5F57;
+}
+
+.promo-popup-dots i:nth-child(2) {
+    background: #FEBC2E;
+}
+
+.promo-popup-dots i:nth-child(3) {
+    background: #28C840;
+}
+
+.promo-popup-titlebar-label {
+    flex: 1;
+    text-align: center;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-600);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .promo-popup-close {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    font-size: 1.6rem;
+    flex-shrink: 0;
+    font-size: 1.4rem;
     color: var(--gray-400);
     background: none;
     border: none;
     cursor: pointer;
     line-height: 1;
-    z-index: 10;
-    padding: 4px;
+    padding: 2px 6px;
     border-radius: var(--radius-sm);
     transition: var(--transition);
 }
 
 .promo-popup-close:hover {
     color: var(--gray-700);
-    background: var(--gray-100);
+    background: var(--gray-200);
 }
 
-.promo-popup-chat-tab {
-    position: absolute;
-    top: 50%;
-    right: -66px;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
+.promo-popup-chatrow {
+    padding: 0 1.5rem;
+    text-align: center;
+}
+
+.promo-popup-chat-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    width: 62px;
-    height: 62px;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.7rem 1rem;
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: var(--white);
-    border-radius: 50%;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
     text-decoration: none;
-    text-align: center;
-    line-height: 1.15;
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
     transition: var(--transition);
 }
 
-.promo-popup-chat-tab:hover {
-    transform: translateY(-50%) scale(1.07);
-    box-shadow: 0 8px 22px rgba(79, 70, 229, 0.45);
+.promo-popup-chat-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
 }
 
-.promo-popup-chat-emoji {
-    font-size: 1.35rem;
-}
-
-.promo-popup-chat-label {
-    font-size: 0.65rem;
-    font-weight: var(--font-bold);
-}
-
-.promo-popup-chat-tab.lp-btn-disabled {
+.promo-popup-chat-btn.lp-btn-disabled {
     background: var(--gray-300);
     color: var(--gray-600);
     box-shadow: none;
@@ -970,7 +1001,7 @@ table tr:hover td {
 }
 
 .promo-popup-body {
-    padding: 2rem 1.5rem 1rem;
+    padding: 1.5rem 1.5rem 1rem;
     text-align: center;
 }
 
@@ -1127,8 +1158,10 @@ table tr:hover td {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1.5rem;
+    margin-top: 1rem;
     border-top: 1px solid var(--gray-200);
     background: var(--gray-50);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .promo-popup-today {
@@ -1206,26 +1239,6 @@ table tr:hover td {
 
     .promo-popup-today {
         font-size: var(--text-xs);
-    }
-
-    .promo-popup-chat-tab {
-        position: static;
-        transform: none;
-        flex-direction: row;
-        width: auto;
-        height: auto;
-        margin: 0.75rem auto 0;
-        padding: 0.6rem 1.5rem;
-        border-radius: 999px;
-        gap: 0.4rem;
-    }
-
-    .promo-popup-chat-tab:hover {
-        transform: scale(1.03);
-    }
-
-    .promo-popup-chat-label br {
-        display: none;
     }
 }
 
