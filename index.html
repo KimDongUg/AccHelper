@@ -426,6 +426,41 @@
 
     </main>
 
+    <!-- 이벤트 팝업 -->
+    <div class="promo-popup-overlay" id="promoPopup" role="dialog" aria-modal="true" aria-label="AI 헬퍼 도입 이벤트">
+        <div class="promo-popup">
+            <button class="promo-popup-close" id="promoPopupClose" aria-label="닫기">&times;</button>
+            <div class="promo-popup-body">
+                <div class="promo-popup-logo">
+                    <img src="/assets/images/robot.png" alt="AI 헬퍼 로봇 캐릭터">
+                </div>
+                <div class="promo-popup-event">
+                    <div class="promo-popup-badge">AI 헬퍼 도입 이벤트</div>
+                    <h3 class="promo-popup-title">최초 <em>5개 아파트(오피스텔)</em> 한정!</h3>
+                    <p class="promo-popup-note"><strong>이용료 + 운영지원 6개월 전액 무료</strong></p>
+                    <ul class="promo-popup-benefits">
+                        <li>이용료 6개월 무료</li>
+                        <li>도입 초기 운영지원 무료</li>
+                        <li>선착순 5개 단지 한정</li>
+                    </ul>
+                </div>
+                <p class="promo-popup-cta">우리 아파트에 6개월간 도입해 보시고 결정하세요!</p>
+                <p class="promo-popup-pc-notice">* 신청은 PC에서 진행해 주세요.</p>
+                <div class="promo-popup-actions" style="display:flex; gap:0.75rem; justify-content:center; margin-top:1.25rem; flex-wrap:wrap;">
+                    <a href="/company-register.html" class="lp-btn-primary" onclick="gaEvent('register_click','promo_popup')">신청하기</a>
+                    <a href="#" id="promoPopupChatTalk" class="lp-btn-outline" onclick="gaEvent('chat_talk_click','promo_popup')">1:1 톡 연결</a>
+                </div>
+            </div>
+            <div class="promo-popup-footer">
+                <label class="promo-popup-today">
+                    <input type="checkbox" id="promoTodayCheck">
+                    <span>오늘 하루 안 보기</span>
+                </label>
+                <button class="btn btn-primary btn-sm" id="promoPopupConfirm">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 1:1 톡 문의 (플로팅, 샘플아파트 체험) -->
     <a href="#" id="lpChatTalkFab" class="lp-chat-talk-fab" onclick="gaEvent('chat_talk_click','fab')">
         <span class="lp-ctf-icon" aria-hidden="true">💬</span>
@@ -491,7 +526,8 @@
             var SAMPLE_COMPANY_ID = 1000;
             var fab = document.getElementById('lpChatTalkFab');
             var textEl = document.getElementById('lpChatTalkFabText');
-            if (!fab || !textEl) return;
+            var popupBtn = document.getElementById('promoPopupChatTalk');
+            if (!fab && !popupBtn) return;
 
             var talkUrl = '/chat-talk.html?company=' + SAMPLE_COMPANY_ID;
 
@@ -502,24 +538,29 @@
                 location.href = hasMarketToken ? talkUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(talkUrl));
             }
 
+            function disableClick(e) { e.preventDefault(); }
+
             fetch('/api/chat-talk/availability')
                 .then(function (res) { return res.json(); })
                 .then(function (avail) {
-                    if (avail && avail.available) {
-                        fab.classList.remove('lp-ctf-disabled');
-                        fab.onclick = goToTalk;
-                        textEl.textContent = '1:1 톡 문의';
-                    } else {
-                        fab.classList.add('lp-ctf-disabled');
-                        fab.onclick = function (e) { e.preventDefault(); };
-                        textEl.textContent = '1:1 톡 문의 (현재 업무 시간 아님)';
+                    var available = !!(avail && avail.available);
+                    if (fab && textEl) {
+                        fab.classList.toggle('lp-ctf-disabled', !available);
+                        fab.onclick = available ? goToTalk : disableClick;
+                        textEl.textContent = available ? '1:1 톡 문의' : '1:1 톡 문의 (현재 업무 시간 아님)';
+                    }
+                    if (popupBtn) {
+                        popupBtn.onclick = available ? goToTalk : disableClick;
+                        popupBtn.classList.toggle('lp-btn-disabled', !available);
+                        popupBtn.textContent = available ? '1:1 톡 연결' : '1:1 톡 연결 (업무 시간 아님)';
                     }
                 })
                 .catch(function () {
-                    fab.classList.add('lp-ctf-disabled');
-                    fab.onclick = function (e) { e.preventDefault(); };
+                    if (fab) { fab.classList.add('lp-ctf-disabled'); fab.onclick = disableClick; }
+                    if (popupBtn) { popupBtn.onclick = disableClick; }
                 });
         })();
     </script>
+    <script src="/js/promo-popup.js?v=1"></script>
 </body>
 </html>
