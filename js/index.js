@@ -684,11 +684,14 @@ function showChat(companyData) {
             });
         }
 
-        // 미답변 판정: 답변이 미답변 패턴이면 저장 (evidences가 있어도 LLM이 "모른다"고
-        // 답했을 수 있으므로 hasEvidences/qaIds 여부와 무관하게 문구로만 판정)
+        // 미답변 판정: "죄송/찾지 못" 같은 명백한 거절 문구는 evidence 유무와 무관하게 미답변으로 저장한다
+        // (evidence가 있어도 LLM이 "모른다"고 답했을 수 있으므로). 반면 "확인이 필요/관리사무소에 문의"는
+        // GPT가 정답을 다 준 뒤 습관적으로 붙이는 안내 멘트에도 등장하므로, evidence가 없을 때만 미답변으로 본다.
         var answerText = result.answer || '';
-        var looksUnanswered = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없|확인이 필요|관리사무소에 문의/.test(answerText);
-        var isUnanswered = looksUnanswered;
+        var strongUnansweredPattern = /죄송|찾지 못|찾을 수 없|등록된 (정보|답변).*없|답변.*없/;
+        var weakUnansweredPattern = /확인이 필요|관리사무소에 문의/;
+        var isUnanswered = strongUnansweredPattern.test(answerText) ||
+            (!hasEvidences && weakUnansweredPattern.test(answerText));
         if (isUnanswered) {
             apiPost('/unanswered-questions', {
                 question: question,
