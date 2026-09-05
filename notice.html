@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>공지사항</title>
+<link rel="icon" type="image/png" href="/assets/images/logo.png">
+<link rel="stylesheet" href="/css/common.css?v=13">
+<link rel="stylesheet" href="/css/complaint.css?v=7">
+</head>
+<body>
+
+<header class="header" role="banner">
+  <div class="header-left">
+    <a href="/" id="headerLogo" class="header-logo" aria-label="AI Helper 홈으로 이동">
+      <img src="/assets/images/robot.png" alt="AI Helper 로고">
+      <span class="logo-text">AI Helper</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/" id="cpChatbotNav"><span class="nav-long">AI 챗봇</span><span class="nav-short">챗봇</span></a>
+      <a href="/fee.html" id="cpFeeNav"><span class="nav-long">관리비</span><span class="nav-short">관리비</span></a>
+      <a href="#" id="cpComplaintNav"><span class="nav-long">답변예약</span><span class="nav-short">예약</span></a>
+      <a href="/market.html" id="cpDaangnNav" style="display:none"><span class="nav-long">🥕 우리아파트 당근</span><span class="nav-short">🥕당근</span></a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <span id="cpCompanyLabel" class="company-label" style="display:none"></span>
+    <a href="/login.html" class="btn btn-outline btn-sm" id="cpHeaderLoginLink" data-short="🔐">관리자 로그인</a>
+    <a href="/admin.html" class="btn btn-outline btn-sm" id="cpAdminLink" data-short="관리자" style="display:none">관리자</a>
+  </div>
+</header>
+
+<div class="cp-page">
+
+<div class="cp-header">
+  <button class="cp-back" id="backBtn">&#8249;</button>
+  <h1 id="pageTitle">공지사항</h1>
+  <div style="width:28px"></div>
+</div>
+
+<div id="noticeList" class="cp-list"></div>
+
+<div id="noticeDetail" class="cp-post-body" style="display:none"></div>
+
+<div id="emptyState" class="cp-empty" style="display:none">
+  <span class="emoji">📢</span>
+  <p>등록된 공지사항이 없습니다.</p>
+</div>
+
+</div><!-- /.cp-page -->
+
+<script src="/js/complaint.js?v=4"></script>
+<script>
+initCpHeader();
+const companyId = getCompanyParam();
+if (!companyId) {
+    alert('잘못된 접근입니다. 메인 페이지에서 이동해주세요.');
+    location.href = '/';
+}
+
+const category = new URLSearchParams(location.search).get('category') || '공고문';
+const noticeId = new URLSearchParams(location.search).get('id');
+
+document.getElementById('pageTitle').textContent = category;
+
+async function loadList() {
+    const list = document.getElementById('noticeList');
+    const empty = document.getElementById('emptyState');
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa">불러오는 중...</div>';
+    try {
+        const res = await fetch(`/api/qa/public/list?company_id=${companyId}&category=${encodeURIComponent(category)}`);
+        if (!res.ok) throw new Error('load failed');
+        const data = await res.json();
+        list.innerHTML = '';
+
+        if (!data.items || data.items.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        data.items.forEach(n => {
+            const a = document.createElement('a');
+            a.className = 'cp-item';
+            a.href = `/notice.html?company=${companyId}&category=${encodeURIComponent(category)}&id=${n.qa_id}`;
+            a.innerHTML = `
+              <div class="cp-item-meta"><span>${escHtml(n.created_at.slice(0, 10))}</span></div>
+              <div class="cp-item-top"><div class="cp-item-title">${escHtml(n.question)}</div></div>`;
+            list.appendChild(a);
+        });
+    } catch (e) {
+        list.innerHTML = `<div class="cp-empty"><p>공지사항을 불러오지 못했습니다.</p></div>`;
+    }
+}
+
+// QA 답변 안의 마크다운 이미지(![alt](url))를 실제 <img>로, 나머지는 이스케이프 후 개행 변환
+function renderNoticeAnswer(rawText) {
+    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    let rendered = '', lastIndex = 0, m;
+    while ((m = imgRegex.exec(rawText)) !== null) {
+        rendered += escHtml(rawText.slice(lastIndex, m.index)).replace(/\n/g, '<br>');
+        rendered += `<img src="${escHtml(m[2])}" alt="${escHtml(m[1])}" style="max-width:100%;border-radius:8px;margin:8px 0;display:block">`;
+        lastIndex = m.index + m[0].length;
+    }
+    rendered += escHtml(rawText.slice(lastIndex)).replace(/\n/g, '<br>');
+    return rendered;
+}
+
+async function loadDetail(id) {
+    document.getElementById('noticeList').style.display = 'none';
+    const detail = document.getElementById('noticeDetail');
+    detail.style.display = 'block';
+    detail.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa">불러오는 중...</div>';
+    try {
+        const res = await fetch(`/api/qa/public/${id}?company_id=${companyId}&category=${encodeURIComponent(category)}`);
+        if (!res.ok) throw new Error('not found');
+        const n = await res.json();
+        detail.innerHTML = `
+          <div class="cp-post-title">${escHtml(n.question)}</div>
+          <div style="font-size:13px;color:var(--gray-500);margin:4px 0 16px">${escHtml(n.created_at.slice(0, 10))}</div>
+          <div class="cp-post-content">${renderNoticeAnswer(n.answer)}</div>`;
+    } catch (e) {
+        detail.innerHTML = `<div class="cp-empty"><p>공지사항을 찾을 수 없습니다.</p></div>`;
+    }
+}
+
+document.getElementById('backBtn').onclick = () => {
+    if (noticeId) {
+        location.href = `/notice.html?company=${companyId}&category=${encodeURIComponent(category)}`;
+    } else {
+        history.back();
+    }
+};
+
+if (noticeId) {
+    loadDetail(noticeId);
+} else {
+    loadList();
+}
+</script>
+</body>
+</html>

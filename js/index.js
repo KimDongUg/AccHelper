@@ -505,6 +505,13 @@ function showChat(companyData) {
     // Quick question buttons
     document.querySelectorAll('.quick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            var label = btn.textContent.trim();
+            // "공고문"은 챗봇 답변 1건이 아니라 전체 공지사항 목록을 봐야 하는 경우가 많아
+            // 목록 페이지로 이동시킨다 (해당 카테고리의 QA 항목들을 그대로 재사용)
+            if (label === '공고문') {
+                window.location.href = '/notice.html?company=' + currentCompanyId + '&category=' + encodeURIComponent(label);
+                return;
+            }
             sendMessage(btn.dataset.question);
         });
     });
