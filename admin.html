@@ -185,11 +185,23 @@
                     <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.25rem">ERP 수집기(확장프로그램) 설치 후, 브라우저 툴바의 확장프로그램 아이콘을 눌러 이 키를 붙여넣고 저장하세요.</div>
                 </div>
                 <!-- 공지사항 -->
-                <div class="form-group" style="grid-column:1/-1">
-                    <label>공지사항</label>
-                    <div id="noticeListWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:0.5rem"></div>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="openNoticeModal()">+ 공지 추가</button>
-                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.4rem">"배너로 표시"로 지정한 공지 1건이 챗봇 첫 화면 인사말 대신 노출됩니다. 입주민은 지난 공지도 목록으로 볼 수 있습니다.</div>
+                <div class="form-group notice-admin-group" style="grid-column:1/-1">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+                        <label style="margin:0">공지사항</label>
+                        <label class="notice-toggle-wrap">
+                            <input type="checkbox" id="noticeActive">
+                            <span class="notice-toggle-slider"></span>
+                            <span style="font-size:var(--text-sm);color:var(--gray-600);margin-left:0.25rem" id="noticeActiveLabel">비활성</span>
+                        </label>
+                    </div>
+                    <textarea id="noticeText" class="form-control" rows="2" placeholder="공지 내용을 입력하세요. (예: 생활 소음 협조 부탁드립니다...)"></textarea>
+                    <input type="text" id="noticeTextLink" class="form-control" placeholder="텍스트 클릭 시 챗봇에 물어볼 질문 (선택, 예: 층간소음 관련 규정이 어떻게 되나요?)" style="margin-top:0.4rem">
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem">
+                        <input type="file" id="noticeImageFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="uploadNoticeImage(this)">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('noticeImageFile').click()">이미지 선택</button>
+                        <span id="noticeImgStatus" style="font-size:var(--text-xs);color:var(--gray-400)"></span>
+                    </div>
+                    <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:0.4rem">공지 활성화 시 챗봇 첫 화면의 인사말 대신 표시됩니다. 이미지는 공지 내용 안에 삽입됩니다.</div>
                 </div>
 
                 <div class="form-group" style="grid-column:1/-1">
@@ -1208,32 +1220,6 @@
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeMktHideModal()">취소</button>
                 <button class="btn btn-primary" onclick="confirmMktHide()" style="background:#E74C3C;border-color:#E74C3C">숨김 처리</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 공지사항 작성/수정 모달 -->
-    <div class="modal-overlay" id="noticeModal" role="dialog" aria-modal="true" onclick="if(event.target===this)closeNoticeModal()">
-        <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3 id="noticeModalTitle">공지 작성</h3>
-                <button class="modal-close" onclick="closeNoticeModal()" aria-label="닫기">&times;</button>
-            </div>
-            <div class="modal-body">
-                <textarea id="noticeModalText" class="form-control" rows="4" placeholder="공지 내용을 입력하세요. (예: 생활 소음 협조 부탁드립니다...)"></textarea>
-                <input type="text" id="noticeModalTextLink" class="form-control" placeholder="텍스트 클릭 시 챗봇에 물어볼 질문 (선택, 예: 층간소음 관련 규정이 어떻게 되나요?)" style="margin-top:0.4rem">
-                <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem">
-                    <input type="file" id="noticeModalImageFile" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="uploadNoticeModalImage(this)">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('noticeModalImageFile').click()">이미지 선택</button>
-                    <span id="noticeModalImgStatus" style="font-size:var(--text-xs);color:var(--gray-400)"></span>
-                </div>
-                <label style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;font-size:var(--text-sm)">
-                    <input type="checkbox" id="noticeModalActive"> 이 공지를 챗봇 배너로 표시
-                </label>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeNoticeModal()">취소</button>
-                <button class="btn btn-primary" id="noticeModalSaveBtn" onclick="submitNoticeModal()">저장</button>
             </div>
         </div>
     </div>

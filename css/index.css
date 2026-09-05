@@ -91,14 +91,6 @@
     margin-top: 0.25rem;
 }
 
-.notice-list-link {
-    display: inline-block;
-    margin-top: 0.5rem;
-    font-size: var(--text-xs);
-    color: var(--primary);
-    text-decoration: underline;
-}
-
 /* ── Category filters ───────────────────────── */
 .category-filters {
     display: flex;

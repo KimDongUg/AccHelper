@@ -367,12 +367,6 @@ async function validateAndStartChat(code) {
         // 1:1 톡 바로가기 (활성/비활성 조건은 챗봇 미답변 안내와 동일)
         setupChatTalkQuickLink(company.company_id);
 
-        // 지난 공지사항 목록 링크
-        var noticeListLink = document.getElementById('noticeListLink');
-        if (noticeListLink) {
-            noticeListLink.href = '/notice.html?company=' + company.company_id;
-        }
-
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company);
     } catch (err) {
