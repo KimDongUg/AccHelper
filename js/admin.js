@@ -3265,12 +3265,11 @@ async function refreshCtThreadModal(threadId, silent) {
                     <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">
                         🔔 ${isResident ? '관리자에게' : '입주민에게'} 카카오 알림톡이 전달되었습니다
                     </div>` : '';
+            const bg = isResident ? 'var(--gray-100)' : 'var(--primary)';
+            const fg = isResident ? 'var(--gray-900)' : '#fff';
             return `
                 <div style="align-self:${isResident ? 'flex-start' : 'flex-end'};max-width:80%">
-                    <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;
-                        background:${isResident ? 'var(--gray-100)' : 'var(--primary)'};color:${isResident ? 'var(--gray-900)' : '#fff'}">
-                        ${escHtml(m.content)}
-                    </div>
+                    <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:${bg};color:${fg}">${escHtml(m.content)}</div>
                     <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${escHtml(m.created_at)}</div>
                     ${alimtalkNotice}
                 </div>
