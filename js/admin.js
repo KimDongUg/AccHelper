@@ -1358,12 +1358,8 @@ async function loadCompanySettings() {
 
         document.getElementById('dashCollectorApiKey').value = company.collector_api_key || '';
 
-        // Load notice
-        const noticeActive = !!company.notice_active;
-        document.getElementById('noticeActive').checked = noticeActive;
-        document.getElementById('noticeActiveLabel').textContent = noticeActive ? '활성' : '비활성';
-        document.getElementById('noticeText').value = company.notice_text || '';
-        document.getElementById('noticeTextLink').value = company.notice_text_link || '';
+        // Load notices
+        loadNotices();
 
         // Load categories
         const wrap = document.getElementById('categoryItemsWrap');
@@ -1411,9 +1407,6 @@ async function saveCompanySettings() {
     const companyAddress = document.getElementById('dashCompanyAddress').value.trim();
     const greetingText = document.getElementById('dashGreeting').value.trim();
     const categories = getCategoryItems();
-    const noticeActive = document.getElementById('noticeActive').checked;
-    const noticeText = document.getElementById('noticeText').value.trim();
-    const noticeTextLink = document.getElementById('noticeTextLink').value.trim();
 
     const saveBtn = document.getElementById('companySettingsSaveBtn');
     saveBtn.disabled = true;
@@ -1424,9 +1417,6 @@ async function saveCompanySettings() {
             address: companyAddress || null,
             greeting_text: greetingText || null,
             categories: categories.length > 0 ? categories : null,
-            notice_active: noticeActive,
-            notice_text: noticeText || null,
-            notice_text_link: noticeTextLink || null,
         });
 
         if (companyName) {
@@ -1443,18 +1433,102 @@ async function saveCompanySettings() {
 }
 
 /* ═══════════════════════════════════════════════
- *  NOTICE — 공지사항 이미지 업로드
+ *  NOTICE — 공지사항 목록 관리 (여러 건 등록, 그중 1건을 배너로 표시)
  * ═══════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', function () {
-    const toggle = document.getElementById('noticeActive');
-    if (toggle) {
-        toggle.addEventListener('change', function () {
-            document.getElementById('noticeActiveLabel').textContent = this.checked ? '활성' : '비활성';
-        });
-    }
-});
+let noticeEditingId = null;
 
-async function uploadNoticeImage(input) {
+async function loadNotices() {
+    const wrap = document.getElementById('noticeListWrap');
+    wrap.innerHTML = '<div style="font-size:var(--text-sm);color:var(--gray-400)">불러오는 중...</div>';
+    try {
+        const data = await apiGet('/notices');
+        renderNoticeList(data.items || []);
+    } catch (e) {
+        wrap.innerHTML = '<div style="font-size:var(--text-sm);color:var(--gray-400)">공지사항을 불러오지 못했습니다.</div>';
+    }
+}
+
+function renderNoticeList(items) {
+    const wrap = document.getElementById('noticeListWrap');
+    if (!items.length) {
+        wrap.innerHTML = '<div style="font-size:var(--text-sm);color:var(--gray-400)">등록된 공지사항이 없습니다.</div>';
+        return;
+    }
+    wrap.innerHTML = items.map(n => `
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0.6rem 0.75rem;border:1px solid var(--gray-200);border-radius:6px">
+            <div style="min-width:0;flex:1">
+                ${n.is_active ? '<span class="badge" style="background:var(--primary);color:#fff;font-size:11px;margin-bottom:4px;display:inline-block">배너 표시중</span>' : ''}
+                <div style="font-size:var(--text-sm);color:var(--gray-900);white-space:pre-wrap;word-break:break-word">${escapeHtml(n.text.length > 80 ? n.text.slice(0, 80) + '…' : n.text)}</div>
+                <div style="font-size:var(--text-xs);color:var(--gray-400);margin-top:2px">${new Date(n.created_at).toLocaleDateString('ko-KR')}</div>
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0">
+                ${n.is_active ? '' : `<button type="button" class="btn btn-outline btn-sm" onclick="setActiveNotice(${n.id})">배너로 표시</button>`}
+                <button type="button" class="btn btn-outline btn-sm" onclick='openNoticeModal(${JSON.stringify(n).replace(/'/g, "&#39;")})'>수정</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="deleteNoticeItem(${n.id})">삭제</button>
+            </div>
+        </div>`).join('');
+}
+
+function openNoticeModal(notice) {
+    noticeEditingId = notice ? notice.id : null;
+    document.getElementById('noticeModalTitle').textContent = notice ? '공지 수정' : '공지 작성';
+    document.getElementById('noticeModalText').value = notice ? notice.text : '';
+    document.getElementById('noticeModalTextLink').value = (notice && notice.text_link) || '';
+    document.getElementById('noticeModalActive').checked = !!(notice && notice.is_active);
+    document.getElementById('noticeModal').classList.add('show');
+}
+
+function closeNoticeModal() {
+    document.getElementById('noticeModal').classList.remove('show');
+}
+
+async function submitNoticeModal() {
+    const text = document.getElementById('noticeModalText').value.trim();
+    if (!text) { showToast('공지 내용을 입력하세요.', 'error'); return; }
+    const textLink = document.getElementById('noticeModalTextLink').value.trim();
+    const isActive = document.getElementById('noticeModalActive').checked;
+
+    const btn = document.getElementById('noticeModalSaveBtn');
+    btn.disabled = true;
+    try {
+        const payload = { text, text_link: textLink || null, is_active: isActive };
+        if (noticeEditingId) {
+            await apiPut('/notices/' + noticeEditingId, payload);
+        } else {
+            await apiPost('/notices', payload);
+        }
+        showToast('공지사항이 저장되었습니다.', 'success');
+        closeNoticeModal();
+        loadNotices();
+    } catch (e) {
+        showToast(e.message || '저장에 실패했습니다.', 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function setActiveNotice(id) {
+    try {
+        await apiPut('/notices/' + id, { is_active: true });
+        showToast('배너로 표시됩니다.', 'success');
+        loadNotices();
+    } catch (e) {
+        showToast(e.message || '변경에 실패했습니다.', 'error');
+    }
+}
+
+async function deleteNoticeItem(id) {
+    if (!confirm('이 공지사항을 삭제하시겠습니까?')) return;
+    try {
+        await apiDelete('/notices/' + id);
+        showToast('삭제되었습니다.', 'success');
+        loadNotices();
+    } catch (e) {
+        showToast(e.message || '삭제에 실패했습니다.', 'error');
+    }
+}
+
+async function uploadNoticeModalImage(input) {
     const file = input.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -1462,14 +1536,14 @@ async function uploadNoticeImage(input) {
         input.value = '';
         return;
     }
-    const statusEl = document.getElementById('noticeImgStatus');
+    const statusEl = document.getElementById('noticeModalImgStatus');
     statusEl.textContent = '업로드 중...';
     try {
         const formData = new FormData();
         formData.append('file', file);
         const result = await apiFetch('/upload/image', { method: 'POST', body: formData });
         const alt = file.name.replace(/\.[^.]+$/, '');
-        insertAtCursor('noticeText', `![${alt}](${result.url})`);
+        insertAtCursor('noticeModalText', `![${alt}](${result.url})`);
         statusEl.textContent = '';
         showToast('이미지가 삽입되었습니다.', 'success');
     } catch (e) {
