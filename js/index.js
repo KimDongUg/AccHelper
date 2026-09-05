@@ -758,10 +758,12 @@ function showChat(companyData) {
             bubble.appendChild(buildUnansweredOptions(question, result.evidences || []));
         }
 
-        // 관리사무소 업무시간/연락처 답변에는 "톡 문의"·"답변예약" 바로가기를 항상 붙여준다
-        var officeContactPattern = /관리사무소/;
+        // 관리사무소(관리실) 업무시간/연락처를 물어보는 질문에는 "톡 문의"·"답변예약" 바로가기를
+        // 항상 붙여준다. 답변 문구가 아니라 사용자의 질문 의도로 판정 — 정산 절차 안내 등 다른
+        // 답변에 관리실 전화번호가 부수적으로 언급되는 경우까지 걸리지 않도록 하기 위함.
+        var officeContactPattern = /관리사무소|관리실/;
         var officeContactDetailPattern = /(업무\s*시간|운영\s*시간|연락처|전화번호)/;
-        if (!isUnanswered && officeContactPattern.test(answerText) && officeContactDetailPattern.test(answerText)) {
+        if (!isUnanswered && officeContactPattern.test(question) && officeContactDetailPattern.test(question)) {
             bubble.appendChild(buildOfficeContactActions(question));
         }
 
