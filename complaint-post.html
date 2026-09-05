@@ -100,9 +100,16 @@ if (!postId) { location.href = '/'; }
 
 // 샘플 회사(company_id >= 1000)는 데모 목적이므로 입주민 인증 없이 바로 열람 가능
 const isSampleCompany = Number(companyId) >= 1000;
+// 관리자에게 보낸 알림톡 링크("새 민원 접수" 등)에는 for=admin이 붙어 있음 —
+// 이 경우 입주민 본인확인이 아니라 관리자 로그인 화면으로 바로 보낸다.
+const isForAdmin = new URLSearchParams(location.search).get('for') === 'admin';
 
-if (!isSampleCompany && !ComplaintAuth.isAdmin() && !sessionStorage.getItem('market_token')) {
-    location.href = `/market-login.html?return=${encodeURIComponent(location.href)}`;
+if (!isSampleCompany && !ComplaintAuth.isAdmin()) {
+    if (isForAdmin) {
+        location.href = `/login.html?return=${encodeURIComponent(location.href)}`;
+    } else if (!sessionStorage.getItem('market_token')) {
+        location.href = `/market-login.html?return=${encodeURIComponent(location.href)}`;
+    }
 }
 
 let post = null;
