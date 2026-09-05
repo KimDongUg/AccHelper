@@ -163,6 +163,63 @@ function refreshReserveButton(companyId) {
     };
 }
 
+/* 관리사무소 업무시간/연락처 답변 아래에 붙는 바로가기 (톡 문의 / 답변예약) —
+   하단 고정바(chatTalkQuickLink)와 동일한 동작을 답변 말풍선 안에서도 제공한다. */
+function buildOfficeContactActions(question) {
+    var wrap = document.createElement('div');
+    wrap.className = 'chat-talk-quicklink chat-talk-quicklink-inline';
+
+    var talkAnchor = document.createElement('a');
+    talkAnchor.href = '#';
+    talkAnchor.className = 'chat-talk-quicklink-btn';
+    talkAnchor.innerHTML = '<span class="ctql-icon" aria-hidden="true">💬</span><span class="ctql-text">관리실에 톡으로 직접 문의하기</span>';
+    wrap.appendChild(talkAnchor);
+
+    var talkNote = document.createElement('p');
+    talkNote.className = 'ctql-note';
+    talkNote.style.display = 'none';
+    wrap.appendChild(talkNote);
+
+    var reserveBtn = document.createElement('button');
+    reserveBtn.type = 'button';
+    reserveBtn.className = 'chat-talk-quicklink-btn';
+    reserveBtn.style.cssText = 'border:none;cursor:pointer';
+    reserveBtn.innerHTML = '<span class="ctql-icon" aria-hidden="true">📝</span><span>관리실에 답변예약하기</span>';
+    reserveBtn.addEventListener('click', function () {
+        if (currentCompanyId >= 1000) {
+            alert(SAMPLE_COMPANY_FEATURE_ALERT);
+            return;
+        }
+        sessionStorage.setItem('cp_prefill_title', question.slice(0, 100));
+        sessionStorage.setItem('cp_prefill_content', question);
+        window.location.href = '/complaint-write.html?company=' + currentCompanyId;
+    });
+    wrap.appendChild(reserveBtn);
+
+    if (currentCompanyId >= 1000) {
+        talkAnchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            alert(SAMPLE_COMPANY_FEATURE_ALERT);
+        });
+        return wrap;
+    }
+
+    getChatTalkAvailability().then(function (avail) {
+        var hasMarketToken = !!sessionStorage.getItem('market_token');
+        var talkUrl = '/chat-talk.html?company=' + currentCompanyId;
+        if (avail && avail.available) {
+            talkAnchor.href = hasMarketToken ? talkUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(talkUrl));
+        } else {
+            talkAnchor.addEventListener('click', function (e) { e.preventDefault(); });
+            talkNote.textContent = '업무시간(평일 09:00~18:00, 점심시간 제외)에만 이용 가능합니다. ' +
+                ((avail && avail.message) || '');
+            talkNote.style.display = '';
+        }
+    });
+
+    return wrap;
+}
+
 /* ── Initialization ────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
     // 로그인 상태면 헤더 버튼 텍스트 변경
@@ -700,6 +757,14 @@ function showChat(companyData) {
             }).catch(function () { /* 저장 실패해도 무시 */ });
             bubble.appendChild(buildUnansweredOptions(question, result.evidences || []));
         }
+
+        // 관리사무소 업무시간/연락처 답변에는 "톡 문의"·"답변예약" 바로가기를 항상 붙여준다
+        var officeContactPattern = /관리사무소/;
+        var officeContactDetailPattern = /(업무\s*시간|운영\s*시간|연락처|전화번호)/;
+        if (!isUnanswered && officeContactPattern.test(answerText) && officeContactDetailPattern.test(answerText)) {
+            bubble.appendChild(buildOfficeContactActions(question));
+        }
+
         bubble.appendChild(buildFeedbackButtons(question, result.answer, qaIds));
 
         msg.appendChild(avatar);

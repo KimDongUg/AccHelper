@@ -1161,6 +1161,16 @@
     text-align: right;
 }
 
+/* 답변 말풍선 안에 삽입되는 버전 — 좌측 정렬(다른 답변 내용과 통일감) */
+.chat-talk-quicklink-inline {
+    align-items: flex-start;
+    margin-top: 0.5rem;
+}
+
+.chat-talk-quicklink-inline .ctql-note {
+    text-align: left;
+}
+
 /* ── Toast notifications ───────────────────── */
 .toast-container {
     position: fixed;
