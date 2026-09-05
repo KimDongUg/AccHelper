@@ -1,14 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Parse redirect params from URL (e.g., ?redirect=chat&company=X)
+    // Parse redirect params from URL (e.g., ?redirect=chat&company=X, or ?return=<url>)
     const urlParams = new URLSearchParams(window.location.search);
     const redirectTarget = urlParams.get('redirect');
     const redirectCompany = urlParams.get('company');
+    const returnUrl = urlParams.get('return');
 
     // Already logged in? — check client-side first, then verify with server
     if (AuthSession.isValid()) {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
+                // 특정 페이지에서 로그인이 필요해 넘어온 경우, 로그인 후 그 페이지로 바로 복귀
+                if (returnUrl) {
+                    window.location.href = returnUrl;
+                    return;
+                }
                 // If redirecting to chat, go there instead of admin
                 if (redirectTarget === 'chat') {
                     const chatUrl = redirectCompany ? `/?company=${encodeURIComponent(redirectCompany)}` : '/';
@@ -100,6 +106,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const role = result.session.role;
 
                 setTimeout(() => {
+                    // 특정 페이지에서 로그인이 필요해 넘어온 경우, 로그인 후 그 페이지로 바로 복귀
+                    if (returnUrl) {
+                        window.location.href = returnUrl;
+                        return;
+                    }
                     // Redirect to chat if requested via URL params
                     if (redirectTarget === 'chat') {
                         const chatUrl = redirectCompany ? `/?company=${encodeURIComponent(redirectCompany)}` : '/';

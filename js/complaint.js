@@ -124,7 +124,11 @@ function initCpHeader() {
             adminBtn.textContent = '관리자 (' + (sess.fullName || sess.username || '') + ')';
         }
     } else {
-        if (loginBtn) loginBtn.style.display = '';
+        // 로그인 후 지금 보던 화면(예: 특정 답변예약 글)으로 바로 돌아오도록 return 파라미터 포함
+        if (loginBtn) {
+            loginBtn.href = '/login.html?return=' + encodeURIComponent(location.href);
+            loginBtn.style.display = '';
+        }
         if (adminBtn) adminBtn.style.display = 'none';
     }
 }

@@ -122,14 +122,28 @@
         if (sess && sess.isLoggedIn && sess.token) {
             if (loginBtn) loginBtn.style.display = 'none';
             if (adminBtn) { adminBtn.style.display = ''; adminBtn.textContent = '관리자 (' + (sess.fullName || sess.username || '') + ')'; }
+        } else if (loginBtn) {
+            // 로그인 후 지금 보던 화면으로 바로 돌아오도록 return 파라미터 포함
+            loginBtn.href = '/login.html?return=' + encodeURIComponent(location.href);
         }
     } catch (e) {}
 })();
 
-// 이미 로그인된 경우 바로 이동
+// 이미 인증/로그인된 경우 이 인증 화면을 건너뛰고 바로 이동
 (function () {
-  if (!MarketAuth.getToken()) return;
   const ret = new URLSearchParams(location.search).get('return');
+
+  // 이미 관리자로 로그인되어 있으면 입주민 인증 절차 없이 원래 가려던 화면(예: 답변예약 글)으로 바로 이동
+  try {
+    const authRaw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
+    const sess = authRaw ? JSON.parse(authRaw) : null;
+    if (sess && sess.isLoggedIn && sess.token && ret) {
+      location.href = ret;
+      return;
+    }
+  } catch (e) {}
+
+  if (!MarketAuth.getToken()) return;
   location.href = ret || '/market.html';
 })();
 

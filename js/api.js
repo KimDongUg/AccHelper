@@ -104,13 +104,13 @@ const AuthSession = {
         return true;
     },
 
-    /** Redirect to login and clear session. */
+    /** Redirect to login and clear session. 로그인 후 원래 있던 화면으로 돌아올 수 있도록 return 파라미터를 함께 넘긴다. */
     redirectToLogin(returnUrl) {
         console.log('[AUTH] redirectToLogin called from:', new Error().stack);
         this.clear();
         if (!window.location.pathname.includes('login')) {
-            const url = returnUrl || '/login.html';
-            window.location.href = url;
+            const target = returnUrl || window.location.href;
+            window.location.href = '/login.html?return=' + encodeURIComponent(target);
         }
     },
 };
