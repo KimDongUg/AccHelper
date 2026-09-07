@@ -2342,7 +2342,7 @@ function formatStatLabel(period, periodType) {
 }
 
 function renderStatsTable(data, periodType) {
-    const items = data.items || [];
+    const items = (data.items || []).slice().sort((a, b) => (b.period || '').localeCompare(a.period || ''));
     const tbody = document.getElementById('statsTableBody');
     const emptyState = document.getElementById('statsEmptyState');
 
@@ -2709,7 +2709,7 @@ function renderQvChart(data, periodType) {
 }
 
 function renderQvTable(data, periodType) {
-    const periods = data.periods || [];
+    const periods = (data.periods || []).slice().sort((a, b) => (b.period || '').localeCompare(a.period || ''));
     const tbody = document.getElementById('qvTableBody');
     const emptyState = document.getElementById('qvEmptyState');
 
