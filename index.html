@@ -543,7 +543,7 @@
 
             function disableClick(e) { e.preventDefault(); }
 
-            fetch('/api/chat-talk/availability')
+            fetch('/api/chat-talk/availability?company_id=' + SAMPLE_COMPANY_ID)
                 .then(function (res) { return res.json(); })
                 .then(function (avail) {
                     var available = !!(avail && avail.available);
