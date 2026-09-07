@@ -300,9 +300,15 @@ function _historyChart(history) {
   }
 
   return `<div class="fc-card">
-    <div class="fc-card-title">월별 관리비 추이</div>
+    <div class="fc-card-title">월별 관리비 추이 <span style="font-size:11px;color:#94a3b8;font-weight:400">(실사용 기준)</span></div>
     <div style="position:relative;height:180px"><canvas id="fcHistChart"></canvas></div>
   </div>`;
+}
+
+/* 실사용 관리비 — 이주정산/과입금 등 일회성 차감 항목을 뺀 값(usage_amount).
+   구 API 응답 호환을 위해 없으면 net 금액(amount)로 폴백. */
+function _usageAmt(h) {
+  return (h.usage_amount != null) ? h.usage_amount : h.amount;
 }
 
 function _drawHistChart(history) {
@@ -312,7 +318,7 @@ function _drawHistChart(history) {
     const ym = String(h.year_month || '');
     return ym.length >= 6 ? `${parseInt(ym.slice(4, 6))}월` : '';
   });
-  const amounts = history.map(h => h.amount);
+  const amounts = history.map(_usageAmt);
   const lastI = amounts.length - 1;
   new window.Chart(ctx, {
     type: 'line',
@@ -349,10 +355,12 @@ function _drawHistChart(history) {
 function _aiCard(d, history, avg) {
   const msgs = [];
   const tips = [];
-  const total = _n(d.total);
+  // 이주정산/과입금 등 일회성 조정으로 실제 청구액(d.total)이 왜곡될 수 있어,
+  // 증감 분석은 실사용 기준(usage_total)으로 비교한다.
+  const total = (d.usage_total != null) ? _n(d.usage_total) : _n(d.total);
 
   if (history && history.length >= 2) {
-    const prev = history[history.length - 2].amount;
+    const prev = _usageAmt(history[history.length - 2]);
     if (prev > 0) {
       const diff = total - prev;
       const pct = (diff / prev) * 100;
