@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>체험하기 - AI Helper</title>
+    <meta name="description" content="AI Helper를 아파트 버전과 오피스텔 버전 중 원하는 샘플로 무료 체험해 보세요.">
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
+    <link rel="stylesheet" href="/css/common.css?v=16">
+    <link rel="stylesheet" href="/css/landing.css?v=11">
+    <link rel="stylesheet" href="/css/policy.css?v=10">
+    <style>
+        .demo-select-main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 64px 24px 96px;
+        }
+        .demo-select-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .demo-select-desc {
+            text-align: center;
+            color: var(--gray-500, #6b7280);
+            margin-bottom: 40px;
+        }
+        .demo-select-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 640px) {
+            .demo-select-grid { grid-template-columns: 1fr; }
+        }
+        .demo-select-card {
+            display: block;
+            padding: 32px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            text-decoration: none;
+            color: inherit;
+            background: #fff;
+            transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+        }
+        .demo-select-card:hover {
+            border-color: #6d5bf6;
+            box-shadow: 0 8px 24px rgba(109, 91, 246, .12);
+            transform: translateY(-2px);
+        }
+        .demo-select-icon { font-size: 2.4rem; margin-bottom: 14px; }
+        .demo-select-card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .demo-select-card-desc { font-size: .92rem; color: var(--gray-500, #6b7280); line-height: 1.5; margin-bottom: 18px; }
+        .demo-select-card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 700;
+            color: #6d5bf6;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
+
+    <!-- Header -->
+    <header class="lp-header" role="banner">
+        <a href="/" class="header-logo" aria-label="AI 헬퍼 홈으로 이동">
+            <img src="/assets/images/ai-helper-mascot.png" alt="AI Helper 로고">
+        </a>
+        <nav class="lp-nav" aria-label="메인 내비게이션">
+            <a href="/#features-section">서비스 소개</a>
+            <a href="/#features-section">주요 기능</a>
+            <a href="/#effects-section">도입 효과</a>
+            <a href="/#case-section">도입 사례</a>
+            <a href="/#pricing-section">요금 안내</a>
+        </nav>
+        <div class="lp-header-actions">
+            <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
+            <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
+            <a href="/demo-select.html" class="lp-btn-primary">체험하기</a>
+        </div>
+        <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <!-- Mobile menu drawer -->
+    <div class="lp-mobile-menu" id="lpMobileMenu">
+        <nav aria-label="모바일 메뉴">
+            <a href="/#features-section">서비스 소개</a>
+            <a href="/#features-section">주요 기능</a>
+            <a href="/#effects-section">도입 효과</a>
+            <a href="/#case-section">도입 사례</a>
+            <a href="/#pricing-section">요금 안내</a>
+            <hr>
+            <a href="/contact.html">도입 문의</a>
+            <a href="/company-register.html">신청하기</a>
+        </nav>
+    </div>
+
+    <main id="main-content" class="demo-select-main">
+        <h1 class="demo-select-title">어떤 샘플로 체험해 보시겠어요?</h1>
+        <p class="demo-select-desc">건물 유형에 맞는 샘플을 선택하시면 실제 데이터 기반 AI 챗봇을 바로 체험하실 수 있습니다.</p>
+
+        <div class="demo-select-grid">
+            <a href="/app.html?company=1002" class="demo-select-card">
+                <div class="demo-select-icon" aria-hidden="true">🏠</div>
+                <div class="demo-select-card-title">샘플아파트</div>
+                <p class="demo-select-card-desc">전기·난방·누수 등 실제 세대 민원 데이터를 기반으로 만든 아파트형 AI 챗봇입니다.</p>
+                <span class="demo-select-card-cta">체험하기 →</span>
+            </a>
+            <a href="/app.html?company=1000" class="demo-select-card">
+                <div class="demo-select-icon" aria-hidden="true">🏢</div>
+                <div class="demo-select-card-title">샘플오피스텔</div>
+                <p class="demo-select-card-desc">관리비·이주정산 등 실제 운영 중인 오피스텔 데이터를 기반으로 만든 챗봇입니다.</p>
+                <span class="demo-select-card-cta">체험하기 →</span>
+            </a>
+        </div>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-inner">
+            <nav class="footer-links" aria-label="정책 링크">
+                <a href="/privacy.html">개인정보처리방침</a>
+                <a href="/terms.html">이용약관</a>
+                <a href="/copyright.html">저작권 정책</a>
+                <a href="/refund-policy.html">환불 정책</a>
+                <a href="/contact.html">문의하기</a>
+            </nav>
+            <p class="footer-copyright">&copy; 2026 AI Helper(Accounting Helper). All rights reserved.</p>
+            <p class="footer-contact">운영자 이메일: <a href="mailto:kduaro124@naver.com">kduaro124@naver.com</a></p>
+            <p class="footer-business-info">보듬누리 | 통신판매업 신고 제 2026-세종-0130 호 | 세종시 다정남로 22, 122-1203</p>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('lpHamburgerBtn');
+            var menu = document.getElementById('lpMobileMenu');
+            if (!btn || !menu) return;
+
+            function closeMenu() {
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+            function toggleMenu() {
+                var isOpen = menu.classList.toggle('open');
+                btn.classList.toggle('open', isOpen);
+                btn.setAttribute('aria-expanded', String(isOpen));
+            }
+
+            btn.addEventListener('click', toggleMenu);
+            menu.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', closeMenu);
+            });
+            document.addEventListener('click', function (e) {
+                if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
