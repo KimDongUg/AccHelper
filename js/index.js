@@ -246,12 +246,18 @@ document.addEventListener('DOMContentLoaded', function () {
     var code = params.get('company');
 
     // 로고/AI챗봇 버튼 클릭 동작 설정
+    // 샘플/데모 회사(company_id >= 1000)는 실제 관리실 챗봇이 아니므로
+    // 로고 클릭 시 랜딩페이지(acchelper.kr)로 돌아간다.
+    var isSampleCompany = !!code && Number(code) >= 1000;
+
     function handleChatNavClick(e) {
         e.preventDefault();
         if (sess && sess.isLoggedIn && sess.role === 'super_admin') {
             window.location.href = '/';
         } else if (sess && sess.isLoggedIn && sess.companyId) {
             window.location.href = '/?company=' + sess.companyId;
+        } else if (isSampleCompany) {
+            window.location.href = '/';
         } else if (code) {
             window.location.reload();
         } else {
@@ -262,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // href 자체도 우리 회사 챗봇으로 설정 (새 탭으로 열거나 클릭 이벤트가 못 붙는 경우 대비)
     var homeHref = (sess && sess.isLoggedIn && sess.role === 'super_admin') ? '/'
         : (sess && sess.isLoggedIn && sess.companyId) ? '/app.html?company=' + sess.companyId
+        : isSampleCompany ? '/'
         : code ? '/app.html?company=' + code
         : '/';
 
