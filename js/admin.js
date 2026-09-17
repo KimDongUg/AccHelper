@@ -144,11 +144,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modalCompany.appendChild(opt);
             });
 
+            // Populate admin tab's own company filter dropdown
+            document.getElementById('adminCompanyColHeader').style.display = '';
+            const adminCompanyFilter = document.getElementById('adminCompanyFilter');
+            adminCompanyFilter.style.display = '';
+            companies.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.company_id;
+                opt.textContent = c.company_name;
+                adminCompanyFilter.appendChild(opt);
+            });
+
             // Auto-select company if ?company= query parameter is present
             const urlParams = new URLSearchParams(window.location.search);
             const targetCompanyId = urlParams.get('company');
             if (targetCompanyId) {
                 companyFilter.value = targetCompanyId;
+                adminCompanyFilter.value = targetCompanyId;
                 // Update header to show the selected company name
                 const targetCompany = companies.find(c => String(c.company_id) === String(targetCompanyId));
                 if (targetCompany) {
@@ -233,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('createdByFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
     document.getElementById('companyFilter').addEventListener('change', () => { currentPage = 1; loadQaList(); });
+    document.getElementById('adminCompanyFilter').addEventListener('change', () => loadAdminList());
 
     // Profile button
     document.getElementById('profileBtn').addEventListener('click', () => openProfileModal());
@@ -742,13 +755,18 @@ async function saveQa() {
  * ═══════════════════════════════════════════════ */
 async function loadAdminList() {
     try {
-        const data = await apiGet('/admins');
+        const isSuperAdmin = currentRole === 'super_admin';
+        const companyFilterVal = document.getElementById('adminCompanyFilter').value;
+        const params = new URLSearchParams();
+        if (companyFilterVal) params.append('company_id', companyFilterVal);
+        const data = await apiGet(`/admins?${params}`);
         const tbody = document.getElementById('adminTableBody');
         const roleLabels = { super_admin: '최고관리자', admin: '관리자', viewer: '뷰어' };
 
         tbody.innerHTML = data.items.map(admin => `
             <tr>
                 <td>${admin.user_id}</td>
+                ${isSuperAdmin ? `<td>${escapeHtml(companyMap[admin.company_id] || '-')}</td>` : ''}
                 <td>${escapeHtml(admin.email)}</td>
                 <td>${escapeHtml(admin.full_name || '-')}</td>
                 <td><span class="role-badge role-${admin.role}">${roleLabels[admin.role] || admin.role}</span></td>
