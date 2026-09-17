@@ -10,6 +10,14 @@ let unansweredPage = 1;
 let feedbackPage = 1;
 let companiesList = [];
 let companyMap = {};  // id → name
+let scopedCompanyId = null; // super_admin이 ?company= 로 특정 회사를 볼 때 그 회사 id
+
+/* super_admin이 특정 회사를 보고 있을 때(scopedCompanyId) 그 회사의 admin과
+ * 동일한 데이터를 보도록 모든 API 호출에 company_id를 붙여준다. */
+function withScope(url) {
+    if (!scopedCompanyId) return url;
+    return url + (url.includes('?') ? '&' : '?') + 'company_id=' + scopedCompanyId;
+}
 
 /* 시설관리 회사는 카카오 알림톡 기능을 지원하지 않음 */
 function isFacilityManagementCompany(name) {
@@ -159,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const targetCompanyId = urlParams.get('company');
             if (targetCompanyId) {
+                scopedCompanyId = targetCompanyId;
                 companyFilter.value = targetCompanyId;
                 adminCompanyFilter.value = targetCompanyId;
                 // Update header to show the selected company name
@@ -189,13 +198,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (csSection) csSection.style.display = 'none';
     }
 
-    // super_admin viewing another company → hide company settings
-    if (currentRole === 'super_admin') {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('company')) {
-            const csSection = document.getElementById('companySettingsSection');
-            if (csSection) csSection.style.display = 'none';
-        }
+    // super_admin이 특정 회사를 지정하지 않고(전체 보기) 들어온 경우엔
+    // 회사 설정이 성립하지 않으므로 숨긴다. 특정 회사(?company=)를 볼 때는
+    // 그 회사의 admin과 동일하게 회사 설정을 그대로 보여준다.
+    if (currentRole === 'super_admin' && !scopedCompanyId) {
+        const csSection = document.getElementById('companySettingsSection');
+        if (csSection) csSection.style.display = 'none';
     }
 
     // Session watcher
@@ -339,7 +347,7 @@ function showToast(message, type = 'success') {
  * ═══════════════════════════════════════════════ */
 async function loadStats() {
     try {
-        const s = await apiGet('/stats');
+        const s = await apiGet(withScope('/stats'));
         document.getElementById('statTotal').textContent = s.total_qa;
         document.getElementById('statActive').textContent = s.active_qa;
         document.getElementById('statToday').textContent = s.today_chats;
@@ -349,14 +357,14 @@ async function loadStats() {
     }
     // 불만족 피드백 건수 로드
     try {
-        const fc = await apiGet('/feedback/count');
+        const fc = await apiGet(withScope('/feedback/count'));
         document.getElementById('statFeedback').textContent = fc.count ?? 0;
     } catch (e) {
         document.getElementById('statFeedback').textContent = '-';
     }
     // 미답변 질문 건수 로드
     try {
-        const uc = await apiGet('/unanswered-questions/count');
+        const uc = await apiGet(withScope('/unanswered-questions/count'));
         document.getElementById('statUnanswered').textContent = uc.count ?? 0;
     } catch (e) {
         document.getElementById('statUnanswered').textContent = '-';
@@ -364,7 +372,7 @@ async function loadStats() {
     // 구독 상태 로드
     try {
         const sess = AuthSession.get();
-        const data = await apiGet('/billing/status?company_id=' + sess.companyId);
+        const data = await apiGet('/billing/status?company_id=' + (scopedCompanyId || sess.companyId));
         const el = document.getElementById('statSubscription');
         const plan = data.subscription_plan;
         if (plan === 'enterprise' && data.active) {
@@ -887,7 +895,7 @@ async function loadFeedbackList() {
     const loading = document.getElementById('feedbackTableLoading');
     loading.classList.add('show');
     try {
-        const data = await apiGet(`/feedback?${params}`);
+        const data = await apiGet(withScope(`/feedback?${params}`));
         feedbackItems = data.items || [];
         renderFeedbackTable(feedbackItems);
         renderFeedbackPagination(data.page, data.pages);
@@ -1068,7 +1076,7 @@ async function loadUnansweredList() {
     const loading = document.getElementById('unansweredTableLoading');
     loading.classList.add('show');
     try {
-        const data = await apiGet(`/unanswered-questions?${params}`);
+        const data = await apiGet(withScope(`/unanswered-questions?${params}`));
         renderUnansweredTable(data.items);
         renderUnansweredPagination(data.page, data.pages);
     } catch (e) {
@@ -1368,7 +1376,7 @@ async function saveProfile() {
  * ═══════════════════════════════════════════════ */
 async function loadCompanySettings() {
     try {
-        const company = await apiGet('/companies/me');
+        const company = await apiGet(withScope('/companies/me'));
         document.getElementById('dashCompanyName').value = company.company_name || '';
         document.getElementById('dashCompanyAddress').value = company.address || '';
         document.getElementById('dashChatbotUrl').value = getCompanyChatbotUrl() || '';
@@ -1437,7 +1445,7 @@ async function saveCompanySettings() {
     saveBtn.disabled = true;
 
     try {
-        await apiPut('/companies/me', {
+        await apiPut(withScope('/companies/me'), {
             company_name: companyName || null,
             address: companyAddress || null,
             greeting_text: greetingText || null,
@@ -2863,8 +2871,8 @@ async function loadSubscriptionTab() {
     try {
         // 상태 + 내역 병렬 로드
         const [status, history] = await Promise.all([
-            apiGet('/billing/status?company_id=' + sess.companyId),
-            apiGet('/billing/history?company_id=' + sess.companyId),
+            apiGet('/billing/status?company_id=' + (scopedCompanyId || sess.companyId)),
+            apiGet('/billing/history?company_id=' + (scopedCompanyId || sess.companyId)),
         ]);
 
         subStatus = status;
@@ -2944,7 +2952,7 @@ async function loadPaymentDates() {
     if (!sess) return;
 
     try {
-        const history = await apiGet('/billing/history?company_id=' + sess.companyId);
+        const history = await apiGet('/billing/history?company_id=' + (scopedCompanyId || sess.companyId));
         const payments = (history.payments || []).filter(p => p.status === 'success');
 
         const datesEl = document.getElementById('subDates');
@@ -3103,7 +3111,7 @@ async function loadComplaintPersons() {
         const params = new URLSearchParams({ page: cpPage, size: CP_PAGE_SIZE, sort, order });
         if (search) params.append('search', search);
 
-        const data = await apiGet(`/fee/residents?${params}`);
+        const data = await apiGet(withScope(`/fee/residents?${params}`));
 
         if (!data.items || data.items.length === 0) {
             tbody.innerHTML = '';
@@ -3183,7 +3191,7 @@ async function loadChatTalkThreads() {
     if (empty)   empty.style.display = 'none';
 
     try {
-        const data = await apiGet(`/chat-talk/admin/threads?page=${ctPage}`);
+        const data = await apiGet(withScope(`/chat-talk/admin/threads?page=${ctPage}`));
 
         if (!data.items || data.items.length === 0) {
             tbody.innerHTML = '';
@@ -3265,7 +3273,7 @@ async function openCtThreadModal(threadId) {
 async function refreshCtThreadModal(threadId, silent) {
     try {
         // GET 호출 자체가 서버에서 담당자 자동 선점 + 안읽음 처리를 수행함
-        const thread = await apiGet(`/chat-talk/admin/threads/${threadId}`);
+        const thread = await apiGet(withScope(`/chat-talk/admin/threads/${threadId}`));
         if (ctCurrentThreadId !== threadId) return; // 그 사이 모달이 닫혔거나 다른 스레드로 이동함
 
         document.getElementById('ctModalTitle').textContent = `${thread.dong} ${thread.ho} — ${thread.resident_name}`;
@@ -3339,7 +3347,7 @@ async function sendCtReply() {
     if (!content) return;
 
     try {
-        await apiPost(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`, { content });
+        await apiPost(withScope(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`), { content });
         input.value = '';
         await refreshCtThreadModal(ctCurrentThreadId, false);
     } catch (e) {
@@ -3351,7 +3359,7 @@ async function closeCtThreadStatus() {
     if (!ctCurrentThreadId) return;
     try {
         const reopening = document.getElementById('ctCloseThreadBtn').textContent === '다시 열기';
-        await apiPatch(`/chat-talk/admin/threads/${ctCurrentThreadId}/status`, { status: reopening ? 'open' : 'closed' });
+        await apiPatch(withScope(`/chat-talk/admin/threads/${ctCurrentThreadId}/status`), { status: reopening ? 'open' : 'closed' });
         showToast(reopening ? '스레드를 다시 열었습니다' : '스레드를 종료했습니다');
         if (reopening) {
             await refreshCtThreadModal(ctCurrentThreadId, false);
@@ -3413,7 +3421,7 @@ async function loadMarketPosts() {
     if (hidden !== '') url += `&hidden=${hidden}`;
 
     try {
-        const data = await apiGet(url);
+        const data = await apiGet(withScope(url));
 
         if (!data.items || data.items.length === 0) {
             if (empty) empty.style.display = 'block';
@@ -3513,7 +3521,7 @@ async function confirmMktHide() {
     const reason = document.getElementById('mktHideReason').value.trim();
     if (!reason) { showToast('숨김 사유를 입력해주세요.', 'error'); return; }
     try {
-        await apiPatch(`/market/admin/posts/${mktHideTargetId}/hide`, { hidden: true, reason });
+        await apiPatch(withScope(`/market/admin/posts/${mktHideTargetId}/hide`), { hidden: true, reason });
         showToast('게시글이 숨김 처리되었습니다.');
         closeMktHideModal();
         loadMarketPosts();
@@ -3523,7 +3531,7 @@ async function confirmMktHide() {
 async function restoreMktPost(id) {
     if (!confirm('이 게시글을 다시 공개하시겠습니까?')) return;
     try {
-        await apiPatch(`/market/admin/posts/${id}/hide`, { hidden: false });
+        await apiPatch(withScope(`/market/admin/posts/${id}/hide`), { hidden: false });
         showToast('게시글이 복원되었습니다.');
         loadMarketPosts();
     } catch (e) { showToast(e.message, 'error'); }
@@ -3532,7 +3540,7 @@ async function restoreMktPost(id) {
 async function deleteMktPost(id) {
     if (!confirm('게시글을 영구 삭제할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
     try {
-        await apiDelete(`/market/admin/posts/${id}`);
+        await apiDelete(withScope(`/market/admin/posts/${id}`));
         showToast('삭제되었습니다.');
         loadMarketPosts();
     } catch (e) { showToast(e.message, 'error'); }
@@ -3550,7 +3558,7 @@ async function loadMarketResidents() {
     if (tbody)   tbody.innerHTML = '';
 
     try {
-        const data = await apiGet('/market/admin/residents');
+        const data = await apiGet(withScope('/market/admin/residents'));
 
         if (!data || data.length === 0) {
             if (empty) empty.style.display = 'block';
@@ -3600,7 +3608,7 @@ async function loadMarketResidents() {
 
 async function approveMktResident(id) {
     try {
-        await apiPatch(`/market/admin/residents/${id}/verify`, {});
+        await apiPatch(withScope(`/market/admin/residents/${id}/verify`), {});
         showToast('승인되었습니다.');
         loadMarketResidents();
     } catch (e) { showToast(e.message, 'error'); }
@@ -3609,7 +3617,7 @@ async function approveMktResident(id) {
 async function deleteMktResident(id) {
     if (!confirm('회원을 삭제할까요?\n해당 입주민은 더 이상 당근 서비스를 이용할 수 없습니다.')) return;
     try {
-        await apiDelete(`/market/admin/residents/${id}`);
+        await apiDelete(withScope(`/market/admin/residents/${id}`));
         showToast('삭제되었습니다.');
         loadMarketResidents();
     } catch (e) { showToast(e.message, 'error'); }
@@ -3669,7 +3677,7 @@ async function adminFeeSearch() {
 
     try {
         const params = new URLSearchParams({ dong, ho });
-        const data = await apiGet(`/fee/admin-search?${params}`);
+        const data = await apiGet(withScope(`/fee/admin-search?${params}`));
         _adminFeeLastDong = dong;
         _adminFeeLastHo = ho;
         renderAdminFeeResult(data, resultEl);
@@ -3678,7 +3686,7 @@ async function adminFeeSearch() {
         toggleBtn.textContent = '상세 고지서 보기 ▼';
 
         const sess = AuthSession.get();
-        const companyId = sess?.company_id || sess?.companyId;
+        const companyId = scopedCompanyId || sess?.company_id || sess?.companyId;
         window.renderDashboard(data, AuthSession.getToken(), companyId, {
             historyUrl: '/api/fee/admin-history',
             averageUrl: '/api/fee/admin-average',
@@ -3700,11 +3708,11 @@ window.onFeeMonthChange = async function (yearMonth) {
 
     try {
         const params = new URLSearchParams({ dong: _adminFeeLastDong, ho: _adminFeeLastHo, year_month: yearMonth });
-        const data = await apiGet(`/fee/admin-search?${params}`);
+        const data = await apiGet(withScope(`/fee/admin-search?${params}`));
         renderAdminFeeResult(data, resultEl);
 
         const sess = AuthSession.get();
-        const companyId = sess?.company_id || sess?.companyId;
+        const companyId = scopedCompanyId || sess?.company_id || sess?.companyId;
         window.renderDashboard(data, AuthSession.getToken(), companyId, {
             historyUrl: '/api/fee/admin-history',
             averageUrl: '/api/fee/admin-average',
@@ -3819,7 +3827,7 @@ async function loadFeeStats() {
     if (!el) return;
     el.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">불러오는 중...</div>';
     try {
-        _feeStatsData = await apiGet('/fee/admin-stats');
+        _feeStatsData = await apiGet(withScope('/fee/admin-stats'));
         renderFeeStats(_feeStatTab);
     } catch (e) {
         el.innerHTML = '<div style="color:#c62828;font-size:13px;padding:8px 0">통계를 불러오지 못했습니다.</div>';
@@ -3894,7 +3902,7 @@ async function loadFeeAccessLog() {
     if (!el) return;
     el.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">불러오는 중...</div>';
     try {
-        const data = await apiGet('/fee/admin-log?limit=100');
+        const data = await apiGet(withScope('/fee/admin-log?limit=100'));
         renderFeeAccessLog(data.logs || [], el);
     } catch (e) {
         el.innerHTML = '<div style="color:#c62828;font-size:13px;padding:8px 0">이력을 불러오지 못했습니다.</div>';
