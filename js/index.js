@@ -384,19 +384,11 @@ async function validateAndStartChat(code) {
         companyLabel.textContent = company.company_name;
         companyLabel.style.display = '';
 
-        // Hide admin buttons for sample companies (company_id >= 1000)
-        // Show admin link for non-sample companies if logged in
-        if (currentCompanyId >= 1000) {
-            var loginLink = document.getElementById('headerLoginLink');
-            if (loginLink) loginLink.style.display = 'none';
-            var admLink = document.getElementById('adminLink');
-            if (admLink) admLink.style.display = 'none';
-        } else {
-            var sess = AuthSession.get();
-            if (sess && sess.isLoggedIn) {
-                var admLink2 = document.getElementById('adminLink');
-                if (admLink2) admLink2.style.display = '';
-            }
+        // 샘플/데모 회사도 관리자화면 체험이 가능하도록 관리자 버튼 노출
+        var sess = AuthSession.get();
+        if (sess && sess.isLoggedIn) {
+            var admLink2 = document.getElementById('adminLink');
+            if (admLink2) admLink2.style.display = '';
         }
 
         // 관리비 조회 (관리비 데이터가 연동 안 된 회사도 메뉴는 노출하고,
@@ -1136,7 +1128,7 @@ function showChat(companyData) {
                 var headerLoginLink2 = document.getElementById('headerLoginLink');
                 if (headerLoginLink2) headerLoginLink2.style.display = 'none';
                 var adminLink2 = document.getElementById('adminLink');
-                if (adminLink2 && currentCompanyId < 1000) {
+                if (adminLink2) {
                     adminLink2.style.display = '';
                     var label = auth.session.full_name || auth.session.username || '';
                     adminLink2.textContent = '관리자 (' + label + ')';
