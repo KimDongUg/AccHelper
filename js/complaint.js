@@ -103,15 +103,20 @@ function initCpHeader() {
     const headerLogo = document.getElementById('headerLogo');
     if (headerLogo && companyId) headerLogo.href = `/app.html?company=${companyId}`;
 
+    // 관리비 링크에 company 파라미터 삽입 (없으면 fee.html에서 회사를 못 찾아 홈으로 새 나감)
+    const feeNav = document.getElementById('cpFeeNav');
+    if (feeNav && companyId) feeNav.href = `/fee.html?company=${companyId}`;
+
     // 민원게시판 링크에 company 파라미터 삽입
     const cpNav = document.getElementById('cpComplaintNav');
     if (cpNav && companyId) cpNav.href = `/complaint.html?company=${companyId}`;
 
-    // 당근 링크 표시 여부
+    // 당근 링크 표시 여부 + company 파라미터 삽입
     const daangnNav = document.getElementById('cpDaangnNav');
     if (daangnNav) {
         if (companyName || companyId) daangnNav.style.display = '';
         else daangnNav.style.display = 'none';
+        if (companyId) daangnNav.href = `/market.html?company=${companyId}`;
     }
 
     // 관리자 버튼 처리

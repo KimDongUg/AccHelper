@@ -435,6 +435,8 @@ let feeEnabled = true;
 // 로고/AI챗봇 링크가 우리 회사 챗봇 화면으로 가도록 설정 (랜딩페이지로 새지 않게)
 document.getElementById('headerLogo').href = '/app.html?company=' + companyId;
 document.getElementById('chatBotNavLink').href = '/app.html?company=' + companyId;
+document.getElementById('complaintNavLink').href = '/complaint.html?company=' + companyId;
+document.getElementById('daangnNavLink').href = '/market.html?company=' + companyId;
 
 /* ── 개인정보 동의 (월별 1회) ── */
 function _consentKey() {
