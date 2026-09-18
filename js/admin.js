@@ -3293,10 +3293,14 @@ async function refreshCtThreadModal(threadId, silent) {
                     </div>` : '';
             const bg = isResident ? 'var(--gray-100)' : 'var(--primary)';
             const fg = isResident ? 'var(--gray-900)' : '#fff';
+            // 카카오톡처럼: 관리자가 보낸 메시지를 입주민이 아직 안 읽었으면 "1" 표시,
+            // 읽으면(read_at 값이 생기면) 사라짐
+            const unreadBadge = (!isResident && !m.read_at)
+                ? `<span style="color:#FFCC00;font-weight:700;margin-right:4px">1</span>` : '';
             return `
                 <div style="align-self:${isResident ? 'flex-start' : 'flex-end'};max-width:80%">
                     <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:${bg};color:${fg}">${escHtml(m.content)}</div>
-                    <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${escHtml(m.created_at)}</div>
+                    <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${unreadBadge}${escHtml(m.created_at)}</div>
                     ${alimtalkNotice}
                 </div>
             `;

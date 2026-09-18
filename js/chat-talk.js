@@ -89,7 +89,16 @@ function ctRenderMessages(messages) {
 
     var time = document.createElement('div');
     time.className = 'ct-msg-time';
-    time.textContent = ctFormatTime(m.created_at);
+
+    // 카카오톡처럼: 내가 보낸 메시지를 상대(관리자)가 아직 안 읽었으면 "1" 표시,
+    // 읽으면(read_at 값이 생기면) 사라짐
+    if (m.sender_type === 'resident' && !m.read_at) {
+      var unread = document.createElement('span');
+      unread.className = 'ct-msg-unread';
+      unread.textContent = '1';
+      time.appendChild(unread);
+    }
+    time.appendChild(document.createTextNode(ctFormatTime(m.created_at)));
 
     ctMessagesEl.appendChild(bubble);
     ctMessagesEl.appendChild(time);
