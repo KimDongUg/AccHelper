@@ -599,7 +599,7 @@ function renderTable(items) {
                 <div class="actions">
                     <button class="btn btn-outline btn-sm" onclick="copyQaLink(${qa.qa_id})" title="챗봇 링크 복사">🔗 링크</button>
                     ${isViewer ? '' : `<button class="btn btn-outline btn-sm" onclick="openEditModal(${qa.qa_id})">수정</button>
-                    <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${qa.qa_id}, 'qa')">삭제</button>`}
+                    <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${qa.qa_id}, 'qa', event)">삭제</button>`}
                 </div>
             </td>
         </tr>
@@ -847,7 +847,7 @@ async function loadAdminList() {
                 <td>
                     <div class="actions">
                         <button class="btn btn-outline btn-sm" onclick="openEditAdminModal(${admin.user_id})">수정</button>
-                        <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${admin.user_id}, 'admin')">삭제</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${admin.user_id}, 'admin', event)">삭제</button>
                     </div>
                 </td>
             </tr>
@@ -1317,7 +1317,11 @@ function goToLogPage(page) { logPage = page; loadActivityLogs(); }
 /* ═══════════════════════════════════════════════
  *  DELETE (shared for QA and Admin)
  * ═══════════════════════════════════════════════ */
-function openDeleteConfirm(id, type) {
+function openDeleteConfirm(id, type, evt) {
+    if (isSampleCompany()) {
+        showCursorBubble(evt, '샘플에서는 이용할 수 없는 기능입니다.');
+        return;
+    }
     deleteTargetId = id;
     deleteTargetType = type;
     const title = type === 'admin' ? '관리자 삭제' : 'Q&A 삭제';
