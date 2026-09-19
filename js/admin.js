@@ -1720,7 +1720,11 @@ function addCategoryItem(label, question) {
     });
 
     if (!isEtc) {
-        row.querySelector('.btn-category-remove').addEventListener('click', function () {
+        row.querySelector('.btn-category-remove').addEventListener('click', function (e) {
+            if (isSampleCompany()) {
+                showCursorBubble(e, '샘플에서는 이용할 수 없는 기능입니다.');
+                return;
+            }
             const catLabel = row.querySelector('.cat-label').value.trim();
             if (!confirm('삭제하시겠습니까?\n카테고리 이하 데이터가 보이지 않을 수 있습니다.')) return;
 
