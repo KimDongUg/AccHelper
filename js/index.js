@@ -248,16 +248,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // 로고/AI챗봇 버튼 클릭 동작 설정
     // 샘플/데모 회사(company_id >= 1000)는 실제 관리실 챗봇이 아니므로
     // 로고 클릭 시 랜딩페이지(acchelper.kr)로 돌아간다.
-    var isSampleCompany = !!code && Number(code) >= 1000;
+    // URL의 company 파라미터뿐 아니라, 샘플 관리자로 로그인된 세션의
+    // companyId도 함께 확인해야 로그인 상태에서도 정확히 판별된다.
+    var effectiveCompanyId = code || (sess && sess.companyId);
+    var isSampleCompany = !!effectiveCompanyId && Number(effectiveCompanyId) >= 1000;
 
     function handleChatNavClick(e) {
         e.preventDefault();
         if (sess && sess.isLoggedIn && sess.role === 'super_admin') {
             window.location.href = '/';
-        } else if (sess && sess.isLoggedIn && sess.companyId) {
-            window.location.href = '/?company=' + sess.companyId;
         } else if (isSampleCompany) {
             window.location.href = '/';
+        } else if (sess && sess.isLoggedIn && sess.companyId) {
+            window.location.href = '/?company=' + sess.companyId;
         } else if (code) {
             window.location.reload();
         } else {
@@ -267,8 +270,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // href 자체도 우리 회사 챗봇으로 설정 (새 탭으로 열거나 클릭 이벤트가 못 붙는 경우 대비)
     var homeHref = (sess && sess.isLoggedIn && sess.role === 'super_admin') ? '/'
-        : (sess && sess.isLoggedIn && sess.companyId) ? '/app.html?company=' + sess.companyId
         : isSampleCompany ? '/'
+        : (sess && sess.isLoggedIn && sess.companyId) ? '/app.html?company=' + sess.companyId
         : code ? '/app.html?company=' + code
         : '/';
 
@@ -282,6 +285,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (chatBotNavLink) {
         chatBotNavLink.href = homeHref;
         chatBotNavLink.addEventListener('click', handleChatNavClick);
+    }
+
+    // 샘플/데모 회사 체험 중에는 랜딩페이지로 돌아가는 링크를 명시적으로 노출
+    var backToLandingLink = document.getElementById('backToLandingLink');
+    if (backToLandingLink) {
+        backToLandingLink.style.display = isSampleCompany ? '' : 'none';
     }
 
     if (code) {
