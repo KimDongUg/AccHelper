@@ -336,14 +336,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        btn.addEventListener('click', (e) => switchTab(btn.dataset.tab, e));
     });
 });
 
 /* ═══════════════════════════════════════════════
  *  TABS
  * ═══════════════════════════════════════════════ */
-function switchTab(tab) {
+function switchTab(tab, evt) {
+    if ((tab === 'admins' || tab === 'subscription') && isSampleCompany()) {
+        showCursorBubble(evt, '샘플에서는 이용할 수 없는 기능입니다.');
+        return;
+    }
     document.querySelectorAll('.tab-btn').forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
