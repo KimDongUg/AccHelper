@@ -19,6 +19,14 @@ function withScope(url) {
     return url + (url.includes('?') ? '&' : '?') + 'company_id=' + scopedCompanyId;
 }
 
+/* 샘플(데모) 회사인지 여부 — 샘플아파트(1002)/샘플오피스텔(1000) 관리자 화면에서
+ * 구독상태/ERP 수집기처럼 실사용이 불가능한 기능을 막을 때 씀 */
+function isSampleCompany() {
+    const sess = AuthSession.get();
+    const cid = Number(scopedCompanyId || (sess && sess.companyId));
+    return cid === 1000 || cid === 1002;
+}
+
 /* 시설관리 회사는 카카오 알림톡 기능을 지원하지 않음 */
 function isFacilityManagementCompany(name) {
     return typeof name === 'string' && name.indexOf('시설관리') !== -1;
@@ -237,6 +245,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => openCtThreadModal(Number(targetThreadId)), 500);
     }
 
+    // 샘플 회사: ERP 수집기 다운로드는 실사용 불가하므로 클릭 시 안내만 띄움
+    if (isSampleCompany()) {
+        const collectorBtn = document.getElementById('collectorDownloadBtn');
+        if (collectorBtn) {
+            collectorBtn.removeAttribute('href');
+            collectorBtn.removeAttribute('download');
+            collectorBtn.style.cursor = 'pointer';
+            collectorBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('샘플에서는 이용할 수 없는 기능입니다.');
+            });
+        }
+    }
+
     // Load data
     loadCompanySettings();
     loadStats();
@@ -370,25 +392,30 @@ async function loadStats() {
         document.getElementById('statUnanswered').textContent = '-';
     }
     // 구독 상태 로드
-    try {
-        const sess = AuthSession.get();
-        const data = await apiGet('/billing/status?company_id=' + (scopedCompanyId || sess.companyId));
-        const el = document.getElementById('statSubscription');
-        const plan = data.subscription_plan;
-        if (plan === 'enterprise' && data.active) {
-            el.innerHTML = '<span style="color:var(--success);cursor:pointer" onclick="switchTab(\'subscription\')" title="구독 관리로 이동">유료 구독중</span>';
-        } else if (plan === 'trial' && data.active) {
-            let daysText = '';
-            if (data.trial_ends_at) {
-                const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
-                daysText = ' (' + (diff > 0 ? diff : 0) + '일)';
+    if (isSampleCompany()) {
+        document.getElementById('statSubscription').innerHTML =
+            '<span style="color:var(--success);cursor:pointer" onclick="alert(\'샘플에서는 이용할 수 없는 기능입니다.\')">유료 구독중</span>';
+    } else {
+        try {
+            const sess = AuthSession.get();
+            const data = await apiGet('/billing/status?company_id=' + (scopedCompanyId || sess.companyId));
+            const el = document.getElementById('statSubscription');
+            const plan = data.subscription_plan;
+            if (plan === 'enterprise' && data.active) {
+                el.innerHTML = '<span style="color:var(--success);cursor:pointer" onclick="switchTab(\'subscription\')" title="구독 관리로 이동">유료 구독중</span>';
+            } else if (plan === 'trial' && data.active) {
+                let daysText = '';
+                if (data.trial_ends_at) {
+                    const diff = Math.ceil((new Date(data.trial_ends_at) - new Date()) / 86400000);
+                    daysText = ' (' + (diff > 0 ? diff : 0) + '일)';
+                }
+                el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span><br><a href="/billing.html" class="btn btn-primary btn-sm" style="margin-top:0.25rem;font-size:0.75rem;padding:0.2rem 0.6rem">구독하기</a>';
+            } else {
+                el.innerHTML = '<a href="/billing.html" class="btn btn-primary btn-sm" style="font-size:0.75rem;padding:0.2rem 0.6rem">구독하기</a>';
             }
-            el.innerHTML = '<span style="color:#FF9800">체험중' + daysText + '</span><br><a href="/billing.html" class="btn btn-primary btn-sm" style="margin-top:0.25rem;font-size:0.75rem;padding:0.2rem 0.6rem">구독하기</a>';
-        } else {
-            el.innerHTML = '<a href="/billing.html" class="btn btn-primary btn-sm" style="font-size:0.75rem;padding:0.2rem 0.6rem">구독하기</a>';
+        } catch (e) {
+            document.getElementById('statSubscription').innerHTML = '<a href="/billing.html" style="color:var(--primary);font-weight:600;text-decoration:underline">구독하기</a>';
         }
-    } catch (e) {
-        document.getElementById('statSubscription').innerHTML = '<a href="/billing.html" style="color:var(--primary);font-weight:600;text-decoration:underline">구독하기</a>';
     }
 }
 
