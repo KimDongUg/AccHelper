@@ -5,6 +5,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const redirectCompany = urlParams.get('company');
     const returnUrl = urlParams.get('return');
 
+    // Demo mode (landing page "관리페이지 체험하기" buttons) — force a fresh
+    // login as the sample admin instead of following an existing session.
+    const DEMO_ACCOUNTS = {
+        apt: { companyId: 1002, email: 'sample_apt@sample.com', password: '1234' },
+        office: { companyId: 1000, email: 'sample_op@sample.com', password: '1234' },
+    };
+    const demoMode = urlParams.get('demo');
+    if (demoMode && DEMO_ACCOUNTS[demoMode]) {
+        AuthSession.clear();
+    }
+
     // Already logged in? — check client-side first, then verify with server
     if (AuthSession.isValid()) {
         try {
@@ -137,6 +148,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             showError(err.message);
         }
     });
+
+    // Demo mode — prefill the sample admin credentials and log in right away
+    if (demoMode && DEMO_ACCOUNTS[demoMode]) {
+        const acc = DEMO_ACCOUNTS[demoMode];
+        document.getElementById('companyId').value = acc.companyId;
+        document.getElementById('email').value = acc.email;
+        document.getElementById('password').value = acc.password;
+        form.requestSubmit();
+    }
 
     // ── Find Email Modal ──
     const findEmailModal = document.getElementById('findEmailModal');
