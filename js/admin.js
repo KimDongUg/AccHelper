@@ -27,6 +27,44 @@ function isSampleCompany() {
     return cid === 1000 || cid === 1002;
 }
 
+/* 클릭한 마우스 커서 아래에 잠깐 뜨는 말풍선 안내 (alert 대체) */
+function showCursorBubble(evt, message) {
+    document.querySelectorAll('.cursor-bubble').forEach(el => el.remove());
+
+    const bubble = document.createElement('div');
+    bubble.className = 'cursor-bubble';
+    bubble.textContent = message;
+    document.body.appendChild(bubble);
+
+    const x = evt.clientX;
+    const y = evt.clientY;
+    bubble.style.top = (y + 14) + 'px';
+    bubble.style.left = x + 'px';
+
+    setTimeout(() => {
+        const rect = bubble.getBoundingClientRect();
+        if (rect.right > window.innerWidth - 8) {
+            bubble.style.left = (window.innerWidth - 8 - rect.width / 2) + 'px';
+        } else if (rect.left < 8) {
+            bubble.style.left = (8 + rect.width / 2) + 'px';
+        }
+        bubble.classList.add('show');
+    }, 10);
+
+    const remove = () => bubble.remove();
+    const hideTimer = setTimeout(() => {
+        bubble.classList.remove('show');
+        setTimeout(remove, 200);
+    }, 2200);
+
+    setTimeout(() => {
+        document.addEventListener('click', () => {
+            clearTimeout(hideTimer);
+            remove();
+        }, { once: true });
+    }, 0);
+}
+
 /* 시설관리 회사는 카카오 알림톡 기능을 지원하지 않음 */
 function isFacilityManagementCompany(name) {
     return typeof name === 'string' && name.indexOf('시설관리') !== -1;
@@ -254,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             collectorBtn.style.cursor = 'pointer';
             collectorBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert('샘플에서는 이용할 수 없는 기능입니다.');
+                showCursorBubble(e, '샘플에서는 이용할 수 없는 기능입니다.');
             });
         }
     }
@@ -394,7 +432,7 @@ async function loadStats() {
     // 구독 상태 로드
     if (isSampleCompany()) {
         document.getElementById('statSubscription').innerHTML =
-            '<span style="color:var(--success);cursor:pointer" onclick="alert(\'샘플에서는 이용할 수 없는 기능입니다.\')">유료 구독중</span>';
+            '<span style="color:var(--success);cursor:pointer" onclick="showCursorBubble(event, \'샘플에서는 이용할 수 없는 기능입니다.\')">유료 구독중</span>';
     } else {
         try {
             const sess = AuthSession.get();

@@ -1,3 +1,35 @@
+/* ── 커서 말풍선 (클릭 위치에 잠깐 뜨는 안내) ── */
+.cursor-bubble {
+    position: fixed;
+    transform: translateX(-50%) translateY(-4px);
+    background: var(--gray-900, #222);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    z-index: 9999;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity .15s ease, transform .15s ease;
+}
+.cursor-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--gray-900, #222);
+}
+.cursor-bubble.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* ── 공지사항 토글 스위치 ── */
 .notice-toggle-wrap {
     display: inline-flex;
