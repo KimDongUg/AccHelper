@@ -478,7 +478,7 @@ function initOnboardingTour(companyId) {
     var inputTarget = document.querySelector('.chat-input-wrap');
 
     var steps = [
-        { target: noticeTarget, text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
+        { target: noticeTarget, mobileOffset: -40, text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
         { target: categoryTarget, text: '질문을 작성하지 않고 클릭만으로 빠르게 질문할 수 있는 카테고리 버튼이 있습니다. 클릭해 보세요.' },
         { target: inputTarget, text: '질문을 입력한 후 전송해 보세요(7자 이상 가능)<br>챗지피티와 RAG 기법을 활용한 답변을 확인하세요.<br>유사한 답변 5가지도 함께 보여 드립니다.' }
     ];
@@ -513,7 +513,7 @@ function initOnboardingTour(companyId) {
             bubble.remove();
             cleanupIfAllClosed();
         });
-        bubbles.push({ el: bubble, target: step.target });
+        bubbles.push({ el: bubble, target: step.target, mobileOffset: step.mobileOffset || 0 });
     });
 
     if (bubbles.length === 0) return;
@@ -537,7 +537,8 @@ function initOnboardingTour(companyId) {
                 var maxLeft = window.scrollX + window.innerWidth - bubbleRect.width - 16;
                 if (left < minLeft) left = minLeft;
                 if (left > maxLeft) left = maxLeft;
-                top = rect.bottom + window.scrollY + 10;
+                top = rect.bottom + window.scrollY + 10 + (b.mobileOffset || 0);
+                if (top < window.scrollY + 8) top = window.scrollY + 8;
 
                 var arrowLeft = targetCenterX - left;
                 arrowLeft = Math.max(16, Math.min(bubbleRect.width - 16, arrowLeft));
