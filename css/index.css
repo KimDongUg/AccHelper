@@ -1293,6 +1293,14 @@
     border-bottom: 8px solid #FFF6CC;
 }
 
+.onboarding-bubble.pos-top .onboarding-arrow {
+    bottom: -8px;
+    left: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #FFF6CC;
+}
+
 @media (max-width: 767px) {
     .onboarding-bubble {
         max-width: calc(100vw - 2rem);
