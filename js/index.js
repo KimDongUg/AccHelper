@@ -473,15 +473,12 @@ function initOnboardingTour(companyId) {
 
     var noticeArea = document.getElementById('noticeArea');
     var heroDefault = document.getElementById('heroDefault');
-    // 공지 비활성 시엔 "이사, 관리비, 기타.." 줄을 정확히 짚어 그 위에 말풍선이 뜨도록 한다
-    // (heroDefault 전체를 기준으로 하면 제목까지 포함돼 말풍선이 카테고리 버튼까지 밀려 내려감)
-    var noticeParagraph = heroDefault ? heroDefault.querySelector('p:not(.category-hint)') : null;
-    var noticeTarget = (noticeArea && noticeArea.style.display !== 'none') ? noticeArea : (noticeParagraph || heroDefault);
+    var noticeTarget = (noticeArea && noticeArea.style.display !== 'none') ? noticeArea : heroDefault;
     var categoryTarget = document.querySelector('.category-filters');
     var inputTarget = document.querySelector('.chat-input-wrap');
 
     var steps = [
-        { target: noticeTarget, placement: 'top', text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
+        { target: noticeTarget, text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
         { target: categoryTarget, text: '질문을 작성하지 않고 클릭만으로 빠르게 질문할 수 있는 카테고리 버튼이 있습니다. 클릭해 보세요.' },
         { target: inputTarget, text: '질문을 입력한 후 전송해 보세요(7자 이상 가능)<br>챗지피티와 RAG 기법을 활용한 답변을 확인하세요.<br>유사한 답변 5가지도 함께 보여 드립니다.' }
     ];
@@ -516,7 +513,7 @@ function initOnboardingTour(companyId) {
             bubble.remove();
             cleanupIfAllClosed();
         });
-        bubbles.push({ el: bubble, target: step.target, placement: step.placement });
+        bubbles.push({ el: bubble, target: step.target });
     });
 
     if (bubbles.length === 0) return;
@@ -530,24 +527,7 @@ function initOnboardingTour(companyId) {
             var arrowEl = b.el.querySelector('.onboarding-arrow');
             var top, left;
 
-            if (b.placement === 'top') {
-                b.el.classList.add('pos-top');
-                b.el.classList.remove('pos-right', 'pos-bottom');
-
-                var topTargetCenterX = rect.left + rect.width / 2 + window.scrollX;
-                left = topTargetCenterX - bubbleRect.width / 2;
-                var topMinLeft = window.scrollX + 16;
-                var topMaxLeft = window.scrollX + window.innerWidth - bubbleRect.width - 16;
-                if (left < topMinLeft) left = topMinLeft;
-                if (left > topMaxLeft) left = topMaxLeft;
-                top = rect.top + window.scrollY - bubbleRect.height - 10;
-                if (top < window.scrollY + 8) top = window.scrollY + 8;
-
-                var topArrowLeft = topTargetCenterX - left;
-                topArrowLeft = Math.max(16, Math.min(bubbleRect.width - 16, topArrowLeft));
-                arrowEl.style.left = topArrowLeft + 'px';
-                arrowEl.style.top = '';
-            } else if (isMobile) {
+            if (isMobile) {
                 b.el.classList.add('pos-bottom');
                 b.el.classList.remove('pos-right');
 
