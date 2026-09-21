@@ -459,7 +459,6 @@ async function validateAndStartChat(code) {
 /* ── 샘플회사 온보딩 말풍선 (샘플아파트=1002 / 샘플오피스텔=1000 전용) ── */
 var ONBOARDING_TOUR_COMPANY_IDS = [1000, 1002];
 var onboardingTourResizeHandler = null;
-var onboardingTourResizeObserver = null;
 
 function initOnboardingTour(companyId) {
     if (ONBOARDING_TOUR_COMPANY_IDS.indexOf(Number(companyId)) === -1) return;
@@ -470,10 +469,7 @@ function initOnboardingTour(companyId) {
         window.removeEventListener('resize', onboardingTourResizeHandler);
         onboardingTourResizeHandler = null;
     }
-    if (onboardingTourResizeObserver) {
-        onboardingTourResizeObserver.disconnect();
-        onboardingTourResizeObserver = null;
-    }
+    window.onboardingTourReposition = null;
 
     var noticeArea = document.getElementById('noticeArea');
     var heroDefault = document.getElementById('heroDefault');
@@ -500,10 +496,7 @@ function initOnboardingTour(companyId) {
             window.removeEventListener('resize', onboardingTourResizeHandler);
             onboardingTourResizeHandler = null;
         }
-        if (onboardingTourResizeObserver) {
-            onboardingTourResizeObserver.disconnect();
-            onboardingTourResizeObserver = null;
-        }
+        window.onboardingTourReposition = null;
         tour.remove();
     }
 
@@ -572,10 +565,9 @@ function initOnboardingTour(companyId) {
     window.addEventListener('resize', onboardingTourResizeHandler);
 
     // 채팅 메시지 추가 등으로 레이아웃이 바뀔 때도 말풍선 위치를 다시 계산
-    if (window.ResizeObserver) {
-        onboardingTourResizeObserver = new ResizeObserver(function () { positionBubbles(); });
-        onboardingTourResizeObserver.observe(document.body);
-    }
+    // (scrollToBottom()에서 호출 — ResizeObserver로 document.body를 관찰하면
+    //  말풍선이 스크롤바 유무를 바꿔 재관찰→재배치가 반복되는 루프에 빠질 수 있어 피한다)
+    window.onboardingTourReposition = positionBubbles;
 
     // 해당 기능을 실제로 사용하면 관련 말풍선은 자동으로 닫힘
     bubbles.forEach(function (b) {
@@ -1232,6 +1224,8 @@ function showChat(companyData) {
             } else {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
+            // 메시지 추가로 밀린 레이아웃에 맞춰 온보딩 말풍선 위치도 갱신
+            if (window.onboardingTourReposition) window.onboardingTourReposition();
         }, 50);
     }
 
