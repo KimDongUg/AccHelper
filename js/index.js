@@ -480,7 +480,7 @@ function initOnboardingTour(companyId) {
     var steps = [
         { target: noticeTarget, mobileOffset: -40, text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
         { target: categoryTarget, text: '질문을 작성하지 않고 클릭만으로 빠르게 질문할 수 있는 카테고리 버튼이 있습니다. 클릭해 보세요.' },
-        { target: inputTarget, text: '질문을 입력한 후 전송해 보세요(7자 이상 가능)<br>챗지피티와 RAG 기법을 활용한 답변을 확인하세요.<br>유사한 답변 5가지도 함께 보여 드립니다.' }
+        { target: inputTarget, text: '질문을 입력한 후 전송해 보세요(7자 이상 가능)<br>AI가 작성한 답변을 확인하세요.<br>유사한 답변 5가지도 함께 보여 드립니다.' }
     ];
 
     var tour = document.createElement('div');
