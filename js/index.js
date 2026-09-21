@@ -434,6 +434,9 @@ async function validateAndStartChat(code) {
 
         // Show chat (로그인 없이 누구나 이용 가능)
         showChat(company);
+
+        // 샘플아파트(1002)/샘플오피스텔(1000) 전용 온보딩 말풍선 안내
+        initOnboardingTour(company.company_id);
     } catch (err) {
         if (err instanceof ApiError && err.status === 403) {
             // 미승인 업체 접근 시 안내 메시지 표시
@@ -451,6 +454,140 @@ async function validateAndStartChat(code) {
         companyErrorMsg.textContent = `회사 코드 "${code}"를 찾을 수 없습니다.`;
         companyError.style.display = '';
     }
+}
+
+/* ── 샘플회사 온보딩 말풍선 (샘플아파트=1002 / 샘플오피스텔=1000 전용) ── */
+var ONBOARDING_TOUR_COMPANY_IDS = [1000, 1002];
+var onboardingTourResizeHandler = null;
+var onboardingTourResizeObserver = null;
+
+function initOnboardingTour(companyId) {
+    if (ONBOARDING_TOUR_COMPANY_IDS.indexOf(Number(companyId)) === -1) return;
+
+    var existing = document.getElementById('onboardingTour');
+    if (existing) existing.remove();
+    if (onboardingTourResizeHandler) {
+        window.removeEventListener('resize', onboardingTourResizeHandler);
+        onboardingTourResizeHandler = null;
+    }
+    if (onboardingTourResizeObserver) {
+        onboardingTourResizeObserver.disconnect();
+        onboardingTourResizeObserver = null;
+    }
+
+    var noticeArea = document.getElementById('noticeArea');
+    var heroDefault = document.getElementById('heroDefault');
+    var noticeTarget = (noticeArea && noticeArea.style.display !== 'none') ? noticeArea : heroDefault;
+    var categoryTarget = document.querySelector('.category-filters');
+    var inputTarget = document.querySelector('.chat-input-wrap');
+
+    var steps = [
+        { target: noticeTarget, text: '관리자가 공지한 공지사항이 표시됩니다.<br>(이미지 포함 마크다운 렌더링, 클릭 시 관련 질문 바로 질의)' },
+        { target: categoryTarget, text: '질문을 작성하지 않고 클릭만으로 빠르게 질문할 수 있는 카테고리 버튼이 있습니다. 클릭해 보세요.' },
+        { target: inputTarget, text: '질문을 입력한 후 전송해 보세요(7자 이상 가능)<br>챗지피티와 RAG 기법을 활용한 답변을 확인하세요.<br>유사한 답변 5가지도 함께 보여 드립니다.' }
+    ];
+
+    var tour = document.createElement('div');
+    tour.className = 'onboarding-tour';
+    tour.id = 'onboardingTour';
+    document.body.appendChild(tour);
+
+    var bubbles = [];
+
+    function cleanupIfAllClosed() {
+        if (tour.querySelectorAll('.onboarding-bubble').length > 0) return;
+        if (onboardingTourResizeHandler) {
+            window.removeEventListener('resize', onboardingTourResizeHandler);
+            onboardingTourResizeHandler = null;
+        }
+        if (onboardingTourResizeObserver) {
+            onboardingTourResizeObserver.disconnect();
+            onboardingTourResizeObserver = null;
+        }
+        tour.remove();
+    }
+
+    steps.forEach(function (step) {
+        if (!step.target) return;
+        var bubble = document.createElement('div');
+        bubble.className = 'onboarding-bubble';
+        bubble.innerHTML =
+            '<button type="button" class="onboarding-close" aria-label="안내 닫기">&times;</button>' +
+            '<div class="onboarding-text">' + step.text + '</div>' +
+            '<div class="onboarding-arrow"></div>';
+        tour.appendChild(bubble);
+        bubble.querySelector('.onboarding-close').addEventListener('click', function () {
+            bubble.remove();
+            cleanupIfAllClosed();
+        });
+        bubbles.push({ el: bubble, target: step.target });
+    });
+
+    if (bubbles.length === 0) return;
+
+    function positionBubbles() {
+        var isMobile = window.innerWidth <= 767;
+        bubbles.forEach(function (b) {
+            if (!document.body.contains(b.el)) return;
+            var rect = b.target.getBoundingClientRect();
+            var bubbleRect = b.el.getBoundingClientRect();
+            var arrowEl = b.el.querySelector('.onboarding-arrow');
+            var top, left;
+
+            if (isMobile) {
+                b.el.classList.add('pos-bottom');
+                b.el.classList.remove('pos-right');
+
+                var targetCenterX = rect.left + rect.width / 2 + window.scrollX;
+                left = targetCenterX - bubbleRect.width / 2;
+                var minLeft = window.scrollX + 16;
+                var maxLeft = window.scrollX + window.innerWidth - bubbleRect.width - 16;
+                if (left < minLeft) left = minLeft;
+                if (left > maxLeft) left = maxLeft;
+                top = rect.bottom + window.scrollY + 10;
+
+                var arrowLeft = targetCenterX - left;
+                arrowLeft = Math.max(16, Math.min(bubbleRect.width - 16, arrowLeft));
+                arrowEl.style.left = arrowLeft + 'px';
+                arrowEl.style.top = '';
+            } else {
+                b.el.classList.add('pos-right');
+                b.el.classList.remove('pos-bottom');
+
+                top = rect.top + window.scrollY + rect.height / 2 - bubbleRect.height / 2;
+                left = rect.right + window.scrollX + 14;
+                var maxLeftDesktop = window.scrollX + window.innerWidth - bubbleRect.width - 12;
+                if (left > maxLeftDesktop) left = maxLeftDesktop;
+                arrowEl.style.left = '';
+                arrowEl.style.top = '';
+            }
+
+            b.el.style.top = top + 'px';
+            b.el.style.left = left + 'px';
+        });
+    }
+
+    positionBubbles();
+    onboardingTourResizeHandler = function () { positionBubbles(); };
+    window.addEventListener('resize', onboardingTourResizeHandler);
+
+    // 채팅 메시지 추가 등으로 레이아웃이 바뀔 때도 말풍선 위치를 다시 계산
+    if (window.ResizeObserver) {
+        onboardingTourResizeObserver = new ResizeObserver(function () { positionBubbles(); });
+        onboardingTourResizeObserver.observe(document.body);
+    }
+
+    // 해당 기능을 실제로 사용하면 관련 말풍선은 자동으로 닫힘
+    bubbles.forEach(function (b) {
+        var interactionTarget = (b.target === inputTarget) ? document.getElementById('chatInput') : b.target;
+        var eventName = (b.target === inputTarget) ? 'focus' : 'click';
+        if (interactionTarget) {
+            interactionTarget.addEventListener(eventName, function () {
+                b.el.remove();
+                cleanupIfAllClosed();
+            }, { once: true });
+        }
+    });
 }
 
 /* ── Image Lightbox ────────────────────────── */

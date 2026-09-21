@@ -1226,3 +1226,74 @@
 .system-message .btn {
     margin: 0.25rem;
 }
+
+/* ── 샘플회사 온보딩 말풍선 (샘플아파트/샘플오피스텔 전용) ───── */
+/* .onboarding-tour는 position:static 래퍼로 두어(새 containing block을 만들지 않음),
+   자식 .onboarding-bubble(position:absolute)이 문서 좌표계를 그대로 기준으로 삼게 한다. */
+.onboarding-bubble {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 950;
+    max-width: 280px;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.75rem 1.75rem 0.75rem 1rem;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.onboarding-bubble .onboarding-text {
+    white-space: normal;
+}
+
+.onboarding-bubble .onboarding-close {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.375rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    background: transparent;
+    color: var(--white);
+    opacity: 0.75;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.onboarding-bubble .onboarding-close:hover {
+    opacity: 1;
+}
+
+.onboarding-bubble .onboarding-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.onboarding-bubble.pos-right .onboarding-arrow {
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--primary);
+}
+
+.onboarding-bubble.pos-bottom .onboarding-arrow {
+    top: -8px;
+    left: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--primary);
+}
+
+@media (max-width: 767px) {
+    .onboarding-bubble {
+        max-width: calc(100vw - 2rem);
+    }
+}
