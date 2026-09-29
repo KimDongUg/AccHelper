@@ -48,6 +48,16 @@
                 text: '회사명·주소·인사말과 <b>공지사항</b>, 챗봇 첫 화면의 <b>카테고리 버튼</b>을 여기서 바꿉니다. 공지를 켜면 인사말 대신 공지가 표시됩니다.'
             },
             {
+                target: '#categoryItemsWrap .category-item:first-child .cat-order-btns',
+                place: 'right',
+                text: '각 카테고리 옆 <b>↑ ↓</b> 버튼으로 순서를 바꿀 수 있습니다. 챗봇 첫 화면의 카테고리 버튼도 이 순서 그대로 표시됩니다.'
+            },
+            {
+                target: '#addCategoryBtn',
+                place: 'bottom',
+                text: '<b>+ 카테고리 추가</b>로 새 빠른 질문 버튼을 만듭니다. 버튼에 표시할 텍스트와, 눌렀을 때 챗봇에 물어볼 질문을 입력하세요.'
+            },
+            {
                 target: '.tab-nav',
                 place: 'bottom',
                 text: '기능별 탭입니다. 각 탭을 처음 열면 그 탭에 대한 안내 말풍선이 표시됩니다.'
