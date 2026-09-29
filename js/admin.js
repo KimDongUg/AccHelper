@@ -302,6 +302,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadStats();
     loadQaList();
 
+    // 샘플회사(체험용) 관리자 화면 온보딩 말풍선 — 통계/설정이 채워져 높이가 잡힌 뒤 표시
+    if (isSampleCompany() && window.AdminTour) {
+        setTimeout(() => window.AdminTour.start(), 700);
+    }
+
     // Search debounce
     let searchTimer;
     document.getElementById('searchInput').addEventListener('input', () => {
@@ -379,6 +384,11 @@ function switchTab(tab, evt) {
     if (tab === 'market') { mktPage = 1; loadMarketPosts(); }
     if (tab === 'subscription') loadSubscriptionTab();
     if (tab === 'fee') { loadFeeStats(); loadFeeAccessLog(); }
+
+    // 샘플회사: 탭을 처음 열 때 그 탭 전용 안내 말풍선 표시
+    if (isSampleCompany() && window.AdminTour) {
+        setTimeout(() => window.AdminTour.onTabSwitch(tab), 150);
+    }
 }
 
 /* ═══════════════════════════════════════════════

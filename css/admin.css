@@ -1175,3 +1175,115 @@
 .highlight-row {
     animation: highlight-fade 3s ease-out;
 }
+
+/* ── 샘플회사 관리자 화면 온보딩 말풍선 (js/admin-tour.js) ───── */
+.admin-tour-bubble {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 950;
+    max-width: 300px;
+    background: #FFF6CC;
+    color: var(--gray-900);
+    border: 1px solid #F5E3A3;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.75rem 1.75rem 0.75rem 1rem;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.admin-tour-bubble .admin-tour-text {
+    white-space: normal;
+}
+
+.admin-tour-bubble .admin-tour-text b {
+    font-weight: 700;
+}
+
+.admin-tour-bubble .admin-tour-close {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.375rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    background: transparent;
+    color: var(--gray-700);
+    opacity: 0.75;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-tour-bubble .admin-tour-close:hover {
+    opacity: 1;
+}
+
+.admin-tour-bubble .admin-tour-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.admin-tour-bubble.pos-right .admin-tour-arrow {
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #FFF6CC;
+}
+
+.admin-tour-bubble.pos-left .admin-tour-arrow {
+    top: 50%;
+    right: -8px;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #FFF6CC;
+}
+
+.admin-tour-bubble.pos-bottom .admin-tour-arrow {
+    top: -8px;
+    left: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #FFF6CC;
+}
+
+.admin-tour-bubble.pos-top .admin-tour-arrow {
+    bottom: -8px;
+    left: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #FFF6CC;
+}
+
+/* 우측 하단 "안내 모두 닫기" */
+.admin-tour-closeall {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 951;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #F5E3A3;
+    border-radius: 999px;
+    background: #FFF6CC;
+    color: var(--gray-800);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+}
+
+.admin-tour-closeall:hover {
+    background: #FDEFB8;
+}
+
+@media (max-width: 767px) {
+    .admin-tour-bubble {
+        max-width: calc(100vw - 2rem);
+    }
+}
