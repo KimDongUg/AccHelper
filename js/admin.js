@@ -1457,6 +1457,8 @@ async function saveProfile() {
 /* ═══════════════════════════════════════════════
  *  COMPANY SETTINGS (Dashboard)
  * ═══════════════════════════════════════════════ */
+let _feeNoticeTextCache = '';
+
 async function loadCompanySettings() {
     try {
         const company = await apiGet(withScope('/companies/me'));
@@ -1466,6 +1468,8 @@ async function loadCompanySettings() {
         document.getElementById('dashGreeting').value = company.greeting_text || '';
 
         document.getElementById('dashCollectorApiKey').value = company.collector_api_key || '';
+        document.getElementById('dashFeeNoticeText').value = company.fee_notice_text || '';
+        _feeNoticeTextCache = company.fee_notice_text || '';
 
         // Load notice
         const noticeActive = !!company.notice_active;
@@ -1523,6 +1527,7 @@ async function saveCompanySettings() {
     const noticeActive = document.getElementById('noticeActive').checked;
     const noticeText = document.getElementById('noticeText').value.trim();
     const noticeTextLink = document.getElementById('noticeTextLink').value.trim();
+    const feeNoticeText = document.getElementById('dashFeeNoticeText').value.trim();
 
     const saveBtn = document.getElementById('companySettingsSaveBtn');
     saveBtn.disabled = true;
@@ -1536,7 +1541,9 @@ async function saveCompanySettings() {
             notice_active: noticeActive,
             notice_text: noticeText || null,
             notice_text_link: noticeTextLink || null,
+            fee_notice_text: feeNoticeText || null,
         });
+        _feeNoticeTextCache = feeNoticeText || '';
 
         if (companyName) {
             document.getElementById('headerCompanyName').textContent = companyName;
@@ -3781,6 +3788,7 @@ async function adminFeeSearch() {
         window.renderDashboard(data, AuthSession.getToken(), companyId, {
             historyUrl: '/api/fee/admin-history',
             averageUrl: '/api/fee/admin-average',
+            feeNoticeText: _feeNoticeTextCache,
         });
     } catch (e) {
         resultEl.innerHTML = '';
@@ -3807,6 +3815,7 @@ window.onFeeMonthChange = async function (yearMonth) {
         window.renderDashboard(data, AuthSession.getToken(), companyId, {
             historyUrl: '/api/fee/admin-history',
             averageUrl: '/api/fee/admin-average',
+            feeNoticeText: _feeNoticeTextCache,
         });
     } catch (e) {
         _adminFeeShowMsg(e.message || '조회에 실패했습니다.', true);

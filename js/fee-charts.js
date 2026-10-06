@@ -81,6 +81,18 @@ function _heroCard(d, history) {
   </div>`;
 }
 
+/* F-01-1 관리비 조회 안내문구 (계좌번호 등 회사별 커스텀 텍스트) */
+function _feeNoticeCard(text) {
+  if (!text) return '';
+  const esc = String(text)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+  return `<div class="fc-notice">
+    <div class="fc-notice-icon">🏦</div>
+    <div class="fc-notice-text">${esc}</div>
+  </div>`;
+}
+
 /* F-02 도넛 차트
    billing에는 "이주정산/과입금", "바우처할인" 등 음수(차감) 항목이 섞여 있을 수 있다.
    파이 슬라이스는 양수 항목으로만 구성(음수는 비율로 표현 불가)하고,
@@ -432,6 +444,7 @@ window.renderDashboard = async function(d, token, companyId, opts) {
     const vat = _n((d.summary || {})['부가가치세']);
     const discountTotal = _n((d.summary || {})['할인총계']);
     let html = _heroCard(d, hist);
+    html += _feeNoticeCard((opts && opts.feeNoticeText) || '');
     html += _donutChart(d.billing_items || {}, vat, discountTotal);
     html += _usageCards(d.meter || {}, avg);
     html += _compareCard(d, avg);

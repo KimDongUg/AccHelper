@@ -431,6 +431,7 @@
 const companyId = new URLSearchParams(location.search).get('company');
 if (!companyId) location.replace('/');
 let feeEnabled = true;
+let feeNoticeText = '';
 
 // 로고/AI챗봇 링크가 우리 회사 챗봇 화면으로 가도록 설정 (랜딩페이지로 새지 않게)
 document.getElementById('headerLogo').href = '/app.html?company=' + companyId;
@@ -500,6 +501,7 @@ function handleConsent() {
       }
 
       feeEnabled = !!c.enable_fee;
+      feeNoticeText = c.fee_notice_text || '';
     } else {
       // API 실패 시 기본적으로 링크 표시
       document.getElementById('complaintNavLink').style.display = '';
@@ -562,7 +564,7 @@ window.onFeeMonthChange = async function (yearMonth) {
     }
 
     renderBill(fd);
-    window.renderDashboard(fd, currentFeeToken, Number(companyId));
+    window.renderDashboard(fd, currentFeeToken, Number(companyId), { feeNoticeText });
   } catch (e) {
     showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
   }
@@ -883,7 +885,7 @@ document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
     document.getElementById('verifyCard').style.display = 'none';
     document.getElementById('previewSection').style.display = 'none';
     document.getElementById('fcToggleBtn').style.display = '';
-    window.renderDashboard(fd, vd.token, Number(companyId));
+    window.renderDashboard(fd, vd.token, Number(companyId), { feeNoticeText });
     startSessionCountdown(vd.expires_in || 1800);
 
   } catch (e) {
@@ -923,7 +925,7 @@ document.getElementById('inp-code').addEventListener('keydown', e => {
     document.getElementById('verifyCard').style.display = 'none';
     document.getElementById('previewSection').style.display = 'none';
     document.getElementById('fcToggleBtn').style.display = '';
-    window.renderDashboard(fd, s.token, Number(companyId));
+    window.renderDashboard(fd, s.token, Number(companyId), { feeNoticeText });
     startSessionCountdown(Math.max(1, Math.round((s.expiresAt - Date.now()) / 1000)));
   } catch {
     _clearSession();

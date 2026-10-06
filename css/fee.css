@@ -28,6 +28,22 @@
 }
 .fc-month-select option { color: #1a1a2e; }
 
+.fc-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #1e3a8a;
+}
+.fc-notice-icon { font-size: 16px; line-height: 1.5; flex-shrink: 0; }
+.fc-notice-text { word-break: break-word; }
+
 .fc-card {
   background: #fff;
   border-radius: 14px;
