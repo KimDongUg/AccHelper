@@ -77,6 +77,7 @@ function _heroCard(d, history) {
     <div style="font-size:13px;opacity:.75;margin-bottom:6px">🏠 ${d.dong}동 ${d.ho}호 · ${periodHtml}</div>
     <div style="font-size:13px;opacity:.8;margin-bottom:2px">이번달 관리비</div>
     <div class="fc-hero-amt" id="fcHeroAmt">0원</div>
+    <div class="fc-hero-note">* 관리비 금액은 납기내 기준금액 입니다.</div>
     ${compareHtml}
   </div>`;
 }
