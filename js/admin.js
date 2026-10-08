@@ -1458,8 +1458,10 @@ async function saveProfile() {
  *  COMPANY SETTINGS (Dashboard)
  * ═══════════════════════════════════════════════ */
 let _feeNoticeTextCache = '';
+let _companySettingsLoaded = false;
 
 async function loadCompanySettings() {
+    _companySettingsLoaded = false;
     try {
         const company = await apiGet(withScope('/companies/me'));
         document.getElementById('dashCompanyName').value = company.company_name || '';
@@ -1486,9 +1488,12 @@ async function loadCompanySettings() {
 
         // Sync category dropdowns
         syncCategoryDropdowns(categories);
+
+        _companySettingsLoaded = true;
     } catch (e) {
         const sess = AuthSession.get();
         document.getElementById('dashCompanyName').value = sess?.companyName || '';
+        showToast('회사 설정을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.', 'error');
     }
 }
 
@@ -1520,6 +1525,10 @@ function syncCategoryDropdowns(categories) {
 }
 
 async function saveCompanySettings() {
+    if (!_companySettingsLoaded) {
+        showToast('설정을 아직 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.', 'error');
+        return;
+    }
     const companyName = document.getElementById('dashCompanyName').value.trim();
     const companyAddress = document.getElementById('dashCompanyAddress').value.trim();
     const greetingText = document.getElementById('dashGreeting').value.trim();
