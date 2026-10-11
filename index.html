@@ -37,7 +37,7 @@
         <div class="lp-header-actions">
 <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
             <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
-            <a href="/login.html" class="lp-btn-outline">관리자 로그인</a>
+            <a href="/login.html" class="lp-btn-outline" id="lpAdminLoginBtn">관리자 로그인</a>
             <a href="/demo-select.html" class="lp-btn-primary">체험하기</a>
         </div>
         <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
@@ -56,7 +56,7 @@
             <hr>
             <a href="/contact.html">도입 문의</a>
             <a href="/company-register.html">신청하기</a>
-            <a href="/login.html">관리자 로그인</a>
+            <a href="/login.html" id="lpAdminLoginMobile">관리자 로그인</a>
         </nav>
     </div>
 
@@ -574,21 +574,34 @@
                 });
         })();
     </script>
-    <!-- 샘플 관리페이지 체험 버튼 — 슈퍼관리자가 지정한 관리자(로그인 상태)에게만 표시 -->
+    <!-- 관리자 로그인 상태 반영 — 로그인 시 "관리자 로그인" 대신 관리자 이름 표시(클릭 시 관리자 화면),
+         샘플 관리페이지 체험 버튼은 슈퍼관리자가 지정한 관리자에게만 표시 -->
     <script>
         (function () {
             var cta = document.getElementById('lpSampleAdminCta');
-            if (!cta) return;
+            var loginLinks = [document.getElementById('lpAdminLoginBtn'), document.getElementById('lpAdminLoginMobile')];
             var headers = {};
+            var hasClientSession = false;
             try {
                 var raw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
                 var token = raw && JSON.parse(raw).token;
-                if (token) headers['Authorization'] = 'Bearer ' + token;
+                if (token) { headers['Authorization'] = 'Bearer ' + token; hasClientSession = true; }
             } catch (e) {}
             fetch('/api/auth/check', { headers: headers, credentials: 'same-origin' })
                 .then(function (res) { return res.ok ? res.json() : null; })
                 .then(function (data) {
-                    if (data && data.session && data.session.can_view_sample_admin) {
+                    var sess = data && data.session;
+                    if (!sess) return;
+                    var name = (sess.full_name || sess.email || '관리자') + '님';
+                    var adminUrl = sess.role === 'super_admin' ? '/super-admin.html' : '/admin.html';
+                    // 관리자 화면은 브라우저에 저장된 세션이 있어야 열리므로, 그때만 이름으로 바꾼다
+                    if (hasClientSession) loginLinks.forEach(function (a) {
+                        if (!a) return;
+                        a.textContent = name;
+                        a.href = adminUrl;
+                        a.title = '관리자 화면으로 이동';
+                    });
+                    if (cta && sess.can_view_sample_admin) {
                         cta.hidden = false;
                     }
                 })
