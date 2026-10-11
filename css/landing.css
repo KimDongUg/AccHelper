@@ -43,6 +43,10 @@
     align-items: center;
 }
 
+.lp-header-actions a {
+    white-space: nowrap;
+}
+
 /* ── Hamburger (모바일 전용) ──────────────────── */
 .lp-hamburger {
     display: none;
