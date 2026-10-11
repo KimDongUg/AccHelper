@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadSubscribers();
     loadPayments();
     loadSampleAccess();
+    loadVisitStats();
 
     // Sample admin access filters
     document.getElementById('sampleAccessSearch').addEventListener('input', renderSampleAccess);
@@ -73,6 +74,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('paymentCompanyFilter').addEventListener('change', () => loadPayments());
     document.getElementById('paymentStatusFilter').addEventListener('change', () => loadPayments());
 });
+
+/* ═══════════════════════════════════════════════
+ *  PAGE VISIT STATS — 랜딩페이지/샘플 체험 페이지 접속자 현황
+ * ═══════════════════════════════════════════════ */
+async function loadVisitStats() {
+    try {
+        const data = await apiGet('/super/visit-stats');
+        const fmt = v => `<strong>${v.visitors.toLocaleString()}</strong>명 <span style="color:var(--gray-500)">/ ${v.views.toLocaleString()}회</span>`;
+        document.getElementById('visitStatsTableBody').innerHTML = (data.pages || []).map(p => `
+            <tr>
+                <td>${escapeHtml(p.label)}</td>
+                <td>${fmt(p.today)}</td>
+                <td>${fmt(p.week)}</td>
+                <td>${fmt(p.month)}</td>
+                <td>${fmt(p.total)}</td>
+            </tr>
+        `).join('');
+        document.getElementById('visitDailyTableBody').innerHTML = (data.daily || []).slice().reverse().map(d => `
+            <tr>
+                <td>${escapeHtml(d.date)}</td>
+                <td>${fmt(d.landing)}</td>
+                <td>${fmt(d.sample_apt)}</td>
+                <td>${fmt(d.sample_office)}</td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        showToast('접속자 현황을 불러올 수 없습니다.', 'error');
+    }
+}
 
 /* ═══════════════════════════════════════════════
  *  SAMPLE ADMIN PAGE ACCESS — 랜딩페이지 샘플 관리페이지 체험 권한

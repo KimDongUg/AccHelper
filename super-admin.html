@@ -103,6 +103,50 @@
             </div>
         </div>
 
+        <!-- Page Visit Stats -->
+        <section class="sa-section">
+            <h2 class="sa-section-title">접속자 현황</h2>
+            <p style="margin:-0.5rem 0 0.75rem;color:var(--gray-500);font-size:var(--text-sm)">
+                방문자 = 같은 브라우저는 하루 1명으로 집계 / 조회수 = 새로고침 포함 전체 접속 횟수 (2026-10-11 배포 이후 기록)
+            </p>
+            <div class="sa-table-wrap">
+                <div class="table-wrap">
+                    <table class="sa-table" aria-label="접속자 현황">
+                        <thead>
+                            <tr>
+                                <th scope="col">페이지</th>
+                                <th scope="col">오늘</th>
+                                <th scope="col">최근 7일</th>
+                                <th scope="col">최근 30일</th>
+                                <th scope="col">누적</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitStatsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <details style="margin-top:0.75rem">
+                <summary style="cursor:pointer;font-size:var(--text-sm);color:var(--gray-600)">최근 14일 일별 방문자 보기</summary>
+                <div class="sa-table-wrap" style="margin-top:0.5rem">
+                    <div class="table-wrap">
+                        <table class="sa-table" aria-label="최근 14일 일별 방문자">
+                            <thead>
+                                <tr>
+                                    <th scope="col">날짜</th>
+                                    <th scope="col">랜딩페이지</th>
+                                    <th scope="col">샘플아파트 체험하기</th>
+                                    <th scope="col">샘플오피스텔 체험하기</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitDailyTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </details>
+        </section>
+
         <!-- Q&A Excel Upload -->
         <section class="sa-section">
             <div class="sa-upload-bar">
@@ -340,7 +384,7 @@
     </footer>
 
     <script src="/js/api.js?v=8"></script>
-    <script src="/js/super-admin.js?v=11"></script>
+    <script src="/js/super-admin.js?v=12"></script>
 </body>
 </html>
 
