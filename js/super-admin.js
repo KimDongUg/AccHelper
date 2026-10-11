@@ -63,11 +63,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadOverview();
     loadSubscribers();
     loadPayments();
+    loadSampleAccess();
+
+    // Sample admin access filters
+    document.getElementById('sampleAccessSearch').addEventListener('input', renderSampleAccess);
+    document.getElementById('sampleAccessOnlyGranted').addEventListener('change', renderSampleAccess);
 
     // Payment filters
     document.getElementById('paymentCompanyFilter').addEventListener('change', () => loadPayments());
     document.getElementById('paymentStatusFilter').addEventListener('change', () => loadPayments());
 });
+
+/* ═══════════════════════════════════════════════
+ *  SAMPLE ADMIN PAGE ACCESS — 랜딩페이지 샘플 관리페이지 체험 권한
+ * ═══════════════════════════════════════════════ */
+let sampleAccessAdmins = [];
+
+async function loadSampleAccess() {
+    try {
+        const data = await apiGet('/super/sample-access');
+        sampleAccessAdmins = data.admins || [];
+        renderSampleAccess();
+    } catch (e) {
+        showToast('샘플 관리페이지 권한 목록을 불러올 수 없습니다.', 'error');
+    }
+}
+
+function renderSampleAccess() {
+    const q = document.getElementById('sampleAccessSearch').value.trim().toLowerCase();
+    const onlyGranted = document.getElementById('sampleAccessOnlyGranted').checked;
+    const roleLabels = { admin: '관리자', viewer: '뷰어' };
+    const items = sampleAccessAdmins.filter(a => {
+        if (onlyGranted && !a.can_view_sample_admin) return false;
+        if (!q) return true;
+        return [a.company_name, a.email, a.full_name, String(a.company_id)]
+            .some(v => (v || '').toLowerCase().includes(q));
+    });
+
+    const tbody = document.getElementById('sampleAccessTableBody');
+    document.getElementById('sampleAccessEmpty').style.display = items.length ? 'none' : '';
+    tbody.innerHTML = items.map(a => `
+        <tr${a.is_active ? '' : ' style="opacity:0.5"'}>
+            <td>${a.company_id}</td>
+            <td>${escapeHtml(a.company_name || '-')}</td>
+            <td>${escapeHtml(a.email)}</td>
+            <td>${escapeHtml(a.full_name || '-')}</td>
+            <td>${escapeHtml(roleLabels[a.role] || a.role)}</td>
+            <td><input type="checkbox" ${a.can_view_sample_admin ? 'checked' : ''}
+                       onchange="toggleSampleAccess(${a.user_id}, this)"
+                       aria-label="${escapeHtml(a.email)} 샘플 관리페이지 체험 권한"></td>
+        </tr>
+    `).join('');
+}
+
+async function toggleSampleAccess(userId, checkbox) {
+    const granted = checkbox.checked;
+    checkbox.disabled = true;
+    try {
+        await apiPut('/super/sample-access/' + userId, { can_view_sample_admin: granted });
+        const admin = sampleAccessAdmins.find(a => a.user_id === userId);
+        if (admin) admin.can_view_sample_admin = granted;
+        showToast(granted ? '샘플 관리페이지 체험 권한을 부여했습니다.' : '샘플 관리페이지 체험 권한을 해제했습니다.', 'success');
+    } catch (e) {
+        checkbox.checked = !granted;
+        showToast('권한 변경 실패: ' + e.message, 'error');
+    } finally {
+        checkbox.disabled = false;
+    }
+}
 
 /* ═══════════════════════════════════════════════
  *  OVERVIEW — 6 stat cards

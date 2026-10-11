@@ -17,7 +17,7 @@
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/common.css?v=18">
-    <link rel="stylesheet" href="/css/landing.css?v=11">
+    <link rel="stylesheet" href="/css/landing.css?v=12">
 </head>
 <body>
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
@@ -89,7 +89,7 @@
                             <span class="lp-btn-register-plus">+</span> 신청하기
                         </a>
                     </div>
-                    <div class="lp-hero-cta">
+                    <div class="lp-hero-cta" id="lpSampleAdminCta" hidden>
                         <a href="/login.html?demo=apt" class="lp-btn-outline lp-btn-lg"
                            onclick="gaEvent('app_click','hero_admin_apt')">샘플아파트 관리페이지 체험하기</a>
                         <a href="/login.html?demo=office" class="lp-btn-outline lp-btn-lg"
@@ -570,6 +570,27 @@
                     if (fab) { fab.classList.add('lp-ctf-disabled'); fab.onclick = disableClick; }
                     if (popupBtn) { popupBtn.onclick = disableClick; }
                 });
+        })();
+    </script>
+    <!-- 샘플 관리페이지 체험 버튼 — 슈퍼관리자가 지정한 관리자(로그인 상태)에게만 표시 -->
+    <script>
+        (function () {
+            var cta = document.getElementById('lpSampleAdminCta');
+            if (!cta) return;
+            var headers = {};
+            try {
+                var raw = sessionStorage.getItem('acc_auth_session') || localStorage.getItem('acc_auth_session');
+                var token = raw && JSON.parse(raw).token;
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+            } catch (e) {}
+            fetch('/api/auth/check', { headers: headers, credentials: 'same-origin' })
+                .then(function (res) { return res.ok ? res.json() : null; })
+                .then(function (data) {
+                    if (data && data.session && data.session.can_view_sample_admin) {
+                        cta.hidden = false;
+                    }
+                })
+                .catch(function () {});
         })();
     </script>
     <script src="/js/promo-popup.js?v=1"></script>

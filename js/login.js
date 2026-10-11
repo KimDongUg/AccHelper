@@ -5,19 +5,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const redirectCompany = urlParams.get('company');
     const returnUrl = urlParams.get('return');
 
-    // Demo mode (landing page "관리페이지 체험하기" buttons) — force a fresh
-    // login as the sample admin instead of following an existing session.
-    const DEMO_ACCOUNTS = {
-        apt: { companyId: 1002, email: 'sample_apt@sample.com', password: '1234' },
-        office: { companyId: 1000, email: 'sample_op@sample.com', password: '1234' },
-    };
+    // Demo mode (landing page "관리페이지 체험하기" buttons) — 슈퍼관리자가 지정한 관리자만
+    // 서버에서 권한을 확인받아 샘플 관리자 세션으로 전환된다 (샘플 계정 비밀번호는 프론트에 두지 않음).
     const demoMode = urlParams.get('demo');
-    if (demoMode && DEMO_ACCOUNTS[demoMode]) {
-        AuthSession.clear();
+    let demoError = null;
+    if (demoMode === 'apt' || demoMode === 'office') {
+        try {
+            const res = await apiPost('/auth/demo-login', { demo: demoMode });
+            if (res.success && res.session) {
+                const persist = !!localStorage.getItem(AUTH_KEY);
+                AuthSession.save(res.session, persist, res.token);
+                window.location.href = '/admin.html';
+                return;
+            }
+            demoError = res.message || '샘플 관리페이지에 들어갈 수 없습니다.';
+        } catch (err) {
+            demoError = err.status === 401
+                ? '샘플 관리페이지는 지정된 관리자만 이용할 수 있습니다. 먼저 관리자 계정으로 로그인해 주세요.'
+                : err.message;
+        }
     }
 
     // Already logged in? — check client-side first, then verify with server
-    if (AuthSession.isValid()) {
+    if (!demoError && AuthSession.isValid()) {
         try {
             const res = await apiGet('/auth/check');
             if (res.authenticated) {
@@ -149,13 +159,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Demo mode — prefill the sample admin credentials and log in right away
-    if (demoMode && DEMO_ACCOUNTS[demoMode]) {
-        const acc = DEMO_ACCOUNTS[demoMode];
-        document.getElementById('companyId').value = acc.companyId;
-        document.getElementById('email').value = acc.email;
-        document.getElementById('password').value = acc.password;
-        form.requestSubmit();
+    // Demo mode 실패 (권한 없음/미로그인) — 로그인 화면에 사유 표시
+    if (demoError) {
+        showError(demoError);
     }
 
     // ── Find Email Modal ──

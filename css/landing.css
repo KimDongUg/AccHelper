@@ -265,6 +265,10 @@
     margin-bottom: 2.5rem;
 }
 
+.lp-hero-cta[hidden] {
+    display: none;
+}
+
 .lp-hero-cta + .lp-hero-cta {
     margin-top: -1.75rem;
 }

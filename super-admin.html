@@ -146,6 +146,42 @@
             </div>
         </section>
 
+        <!-- Sample Admin Page Access -->
+        <section class="sa-section">
+            <h2 class="sa-section-title">샘플 관리페이지 체험 권한</h2>
+            <p style="margin:-0.5rem 0 0.75rem;color:var(--gray-500);font-size:var(--text-sm)">
+                체크된 관리자만 랜딩페이지의 "샘플아파트/샘플오피스텔 관리페이지 체험하기" 버튼을 보고 사용할 수 있습니다. (최고관리자는 항상 허용)
+            </p>
+            <div class="toolbar" role="toolbar" aria-label="관리자 검색">
+                <label for="sampleAccessSearch" class="sr-only">관리자 검색</label>
+                <input type="search" id="sampleAccessSearch" class="form-control" placeholder="회사명, 이메일, 이름 검색" aria-label="관리자 검색">
+                <label style="display:inline-flex;align-items:center;gap:0.35rem;font-size:var(--text-sm);white-space:nowrap">
+                    <input type="checkbox" id="sampleAccessOnlyGranted"> 권한 있는 관리자만
+                </label>
+            </div>
+            <div class="sa-table-wrap">
+                <div class="table-wrap">
+                    <table class="sa-table" aria-label="샘플 관리페이지 체험 권한">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width:70px">회사번호</th>
+                                <th scope="col" style="width:160px">회사명</th>
+                                <th scope="col">이메일</th>
+                                <th scope="col" style="width:110px">이름</th>
+                                <th scope="col" style="width:80px">역할</th>
+                                <th scope="col" style="width:90px">체험 권한</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sampleAccessTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="sampleAccessEmpty" class="empty-state" style="display:none" role="status">
+                    <p>해당하는 관리자가 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Payments Table -->
         <section class="sa-section">
             <h2 class="sa-section-title">결제 내역</h2>
@@ -304,7 +340,7 @@
     </footer>
 
     <script src="/js/api.js?v=8"></script>
-    <script src="/js/super-admin.js?v=10"></script>
+    <script src="/js/super-admin.js?v=11"></script>
 </body>
 </html>
 
