@@ -379,6 +379,101 @@ async function loadCompanies() {
 }
 
 /* ── Validate company & start chat ─────────── */
+/* ── 우리아파트 당근 최근 물건 (공지 아래 표시) ── */
+var MARKET_RECENT_COUNT = 3;
+
+function loadRecentMarketPosts(companyId) {
+    var box = document.getElementById('marketRecent');
+    if (!box || !companyId) return;
+    // 입주민 토큰 없이 company_id로 조회 (목록 API는 공개)
+    fetch('/api/market/posts?size=10&company_id=' + encodeURIComponent(companyId))
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (data) {
+            var items = ((data && data.items) || [])
+                .filter(function (p) { return p.status !== '거래완료'; })
+                .slice(0, MARKET_RECENT_COUNT);
+            if (!items.length) { box.style.display = 'none'; return; }
+            renderRecentMarketPosts(box, items, companyId);
+        })
+        .catch(function () { box.style.display = 'none'; });
+}
+
+function renderRecentMarketPosts(box, items, companyId) {
+    var statusCls = { '판매중': 'badge-sell', '예약중': 'badge-reserve' };
+    var itemsHtml = '';
+    items.forEach(function (p) {
+        var price = (p.category === '무료나눔' || p.price === 0) ? '무료나눔' : (Number(p.price) || 0).toLocaleString() + '원';
+        var thumb = p.thumbnail
+            ? '<img class="market-recent-thumb" src="' + escapeAttr(p.thumbnail) + '" alt="" loading="lazy">'
+            : '<div class="market-recent-thumb market-recent-thumb-empty" aria-hidden="true">🥕</div>';
+        var badge = p.status ? '<span class="market-recent-badge ' + (statusCls[p.status] || 'badge-sell') + '">' + escapeAttr(p.status) + '</span>' : '';
+        itemsHtml += '<a href="#" class="market-recent-item" data-post-id="' + Number(p.id) + '">'
+            + thumb
+            + '<div class="market-recent-body">'
+            + '<div class="market-recent-item-title">' + escapeAttr(p.title) + '</div>'
+            + '<div class="market-recent-meta"><strong>' + price + '</strong> · ' + escapeAttr(p.writer_unit) + ' ' + badge + '</div>'
+            + '</div></a>';
+    });
+
+    box.innerHTML = '<div class="market-recent-head">'
+        + '<span class="market-recent-title">🥕 우리아파트 당근 최근 물건</span>'
+        + '<a href="/market.html" class="market-recent-more">더보기 ›</a>'
+        + '</div>'
+        + '<div class="market-recent-viewport"><div class="market-recent-track">'
+        + '<div class="market-recent-set">' + itemsHtml + '</div>'
+        + '</div></div>';
+
+    box.addEventListener('click', function (e) {
+        var a = e.target.closest('.market-recent-item');
+        if (!a) return;
+        e.preventDefault();
+        var url = '/market-post.html?id=' + a.dataset.postId;
+        // 당근 목록과 동일: 입주민 인증 전이면 인증 후 해당 글로 복귀 (샘플 회사는 인증 없이 열람)
+        if (!sessionStorage.getItem('market_token') && Number(companyId) < 1000) {
+            location.href = '/market-login.html?return=' + encodeURIComponent(url);
+            return;
+        }
+        location.href = url;
+    });
+
+    // 공지가 있으면 공지 아래, 없으면 기본 인사말 아래(안내 문구 위)에 배치
+    var noticeArea = document.getElementById('noticeArea');
+    var heroDefault = document.getElementById('heroDefault');
+    var area = (noticeArea && noticeArea.style.display !== 'none') ? noticeArea : heroDefault;
+    var hint = area && area.querySelector('.category-hint');
+    if (hint) area.insertBefore(box, hint);
+    box.style.display = '';
+
+    startMarketRecentMarquee(box);
+}
+
+/* 물건 띠를 오른쪽 → 왼쪽으로 계속 흐르게 한다.
+ * 한 세트(set)를 화면 폭을 채울 만큼 복제한 뒤, 정확히 한 세트 폭만큼 이동하는 애니메이션을 반복해 끊김 없이 이어지게 함. */
+function startMarketRecentMarquee(box) {
+    var viewport = box.querySelector('.market-recent-viewport');
+    var track = box.querySelector('.market-recent-track');
+    var set = box.querySelector('.market-recent-set');
+    if (!viewport || !track || !set) return;
+
+    var setWidth = set.offsetWidth;
+    if (!setWidth) return;
+    var copies = Math.ceil(viewport.offsetWidth / setWidth) + 1;
+    for (var i = 0; i < copies; i++) {
+        var clone = set.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        clone.querySelectorAll('a').forEach(function (a) { a.tabIndex = -1; });
+        track.appendChild(clone);
+    }
+    track.style.setProperty('--market-shift', '-' + setWidth + 'px');
+    track.style.setProperty('--market-duration', Math.max(8, setWidth / 40) + 's'); // 약 40px/초
+    track.classList.add('is-running');
+
+    // 터치 중에는 멈춤 (데스크톱은 CSS :hover로 멈춤)
+    viewport.addEventListener('touchstart', function () { track.classList.add('is-paused'); }, { passive: true });
+    viewport.addEventListener('touchend', function () { track.classList.remove('is-paused'); });
+    viewport.addEventListener('touchcancel', function () { track.classList.remove('is-paused'); });
+}
+
 async function validateAndStartChat(code) {
     companySelection.style.display = 'none';
     chatSection.style.display = 'none';
@@ -416,6 +511,7 @@ async function validateAndStartChat(code) {
                 // 회사 정보를 세션에 저장 (market-login에서 동 기본값 결정에 사용)
                 sessionStorage.setItem('market_company_name', company.company_name);
                 sessionStorage.setItem('market_company_id', company.company_id);
+                loadRecentMarketPosts(company.company_id);
             } else {
                 daangnNavLink.style.display = 'none';
             }
