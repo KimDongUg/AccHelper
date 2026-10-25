@@ -554,6 +554,111 @@
     flex-shrink: 0;
 }
 
+/* ── Video Section ───────────────────────────── */
+.lp-videos {
+    background: var(--gray-50, #f9fafb);
+    padding: 5rem 2rem;
+}
+
+.lp-videos-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.lp-video-layout {
+    display: grid;
+    grid-template-columns: 1fr 0.95fr;
+    gap: 1rem;
+    align-items: center;
+}
+
+.lp-video-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 16px;
+    background: var(--gray-900);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.lp-video-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+.lp-video-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.lp-video-main {
+    aspect-ratio: 16 / 9;
+    align-self: center;
+}
+
+.lp-shorts-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.lp-shorts-card {
+    aspect-ratio: 9 / 16;
+}
+
+.lp-shorts-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #ff0033;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.lp-video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    transition: background 0.2s;
+}
+
+.lp-video-play::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 10px 0 10px 17px;
+    border-color: transparent transparent transparent #fff;
+}
+
+.lp-shorts-card .lp-video-play {
+    width: 42px;
+    height: 42px;
+}
+
+.lp-shorts-card .lp-video-play::after {
+    border-width: 8px 0 8px 13px;
+}
+
+.lp-video-card:hover .lp-video-play {
+    background: #ff0033;
+}
+
 /* ── Features Section ────────────────────────── */
 .lp-features {
     background: var(--white);
@@ -1144,6 +1249,22 @@
     }
     .lp-features {
         padding: 3rem 1.25rem;
+    }
+    .lp-videos {
+        padding: 3rem 1.25rem;
+    }
+    .lp-video-layout {
+        grid-template-columns: 1fr;
+    }
+    .lp-shorts-row {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 0.5rem;
+    }
+    .lp-shorts-card {
+        flex: 0 0 42%;
+        scroll-snap-align: start;
     }
     .lp-feature-grid {
         grid-template-columns: repeat(2, 1fr);
