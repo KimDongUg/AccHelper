@@ -426,6 +426,11 @@ async function loadStats() {
         document.getElementById('statActive').textContent = s.active_qa;
         document.getElementById('statToday').textContent = s.today_chats;
         document.getElementById('statFeeToday').textContent = `${s.today_fee_total}(${s.today_fee_fail})`;
+        // QA에 실제로 쓰이는 카테고리 (많이 쓰인 순) — 회사 설정 카테고리가 비어 있어도 드롭다운에 보이도록
+        _qaCategoryLabels = Object.entries(s.categories || {})
+            .sort((a, b) => b[1] - a[1])
+            .map(([label]) => label);
+        rebuildCategoryDropdowns();
     } catch (e) {
         console.error('Stats load error:', e);
     }
@@ -738,7 +743,9 @@ function resetModalHints() {
 function openCreateModal() {
     document.getElementById('modalTitle').textContent = '새 Q&A 추가';
     document.getElementById('editQaId').value = '';
-    document.getElementById('modalCategory').value = '이주정산';
+    const modalCategoryEl = document.getElementById('modalCategory');
+    const hasDefault = Array.from(modalCategoryEl.options).some(o => o.value === '이주정산');
+    modalCategoryEl.value = hasDefault ? '이주정산' : (modalCategoryEl.options[0]?.value || '');
     document.getElementById('modalQuestion').value = '';
     document.getElementById('modalAnswer').value = '';
     document.getElementById('modalKeywords').value = '';
@@ -762,7 +769,7 @@ async function openEditModal(qaId) {
         const qa = await apiGet(`/qa/${qaId}`);
         document.getElementById('modalTitle').textContent = 'Q&A 수정';
         document.getElementById('editQaId').value = qa.qa_id;
-        document.getElementById('modalCategory').value = qa.category;
+        setModalCategory(qa.category);
         document.getElementById('modalQuestion').value = qa.question;
         document.getElementById('modalAnswer').value = qa.answer;
         document.getElementById('modalKeywords').value = qa.keywords;
@@ -1064,7 +1071,7 @@ async function editQaFromFeedback(qaId, feedbackId, question) {
             const qa = await apiGet(`/qa/${qaId}`);
             document.getElementById('modalTitle').textContent = 'Q&A 수정';
             document.getElementById('editQaId').value = qa.qa_id;
-            document.getElementById('modalCategory').value = qa.category;
+            setModalCategory(qa.category);
             document.getElementById('modalQuestion').value = qa.question;
             document.getElementById('modalAnswer').value = qa.answer;
             document.getElementById('modalKeywords').value = qa.keywords || '';
@@ -1497,9 +1504,18 @@ async function loadCompanySettings() {
     }
 }
 
+// 회사 설정 카테고리 + QA에 실제로 쓰이는 카테고리를 합쳐서 드롭다운을 채움
+let _companyCategoryLabels = [];
+let _qaCategoryLabels = [];
+
 function syncCategoryDropdowns(categories) {
-    if (!categories || categories.length === 0) return;
-    const labels = categories.map(c => c.label);
+    _companyCategoryLabels = (categories || []).map(c => c.label).filter(Boolean);
+    rebuildCategoryDropdowns();
+}
+
+function rebuildCategoryDropdowns() {
+    const labels = [...new Set([..._companyCategoryLabels, ..._qaCategoryLabels])];
+    if (labels.length === 0) return;
 
     const filterEl = document.getElementById('categoryFilter');
     const filterVal = filterEl.value;
@@ -1521,7 +1537,19 @@ function syncCategoryDropdowns(categories) {
         opt.textContent = label;
         modalEl.appendChild(opt);
     });
-    if (modalVal && labels.includes(modalVal)) modalEl.value = modalVal;
+    if (modalVal) setModalCategory(modalVal);
+}
+
+// 목록에 없는 카테고리면 옵션을 추가한 뒤 선택 (빈칸으로 보이는 문제 방지)
+function setModalCategory(value) {
+    const modalEl = document.getElementById('modalCategory');
+    if (value && !Array.from(modalEl.options).some(o => o.value === value)) {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        modalEl.appendChild(opt);
+    }
+    modalEl.value = value || '';
 }
 
 async function saveCompanySettings() {
