@@ -280,7 +280,7 @@
 /* 운영중인 업체 챗봇 바로가기 */
 .lp-live {
     margin: -1rem 0 2.5rem;
-    max-width: 35rem;
+    max-width: 40rem;
 }
 
 .lp-live-label {
@@ -312,7 +312,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 14px 20px;
+    padding: 14px 18px;
     border-radius: 10px;
     border: 1.5px solid rgba(79, 70, 229, 0.18);
     background: rgba(255, 255, 255, 0.85);
@@ -331,18 +331,17 @@
 
 .lp-live-name {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .lp-live-count {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--gray-500);
+    white-space: nowrap;
 }
 
 .lp-live-arrow {
