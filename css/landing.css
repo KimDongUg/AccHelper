@@ -277,6 +277,18 @@
     margin-top: -1.75rem;
 }
 
+/* 운영 중인 실제 단지 챗봇 바로가기 */
+.lp-hero-cta-live {
+    align-items: center;
+}
+
+.lp-hero-cta-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gray-500);
+    margin-right: 0.25rem;
+}
+
 /* ── Register Dashed Button ──────────────────── */
 .lp-btn-register {
     display: inline-flex;
@@ -1311,6 +1323,9 @@
     }
     .lp-hero-cta {
         flex-direction: column;
+    }
+    .lp-hero-cta-live {
+        align-items: stretch;
     }
     .lp-quickaccess {
         padding: 2rem 1.25rem;
