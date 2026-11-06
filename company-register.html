@@ -129,6 +129,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="householdCount">세대수 <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </span>
+                            <input type="number" id="householdCount" class="form-control" placeholder="세대수를 입력하세요 (예: 824)" min="1" step="1" inputmode="numeric" required aria-required="true">
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="companyPhone">전화번호 <span class="required">*</span></label>
                         <div class="input-wrap">
                             <span class="input-icon" aria-hidden="true">
@@ -228,7 +237,7 @@
     </footer>
 
     <script src="/js/api.js?v=7"></script>
-    <script src="/js/company-register.js?v=9"></script>
+    <script src="/js/company-register.js?v=10"></script>
     <script>
         (function () {
             var btn = document.getElementById('lpHamburgerBtn');

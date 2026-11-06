@@ -69,12 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const businessNumber = document.getElementById('businessNumber').value.trim();
         const companyAddress = document.getElementById('companyAddress').value.trim();
         const companyPhone = document.getElementById('companyPhone').value.trim();
+        const householdCount = parseInt(document.getElementById('householdCount').value, 10);
 
         if (!buildingTypeEl) { showError('건물 유형을 선택해 주세요.'); return; }
         if (!companyName) { showError('회사명을 입력해 주세요.'); return; }
         if (!businessNumber) { showError('사업자등록번호를 입력해 주세요.'); return; }
         if (!companyAddress) { showError('회사 주소를 입력해 주세요.'); return; }
         if (!companyPhone) { showError('전화번호를 입력해 주세요.'); return; }
+        if (!Number.isInteger(householdCount) || householdCount < 1) { showError('세대수를 1 이상의 숫자로 입력해 주세요.'); return; }
 
         // 사업자등록번호 중복 체크 (항상 최신 데이터 조회)
         const normalize = (v) => (v || '').replace(/[^0-9]/g, '');
@@ -101,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             company_name: companyName,
             business_number: businessNumber,
             address: companyAddress,
+            household_count: householdCount,
             phone: companyPhone,
         };
 

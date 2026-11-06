@@ -330,9 +330,19 @@
 }
 
 .lp-live-name {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.lp-live-count {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gray-500);
 }
 
 .lp-live-arrow {
