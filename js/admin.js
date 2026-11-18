@@ -3430,13 +3430,15 @@ async function refreshCtThreadModal(threadId, silent) {
                 ? `<span style="color:#FFCC00;font-weight:700;margin-right:4px">1</span>` : '';
             return `
                 <div style="align-self:${isResident ? 'flex-start' : 'flex-end'};max-width:80%">
-                    <div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:${bg};color:${fg}">${escHtml(m.content)}</div>
+                    ${m.image_url ? `<a href="${escHtml(m.image_url)}" target="_blank" rel="noopener" style="display:block;${isResident ? '' : 'text-align:right;'}"><img src="${escHtml(m.image_url)}" alt="첨부 사진" loading="lazy" onload="ctKeepBottom()" style="max-width:220px;max-height:220px;border-radius:10px;border:1px solid var(--gray-200);display:inline-block"></a>` : ''}
+                    ${m.content ? `<div style="padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:${bg};color:${fg}${m.image_url ? ';margin-top:4px' : ''}">${escHtml(m.content)}</div>` : ''}
                     <div style="font-size:11px;color:var(--gray-500);margin-top:2px;text-align:${isResident ? 'left' : 'right'}">${unreadBadge}${escHtml(m.created_at)}</div>
                     ${alimtalkNotice}
                 </div>
             `;
         }).join('');
-        if (!silent || wasNearBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
+        ctStickToBottom = !silent || wasNearBottom;
+        if (ctStickToBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
 
         // 목록의 안읽음 배지를 즉시 반영 (최초 오픈 시에만 — 폴링마다 목록 전체를 다시 그릴 필요는 없음)
         if (!silent) loadChatTalkThreads();
@@ -3473,20 +3475,96 @@ function closeCtThreadModal() {
     document.getElementById('ctThreadModal').classList.remove('show');
     ctCurrentThreadId = null;
     stopCtModalPolling();
+    clearCtImage();
 }
 
+/* 사진이 늦게 로드되면 높이가 늘어나서 맨 아래가 가려짐 — 하단 고정 상태일 때만 다시 내림 */
+let ctStickToBottom = true;
+function ctKeepBottom() {
+    if (!ctStickToBottom) return;
+    const el = document.getElementById('ctModalMessages');
+    if (el) el.scrollTop = el.scrollHeight;
+}
+
+/* ── 1:1 톡 사진 첨부 ── */
+let ctPendingImage = null; // 전송 대기 중인 (축소된) Blob
+
+/* 휴대폰 사진은 5MB를 쉽게 넘으므로 긴 변 1600px JPEG로 축소 후 업로드.
+ * GIF(애니메이션 유지)나 축소 실패 시에는 원본 그대로 사용. */
+function ctResizeImage(file, maxSide = 1600, quality = 0.85) {
+    return new Promise((resolve) => {
+        if (!file.type.startsWith('image/') || file.type === 'image/gif') return resolve(file);
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => resolve(blob && blob.size < file.size ? blob : file), 'image/jpeg', quality);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
+async function onCtImageSelected(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('이미지 파일만 첨부할 수 있습니다.', 'error'); return; }
+    const blob = await ctResizeImage(file);
+    if (blob.size > 5 * 1024 * 1024) { showToast('사진 크기는 5MB 이하만 가능합니다.', 'error'); return; }
+    ctPendingImage = blob;
+    const img = document.getElementById('ctImagePreviewImg');
+    if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    img.src = URL.createObjectURL(blob);
+    document.getElementById('ctImagePreview').style.display = '';
+}
+
+function clearCtImage() {
+    ctPendingImage = null;
+    const img = document.getElementById('ctImagePreviewImg');
+    if (img && img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    if (img) img.removeAttribute('src');
+    const wrap = document.getElementById('ctImagePreview');
+    if (wrap) wrap.style.display = 'none';
+}
+
+function ctImageFilename(blob) {
+    const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' })[blob.type] || 'jpg';
+    return 'photo.' + ext;
+}
+
+let ctSending = false;
 async function sendCtReply() {
-    if (!ctCurrentThreadId) return;
+    if (!ctCurrentThreadId || ctSending) return;
     const input = document.getElementById('ctReplyInput');
     const content = input.value.trim();
-    if (!content) return;
+    if (!content && !ctPendingImage) return;
 
+    ctSending = true;
     try {
-        await apiPost(withScope(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`), { content });
+        let image_url = null;
+        if (ctPendingImage) {
+            const fd = new FormData();
+            fd.append('file', ctPendingImage, ctImageFilename(ctPendingImage));
+            const up = await apiFetch(withScope(`/chat-talk/admin/threads/${ctCurrentThreadId}/images`), { method: 'POST', body: fd });
+            image_url = up.url;
+        }
+        await apiPost(withScope(`/chat-talk/admin/threads/${ctCurrentThreadId}/messages`), { content, image_url });
         input.value = '';
+        clearCtImage();
         await refreshCtThreadModal(ctCurrentThreadId, false);
     } catch (e) {
         showToast('답장 전송 실패: ' + e.message, 'error');
+    } finally {
+        ctSending = false;
     }
 }
 

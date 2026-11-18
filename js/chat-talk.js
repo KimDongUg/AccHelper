@@ -15,7 +15,7 @@ async function ctFetch(path, opts) {
   var token = MarketAuth.getToken();
   var headers = Object.assign({}, opts.headers || {});
   if (token) headers['Authorization'] = 'Bearer ' + token;
-  if (opts.body && typeof opts.body === 'object') {
+  if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(opts.body);
   }
@@ -42,6 +42,8 @@ var ctEmptyEl = document.getElementById('ctEmpty');
 var ctBannerEl = document.getElementById('ctBanner');
 var ctInputEl = document.getElementById('ctInput');
 var ctSendBtnEl = document.getElementById('ctSendBtn');
+var ctPhotoBtnEl = document.getElementById('ctPhotoBtn');
+var ctImageInputEl = document.getElementById('ctImageInput');
 var ctInputRowEl = document.querySelector('.ct-input-row');
 
 // ── 카카오톡 인앱 브라우저 등에서 키보드가 입력창을 가리는 문제 방지 ──────────
@@ -83,9 +85,28 @@ function ctRenderMessages(messages) {
     return;
   }
   messages.forEach(function (m) {
+    var isResident = m.sender_type === 'resident';
+    if (m.image_url) {
+      var link = document.createElement('a');
+      link.href = m.image_url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.className = 'ct-msg-img-link ' + (isResident ? 'ct-msg-resident-img' : 'ct-msg-admin-img');
+      var img = document.createElement('img');
+      img.className = 'ct-msg-img';
+      img.alt = '첨부 사진';
+      img.src = m.image_url;
+      // 사진이 늦게 로드되면 높이가 늘어나 맨 아래가 가려지므로 로드 후 다시 내림
+      img.addEventListener('load', function () { ctMessagesEl.scrollTop = ctMessagesEl.scrollHeight; });
+      link.appendChild(img);
+      ctMessagesEl.appendChild(link);
+    }
+
     var bubble = document.createElement('div');
-    bubble.className = 'ct-msg ' + (m.sender_type === 'resident' ? 'ct-msg-resident' : 'ct-msg-admin');
+    bubble.className = 'ct-msg ' + (isResident ? 'ct-msg-resident' : 'ct-msg-admin');
     bubble.textContent = m.content;
+    // 사진만 보낸 메시지는 빈 말풍선 대신 시간 정렬용으로만 쓰고 숨김
+    if (!m.content) bubble.style.display = 'none';
 
     var time = document.createElement('div');
     time.className = 'ct-msg-time';
@@ -115,9 +136,14 @@ function ctRenderMessages(messages) {
   ctMessagesEl.scrollTop = ctMessagesEl.scrollHeight;
 }
 
+var ctLastRenderKey = '';
 async function ctLoadThread() {
   try {
     var thread = await ctFetch('/thread');
+    // 폴링마다 다시 그리면 사진이 깜빡이므로 내용(읽음 표시 포함)이 바뀐 경우에만 렌더링
+    var key = JSON.stringify(thread.messages);
+    if (key === ctLastRenderKey) return;
+    ctLastRenderKey = key;
     ctRenderMessages(thread.messages);
   } catch (e) {
     if (e.status === 404) {
@@ -135,17 +161,20 @@ async function ctCheckAvailability() {
       ctBannerEl.style.display = 'none';
       ctInputEl.disabled = false;
       ctSendBtnEl.disabled = false;
+      ctPhotoBtnEl.disabled = false;
     } else {
       ctBannerEl.textContent = avail.message || '현재 상담 가능 시간이 아닙니다.';
       ctBannerEl.style.display = '';
       ctInputEl.disabled = true;
       ctSendBtnEl.disabled = true;
+      ctPhotoBtnEl.disabled = true;
     }
   } catch (e) {
     // 가용성 조회 실패 시 안전하게 전송 비활성화
     ctAvailable = false;
     ctInputEl.disabled = true;
     ctSendBtnEl.disabled = true;
+    ctPhotoBtnEl.disabled = true;
   }
 }
 
@@ -165,6 +194,67 @@ async function ctSendMessage() {
     if (ctAvailable) ctSendBtnEl.disabled = false;
   }
 }
+
+// ── 사진 보내기 (선택 즉시 전송) ─────────────────────────────────────────────
+// 휴대폰 사진은 5MB를 쉽게 넘으므로 긴 변 1600px JPEG로 축소 후 업로드.
+// GIF(애니메이션 유지)나 축소 실패 시에는 원본 그대로 사용.
+function ctResizeImage(file) {
+  var maxSide = 1600, quality = 0.85;
+  return new Promise(function (resolve) {
+    if (!file.type || file.type.indexOf('image/') !== 0 || file.type === 'image/gif') return resolve(file);
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(function (blob) { resolve(blob && blob.size < file.size ? blob : file); }, 'image/jpeg', quality);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+function ctShowError(msg) {
+  ctBannerEl.textContent = msg;
+  ctBannerEl.style.display = '';
+}
+
+async function ctSendImage(file) {
+  if (!file) return;
+  if (!file.type || file.type.indexOf('image/') !== 0) { ctShowError('이미지 파일만 보낼 수 있습니다.'); return; }
+  ctPhotoBtnEl.disabled = true;
+  var prevLabel = ctPhotoBtnEl.textContent;
+  ctPhotoBtnEl.textContent = '⏳';
+  try {
+    var blob = await ctResizeImage(file);
+    if (blob.size > 5 * 1024 * 1024) { ctShowError('사진 크기는 5MB 이하만 보낼 수 있습니다.'); return; }
+    var ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' })[blob.type] || 'jpg';
+    var fd = new FormData();
+    fd.append('file', blob, 'photo.' + ext);
+    var up = await ctFetch('/thread/images', { method: 'POST', body: fd });
+    await ctFetch('/thread/messages', { method: 'POST', body: { content: '', image_url: up.url } });
+    await ctLoadThread();
+  } catch (e) {
+    ctShowError(e.message || '사진 전송에 실패했습니다.');
+  } finally {
+    ctPhotoBtnEl.textContent = prevLabel;
+    if (ctAvailable) ctPhotoBtnEl.disabled = false;
+  }
+}
+
+ctPhotoBtnEl.addEventListener('click', function () { ctImageInputEl.click(); });
+ctImageInputEl.addEventListener('change', function () {
+  var file = ctImageInputEl.files && ctImageInputEl.files[0];
+  ctImageInputEl.value = '';
+  ctSendImage(file);
+});
 
 ctSendBtnEl.addEventListener('click', ctSendMessage);
 ctInputEl.addEventListener('keydown', function (e) {

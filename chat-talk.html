@@ -29,6 +29,13 @@
   .ct-input { flex: 1; padding: 0.625rem 0.875rem; border: 1px solid var(--gray-300); border-radius: 999px; font-size: 0.875rem; }
   .ct-send-btn { padding: 0.625rem 1.25rem; border-radius: 999px; border: none; background: var(--primary); color: #fff; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
   .ct-send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
+  .ct-photo-btn { flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--gray-300); background: var(--white); font-size: 1.1rem; cursor: pointer; padding: 0; }
+  .ct-photo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .ct-msg-img-link { display: block; max-width: 70%; line-height: 0; }
+  .ct-msg-img-link.ct-msg-resident-img { align-self: flex-end; }
+  .ct-msg-img-link.ct-msg-admin-img { align-self: flex-start; }
+  .ct-msg-img { max-width: 100%; max-height: 260px; border-radius: 12px; border: 1px solid var(--gray-200); }
+  .ct-msg-img-link + .ct-msg { margin-top: -0.35rem; }
 </style>
 </head>
 <body>
@@ -66,6 +73,8 @@
   </div>
 
   <div class="ct-input-row">
+    <input type="file" id="ctImageInput" accept="image/*" style="display:none">
+    <button type="button" class="ct-photo-btn" id="ctPhotoBtn" aria-label="사진 보내기">📷</button>
     <input type="text" class="ct-input" id="ctInput" placeholder="메시지를 입력하세요" maxlength="2000">
     <button type="button" class="ct-send-btn" id="ctSendBtn">전송</button>
   </div>
@@ -74,6 +83,6 @@
 <script src="/js/market.js?v=3"></script>
 <script src="/js/complaint.js?v=4"></script>
 <script>initCpHeader();</script>
-<script src="/js/chat-talk.js?v=4"></script>
+<script src="/js/chat-talk.js?v=5"></script>
 </body>
 </html>

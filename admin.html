@@ -1247,6 +1247,14 @@
                 <div class="form-group">
                     <textarea id="ctReplyInput" class="form-control" rows="3" placeholder="답장을 입력하세요"></textarea>
                 </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <input type="file" id="ctImageInput" accept="image/*" style="display:none" onchange="onCtImageSelected(this)">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('ctImageInput').click()">📷 사진 첨부</button>
+                    <div id="ctImagePreview" style="display:none;position:relative">
+                        <img id="ctImagePreviewImg" alt="첨부 사진 미리보기" style="height:56px;max-width:120px;object-fit:cover;border-radius:6px;border:1px solid var(--gray-200)">
+                        <button type="button" onclick="clearCtImage()" aria-label="첨부 사진 제거" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:#444;color:#fff;font-size:12px;line-height:20px;cursor:pointer;padding:0">&times;</button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" id="ctCloseThreadBtn" onclick="closeCtThreadStatus()">대화 종료</button>
@@ -1283,6 +1291,6 @@
     <script src="/js/api.js?v=15"></script>
     <script src="/js/fee-charts.js"></script>
     <script src="/js/admin-tour.js?v=1"></script>
-    <script src="/js/admin.js?v=28"></script>
+    <script src="/js/admin.js?v=29"></script>
 </body>
 </html>
