@@ -32,7 +32,8 @@ var SHARE_CONFIG = {
         if (company) {
             return window.location.origin + window.location.pathname + '?company=' + encodeURIComponent(company);
         }
-        return window.location.href;
+        // company 없는 페이지(메인 등)는 쿼리·해시 제거한 깔끔한 주소
+        return window.location.origin + window.location.pathname;
     }
 
     function loadKakao() {

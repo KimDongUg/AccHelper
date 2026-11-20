@@ -16,7 +16,7 @@
     <title>AI 헬퍼 - 공동주택 최초 AI 관리사무소 서비스</title>
     <meta name="description" content="관리비 조회·분석, 이주정산, 시설 이용 안내, 민원 접수까지. 공동주택 최초 AI 관리사무소 서비스로 직원의 업무는 줄이고 입주민 만족도는 높이세요.">
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
-    <link rel="stylesheet" href="/css/common.css?v=18">
+    <link rel="stylesheet" href="/css/common.css?v=20">
     <link rel="stylesheet" href="/css/landing.css?v=19">
 </head>
 <body>
@@ -35,7 +35,10 @@
             <a href="#pricing-section">요금 안내</a>
         </nav>
         <div class="lp-header-actions">
-<a href="/contact.html" class="lp-btn-outline">도입 문의</a>
+            <button type="button" id="shareBtn" class="header-share-btn" aria-label="AI 헬퍼 링크 공유하기" title="공유하기">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+            </button>
+            <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
             <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
             <a href="/login.html" class="lp-btn-outline" id="lpAdminLoginBtn">관리자 로그인</a>
             <a href="/demo-select.html" class="lp-btn-primary">체험하기</a>
@@ -667,5 +670,12 @@
     </script>
     <script src="/js/promo-popup.js?v=1"></script>
     <script src="/js/visit.js?v=1"></script>
+    <script src="/js/share.js?v=2"></script>
+    <script>
+        initSharePopup({
+            button: 'shareBtn',
+            getTitle: function () { return 'AI 헬퍼 - 공동주택 최초 AI 관리사무소 서비스'; }
+        });
+    </script>
 </body>
 </html>
