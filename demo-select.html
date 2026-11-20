@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/common.css?v=16">
     <link rel="stylesheet" href="/css/landing.css?v=11">
     <link rel="stylesheet" href="/css/policy.css?v=10">
+    <link rel="stylesheet" href="/css/demo-lead.css?v=1">
     <style>
         .demo-select-main {
             max-width: 860px;
@@ -79,7 +80,7 @@
         <div class="lp-header-actions">
             <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
             <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
-            <a href="/demo-select.html" class="lp-btn-primary">체험하기</a>
+            <a href="/demo-select.html" class="lp-btn-primary" data-demo-lead="" data-demo-source="select_header">체험하기</a>
         </div>
         <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
             <span></span><span></span><span></span>
@@ -105,13 +106,13 @@
         <p class="demo-select-desc">건물 유형에 맞는 샘플을 선택하시면 실제 데이터 기반 AI 챗봇을 바로 체험하실 수 있습니다.</p>
 
         <div class="demo-select-grid">
-            <a href="/app.html?company=1002" class="demo-select-card">
+            <a href="/app.html?company=1002" class="demo-select-card" data-demo-lead="apt" data-demo-source="select_apt">
                 <div class="demo-select-icon" aria-hidden="true">🏠</div>
                 <div class="demo-select-card-title">샘플아파트</div>
                 <p class="demo-select-card-desc">전기·난방·누수 등 실제 세대 민원 데이터를 기반으로 만든 아파트형 AI 챗봇입니다.</p>
                 <span class="demo-select-card-cta">체험하기 →</span>
             </a>
-            <a href="/app.html?company=1000" class="demo-select-card">
+            <a href="/app.html?company=1000" class="demo-select-card" data-demo-lead="office" data-demo-source="select_office">
                 <div class="demo-select-icon" aria-hidden="true">🏢</div>
                 <div class="demo-select-card-title">샘플오피스텔</div>
                 <p class="demo-select-card-desc">관리비·이주정산 등 실제 운영 중인 오피스텔 데이터를 기반으로 만든 챗봇입니다.</p>
@@ -163,5 +164,6 @@
             });
         })();
     </script>
+    <script src="/js/demo-lead.js?v=1"></script>
 </body>
 </html>

@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadPayments();
     loadSampleAccess();
     loadVisitStats();
+    initDemoLeads();
 
     // Sample admin access filters
     document.getElementById('sampleAccessSearch').addEventListener('input', renderSampleAccess);
@@ -101,6 +102,90 @@ async function loadVisitStats() {
         `).join('');
     } catch (e) {
         showToast('접속자 현황을 불러올 수 없습니다.', 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+ *  DEMO LEADS — 메인화면 체험하기 신청자
+ * ═══════════════════════════════════════════════ */
+const demoLeadsState = { page: 1, size: 20 };
+
+function demoLeadsParams(withPage) {
+    const p = new URLSearchParams();
+    const q = document.getElementById('demoLeadsSearch').value.trim();
+    const from = document.getElementById('demoLeadsFrom').value;
+    const to = document.getElementById('demoLeadsTo').value;
+    if (q) p.set('q', q);
+    if (from) p.set('date_from', from);
+    if (to) p.set('date_to', to);
+    if (withPage) { p.set('page', demoLeadsState.page); p.set('size', demoLeadsState.size); }
+    return p.toString();
+}
+
+function formatLeadPhone(p) {
+    if (!p) return '';
+    if (p.length === 11) return p.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+    if (p.length === 10) return p.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+    return p;
+}
+
+function initDemoLeads() {
+    let timer = null;
+    const reload = () => { demoLeadsState.page = 1; loadDemoLeads(); };
+    document.getElementById('demoLeadsSearch').addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(reload, 300);
+    });
+    document.getElementById('demoLeadsFrom').addEventListener('change', reload);
+    document.getElementById('demoLeadsTo').addEventListener('change', reload);
+    document.getElementById('demoLeadsExportBtn').addEventListener('click', async () => {
+        try {
+            const qs = demoLeadsParams(false);
+            const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            await apiDownload('/super/demo-leads/export' + (qs ? '?' + qs : ''), `체험신청자_${today}.csv`);
+        } catch (e) {
+            showToast('다운로드에 실패했습니다: ' + e.message, 'error');
+        }
+    });
+    loadDemoLeads();
+}
+
+async function loadDemoLeads() {
+    const tbody = document.getElementById('demoLeadsTableBody');
+    try {
+        const data = await apiGet('/super/demo-leads?' + demoLeadsParams(true));
+        const sum = data.summary || {};
+        document.getElementById('demoLeadsSummary').textContent =
+            `오늘 ${(sum.today || 0).toLocaleString()}명 · 누적 ${(sum.all || 0).toLocaleString()}명`;
+        const deviceLabels = { mobile: '모바일', tablet: '태블릿', desktop: 'PC' };
+        if (!data.items || data.items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:1.5rem">체험 신청자가 없습니다.</td></tr>';
+        } else {
+            tbody.innerHTML = data.items.map(r => `
+                <tr>
+                    <td style="white-space:nowrap">${escapeHtml((r.created_at || '').slice(0, 16).replace('T', ' '))}</td>
+                    <td>${escapeHtml(r.name)}</td>
+                    <td style="white-space:nowrap"><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(formatLeadPhone(r.phone))}</a></td>
+                    <td>${r.email ? `<a href="mailto:${escapeHtml(r.email)}">${escapeHtml(r.email)}</a>` : '<span style="color:var(--gray-400)">-</span>'}</td>
+                    <td>${escapeHtml(r.building_name)}</td>
+                    <td>${escapeHtml(r.demo_type_label)}</td>
+                    <td>${r.marketing_agreed ? '<span style="color:var(--success-dark);font-weight:600">동의</span>' : '<span style="color:var(--gray-500)">미동의</span>'}</td>
+                    <td>${escapeHtml(deviceLabels[r.device_type] || r.device_type || '')}</td>
+                </tr>
+            `).join('');
+        }
+        const pages = Math.max(1, Math.ceil((data.total || 0) / demoLeadsState.size));
+        const pager = document.getElementById('demoLeadsPager');
+        pager.innerHTML = pages <= 1 ? '' : `
+            <button type="button" class="btn btn-outline btn-sm" ${demoLeadsState.page <= 1 ? 'disabled' : ''} data-dir="-1">이전</button>
+            <span>${demoLeadsState.page} / ${pages} (총 ${data.total.toLocaleString()}명)</span>
+            <button type="button" class="btn btn-outline btn-sm" ${demoLeadsState.page >= pages ? 'disabled' : ''} data-dir="1">다음</button>`;
+        pager.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+            demoLeadsState.page += Number(b.dataset.dir);
+            loadDemoLeads();
+        }));
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:1.5rem">체험 신청자 목록을 불러올 수 없습니다.</td></tr>';
     }
 }
 

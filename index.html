@@ -18,6 +18,7 @@
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/css/common.css?v=20">
     <link rel="stylesheet" href="/css/landing.css?v=19">
+    <link rel="stylesheet" href="/css/demo-lead.css?v=1">
 </head>
 <body>
     <a href="#main-content" class="skip-link">본문으로 건너뛰기</a>
@@ -41,7 +42,7 @@
             <a href="/contact.html" class="lp-btn-outline">도입 문의</a>
             <a href="/company-register.html" class="lp-btn-outline">신청하기</a>
             <a href="/login.html" class="lp-btn-outline" id="lpAdminLoginBtn">관리자 로그인</a>
-            <a href="/demo-select.html" class="lp-btn-primary">체험하기</a>
+            <a href="/demo-select.html" class="lp-btn-primary" data-demo-lead="" data-demo-source="header">체험하기</a>
         </div>
         <button type="button" class="lp-hamburger" id="lpHamburgerBtn" aria-label="메뉴 열기" aria-expanded="false" aria-controls="lpMobileMenu">
             <span></span><span></span><span></span>
@@ -85,9 +86,9 @@
                         직원의 업무는 줄이고 입주민 만족도는 높이세요.
                     </p>
                     <div class="lp-hero-cta">
-                        <a href="https://acchelper.kr/?company=1002" class="lp-btn-primary lp-btn-lg"
+                        <a href="https://acchelper.kr/?company=1002" class="lp-btn-primary lp-btn-lg" data-demo-lead="apt" data-demo-source="hero_apt"
                            onclick="gaEvent('app_click','hero_apt')">샘플아파트 체험하기</a>
-                        <a href="https://acchelper.kr/?company=1000" class="lp-btn-primary lp-btn-lg"
+                        <a href="https://acchelper.kr/?company=1000" class="lp-btn-primary lp-btn-lg" data-demo-lead="office" data-demo-source="hero_office"
                            onclick="gaEvent('app_click','hero')">샘플오피스텔 체험하기</a>
                         <a href="/company-register.html" class="lp-btn-register"
                            onclick="gaEvent('register_click','hero')">
@@ -368,7 +369,7 @@
         <!-- ══ Quick Access ══ -->
         <section class="lp-quickaccess" id="quickaccess-section">
             <div class="lp-quickaccess-inner">
-                <a href="/demo-select.html" class="lp-qa-card">
+                <a href="/demo-select.html" class="lp-qa-card" data-demo-lead="" data-demo-source="quick_card">
                     <div class="lp-qa-icon lp-icon-blue">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                     </div>
@@ -671,6 +672,7 @@
     <script src="/js/promo-popup.js?v=1"></script>
     <script src="/js/visit.js?v=1"></script>
     <script src="/js/share.js?v=2"></script>
+    <script src="/js/demo-lead.js?v=1"></script>
     <script>
         initSharePopup({
             button: 'shareBtn',
