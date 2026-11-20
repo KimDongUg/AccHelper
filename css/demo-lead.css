@@ -90,27 +90,6 @@ body.dl-open { overflow: hidden; }
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-.dl-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.dl-type-opt { position: relative; cursor: pointer; }
-.dl-type-opt input { position: absolute; opacity: 0; pointer-events: none; }
-.dl-type-opt span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 12px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    transition: border-color 0.15s, background 0.15s;
-}
-.dl-type-opt b { font-size: 0.95rem; color: #111827; }
-.dl-type-opt small { font-size: 0.8rem; color: #6b7280; }
-.dl-type-opt input:checked + span {
-    border-color: var(--primary, #4F46E5);
-    background: var(--primary-bg, #EEF2FF);
-    box-shadow: 0 0 0 1px var(--primary, #4F46E5) inset;
-}
-.dl-type-opt input:focus-visible + span { outline: 2px solid var(--primary, #4F46E5); outline-offset: 2px; }
-
 .dl-error { margin: 6px 0 0; font-size: 0.82rem; color: #dc2626; }
 .dl-error[hidden] { display: none; }
 .dl-submit-err { margin: 0; text-align: center; }

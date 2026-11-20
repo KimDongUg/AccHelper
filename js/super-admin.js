@@ -168,7 +168,7 @@ async function loadDemoLeads() {
                     <td style="white-space:nowrap"><a href="tel:${escapeHtml(r.phone)}">${escapeHtml(formatLeadPhone(r.phone))}</a></td>
                     <td>${r.email ? `<a href="mailto:${escapeHtml(r.email)}">${escapeHtml(r.email)}</a>` : '<span style="color:var(--gray-400)">-</span>'}</td>
                     <td>${escapeHtml(r.building_name)}</td>
-                    <td>${escapeHtml(r.demo_type_label)}</td>
+                    <td>${escapeHtml(r.source_label || '-')}</td>
                     <td>${r.marketing_agreed ? '<span style="color:var(--success-dark);font-weight:600">동의</span>' : '<span style="color:var(--gray-500)">미동의</span>'}</td>
                     <td>${escapeHtml(deviceLabels[r.device_type] || r.device_type || '')}</td>
                 </tr>

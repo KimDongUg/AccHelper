@@ -2,14 +2,15 @@
  * demo-lead.js — 메인화면 "체험하기" 신청 팝업 (channel.io 데모 방식)
  *
  * 사용법: 체험 버튼에 data-demo-lead 속성을 붙이면 클릭 시 정보 입력 팝업이 먼저 뜬다.
- *   <a href="/demo-select.html" data-demo-lead="">체험하기</a>          → 팝업에서 아파트/오피스텔 선택
+ *   <a href="/demo-select.html" data-demo-lead="" data-demo-source="header">체험하기</a>
  *   <a href="/?company=1002" data-demo-lead="apt" data-demo-source="hero_apt">샘플아파트 체험하기</a>
  *
- * 한 번 신청한 브라우저는 다음부터 팝업 없이 바로 체험 화면으로 이동한다.
+ * 신청 완료 후(또는 이미 신청한 브라우저) → /demo-start.html (샘플 바로 입장 + 운영중인 업체)
+ * data-demo-lead 값(apt/office)은 어떤 버튼에서 신청했는지 기록용으로만 쓰인다.
  */
 (function () {
     var DONE_KEY = 'acc_demo_lead_done';
-    var DEMO_URLS = { apt: '/app.html?company=1002', office: '/app.html?company=1000' };
+    var START_URL = '/demo-start.html';
 
     function isDone() {
         try { return localStorage.getItem(DONE_KEY) === '1'; } catch (e) { return false; }
@@ -40,13 +41,6 @@
             '<button type="button" class="dl-close" aria-label="닫기">&times;</button>' +
             '<h2 class="dl-title" id="dlTitle">AI 헬퍼를 체험해 보세요.<br>정보를 입력하시면 바로 시작됩니다.</h2>' +
             '<form class="dl-form" novalidate>' +
-                '<fieldset class="dl-field dl-type" id="dlTypeField">' +
-                    '<legend class="dl-label">체험 유형</legend>' +
-                    '<div class="dl-type-grid">' +
-                        '<label class="dl-type-opt"><input type="radio" name="demo_type" value="apt"><span><b>🏠 샘플아파트</b><small>아파트형 AI 챗봇</small></span></label>' +
-                        '<label class="dl-type-opt"><input type="radio" name="demo_type" value="office"><span><b>🏢 샘플오피스텔</b><small>오피스텔형 AI 챗봇</small></span></label>' +
-                    '</div>' +
-                '</fieldset>' +
                 '<div class="dl-field">' +
                     '<label class="dl-label" for="dlName">이름</label>' +
                     '<input class="dl-input" id="dlName" name="name" type="text" maxlength="50" autocomplete="name" placeholder="이름을 입력해 주세요">' +
@@ -90,7 +84,7 @@
         '</div>' +
         '</div>';
 
-    var overlay, form, submitBtn, typeField, lastTrigger, currentSource;
+    var overlay, form, submitBtn, lastTrigger, currentSource, currentType;
 
     function build() {
         var wrap = document.createElement('div');
@@ -99,7 +93,6 @@
         document.body.appendChild(overlay);
         form = overlay.querySelector('.dl-form');
         submitBtn = overlay.querySelector('.dl-submit');
-        typeField = overlay.querySelector('#dlTypeField');
 
         overlay.querySelector('.dl-close').addEventListener('click', close);
         overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) close(); });
@@ -134,17 +127,11 @@
         form.addEventListener('submit', submit);
     }
 
-    function selectedType() {
-        var r = form.querySelector('input[name="demo_type"]:checked');
-        return r ? r.value : '';
-    }
-
     function isValid() {
         var f = form.elements;
         var phone = f.phone.value.replace(/\D/g, '');
         var email = f.email.value.trim();
-        return !!selectedType() &&
-            f.name.value.trim().length > 0 &&
+        return f.name.value.trim().length > 0 &&
             /^01[016789]\d{7,8}$/.test(phone) &&
             f.building_name.value.trim().length > 0 &&
             (!email || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) &&
@@ -159,9 +146,7 @@
         if (!overlay) build();
         lastTrigger = trigger;
         currentSource = source || '';
-        form.querySelectorAll('input[name="demo_type"]').forEach(function (r) { r.checked = (r.value === type); });
-        // 버튼에서 유형이 정해져 있으면 유형 선택은 숨김
-        typeField.hidden = !!type;
+        currentType = (type === 'apt' || type === 'office') ? type : 'select';
         overlay.querySelector('#dlSubmitErr').hidden = true;
         validate();
         overlay.hidden = false;
@@ -179,7 +164,6 @@
         e.preventDefault();
         if (!isValid()) return;
         var f = form.elements;
-        var type = selectedType();
         var errEl = overlay.querySelector('#dlSubmitErr');
         errEl.hidden = true;
         submitBtn.disabled = true;
@@ -193,7 +177,7 @@
                 phone: f.phone.value.replace(/\D/g, ''),
                 email: f.email.value.trim() || null,
                 building_name: f.building_name.value.trim(),
-                demo_type: type,
+                demo_type: currentType,
                 privacy_agreed: f.privacy_agreed.checked,
                 marketing_agreed: f.marketing_agreed.checked,
                 device_type: getDeviceType(),
@@ -208,8 +192,8 @@
                     throw new Error(msg);
                 }
                 markDone();
-                if (typeof gaEvent === 'function') { try { gaEvent('demo_lead_submit', currentSource || type); } catch (x) {} }
-                window.location.href = DEMO_URLS[type];
+                if (typeof gaEvent === 'function') { try { gaEvent('demo_lead_submit', currentSource || currentType); } catch (x) {} }
+                window.location.href = START_URL;
             });
         }).catch(function (err) {
             errEl.textContent = err && err.message && err.message !== 'Failed to fetch'
@@ -224,15 +208,12 @@
         var el = e.target.closest('[data-demo-lead]');
         if (!el) return;
         var type = el.getAttribute('data-demo-lead') || '';
+        e.preventDefault();
         if (isDone()) {
-            // 이미 신청한 브라우저: 유형이 정해진 버튼은 바로 체험 화면으로, 아니면 원래 링크(유형 선택 페이지)로
-            if (type && DEMO_URLS[type]) {
-                e.preventDefault();
-                window.location.href = DEMO_URLS[type];
-            }
+            // 이미 신청한 브라우저: 팝업 없이 체험 시작 페이지로
+            window.location.href = START_URL;
             return;
         }
-        e.preventDefault();
         open(type, el.getAttribute('data-demo-source'), el);
     });
 
