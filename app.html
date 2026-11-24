@@ -149,10 +149,17 @@
                 </a>
             </div>
             <p class="ctql-note" id="chatTalkQuickLinkNote" style="display:none"></p>
-            <button type="button" class="chat-talk-quicklink-btn" id="chatTalkReserveBtn" style="display:none;border:none;cursor:pointer">
-                <span class="ctql-icon" aria-hidden="true">📝</span>
-                <span>관리실에 답변예약하기</span>
-            </button>
+            <div class="ctql-row">
+                <button type="button" class="chat-talk-quicklink-btn" id="chatTalkReserveBtn" style="display:none;border:none;cursor:pointer">
+                    <span class="ctql-icon" aria-hidden="true">📝</span>
+                    <span>관리실에 답변예약하기</span>
+                </button>
+                <!-- 답변 확인하기: 상단 "답변예약" 메뉴와 같은 목록 화면으로 이동 -->
+                <a href="#" id="complaintListBtn" class="chat-talk-quicklink-btn ctql-history-btn" style="display:none">
+                    <span class="ctql-icon" aria-hidden="true">📬</span>
+                    <span>답변 확인하기</span>
+                </a>
+            </div>
         </div>
     </main>
 
@@ -177,7 +184,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>if(typeof marked!=='undefined')marked.setOptions({breaks:true});</script>
     <script src="/js/api.js?v=9"></script>
-    <script src="/js/index.js?v=27"></script>
+    <script src="/js/index.js?v=28"></script>
     <script src="/js/visit.js?v=1"></script>
     <script src="/js/share.js?v=2"></script>
     <script>

@@ -170,6 +170,13 @@ function refreshReserveButton(companyId) {
 
     reserveBtn.style.display = '';
 
+    // 답변 확인하기 — 상단 "답변예약" 메뉴와 동일한 목록 화면으로 연결
+    var listBtn = document.getElementById('complaintListBtn');
+    if (listBtn) {
+        listBtn.href = '/complaint.html?company=' + companyId;
+        listBtn.style.display = '';
+    }
+
     if (companyId >= 1000) {
         reserveBtn.onclick = function () {
             alert(SAMPLE_COMPANY_FEATURE_ALERT);
