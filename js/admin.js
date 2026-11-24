@@ -4024,11 +4024,11 @@ function renderAdminFeeResult(d, container) {
 }
 
 /* ═══════════════════════════════════════════════
- *  관리비 조회 이력
+ *  관리비 인증 이력
  * ═══════════════════════════════════════════════ */
 const _FEE_ACTION_LABEL = {
     send_sms:    'SMS 발송',
-    verify:      'OTP 인증',
+    verify:      '인증번호 확인',
     fee_query:   '관리비 조회',
     admin_query: '관리자 조회',
 };
@@ -4126,7 +4126,7 @@ async function loadFeeAccessLog() {
 
 function renderFeeAccessLog(logs, container) {
     if (!logs.length) {
-        container.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">조회 이력이 없습니다.</div>';
+        container.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:8px 0">인증 이력이 없습니다.</div>';
         return;
     }
 
