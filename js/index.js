@@ -1031,12 +1031,73 @@ function showChat(companyData) {
             bubble.appendChild(buildOfficeContactActions(question));
         }
 
+        // 챗GPT처럼 답변 끝에 "이런 것도 알려드릴까요?" — RAG가 함께 찾은 등록 Q&A 질문 2개
+        // (등록된 질문만 추천하므로 눌렀을 때 항상 답변이 있음)
+        if (!isUnanswered) {
+            var related = buildRelatedQuestions(question, result.evidences || []);
+            if (related) bubble.insertBefore(related, answerDiv.nextSibling);
+        }
+
         bubble.appendChild(buildFeedbackButtons(question, result.answer, qaIds));
 
         msg.appendChild(avatar);
         msg.appendChild(bubble);
         chatMessages.appendChild(msg);
         scrollToBottom();
+    }
+
+    /* ── 관련 질문 추천 ("이런 것도 알려드릴까요?") ── */
+    function normalizeQuestionText(t) {
+        return String(t || '').toLowerCase().replace(/[\s?？!.,~·'"()\[\]]/g, '');
+    }
+
+    function pickRelatedQuestions(question, evidences, limit) {
+        if (!evidences || evidences.length < 2) return [];
+        var asked = normalizeQuestionText(question);
+        var usedAnswer = (evidences[0].answer || '').trim();
+        var seen = {};
+        seen[normalizeQuestionText(evidences[0].question)] = true;
+        var picked = [];
+        // evidences[0]은 답변에 사용된 Q&A이므로 제외하고, 관련도 순으로 고름
+        for (var i = 1; i < evidences.length && picked.length < limit; i++) {
+            var q = (evidences[i].question || '').trim();
+            var key = normalizeQuestionText(q);
+            if (!key || seen[key]) continue;
+            // 사용자가 물어본 질문과 사실상 같은 질문은 제외
+            if (key === asked || key.indexOf(asked) !== -1 || asked.indexOf(key) !== -1) continue;
+            // 방금 보여준 답변과 같은 답을 가진 Q&A도 제외
+            if ((evidences[i].answer || '').trim() === usedAnswer) continue;
+            seen[key] = true;
+            picked.push(q);
+        }
+        return picked;
+    }
+
+    function buildRelatedQuestions(question, evidences) {
+        var questions = pickRelatedQuestions(question, evidences, 2);
+        if (!questions.length) return null;
+
+        var wrap = document.createElement('div');
+        wrap.className = 'related-questions';
+
+        var heading = document.createElement('div');
+        heading.className = 'related-q-heading';
+        heading.textContent = '💡 이런 것도 알려드릴까요?';
+        wrap.appendChild(heading);
+
+        questions.forEach(function (q) {
+            var item = document.createElement('a');
+            item.href = '#';
+            item.className = 'related-q-item';
+            item.textContent = q;
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (chatInput.disabled) return;  // 이전 답변 대기 중이면 무시
+                sendMessage(q);
+            });
+            wrap.appendChild(item);
+        });
+        return wrap;
     }
 
     /* ── Build evidence collapse section ── */
