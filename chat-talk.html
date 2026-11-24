@@ -36,6 +36,19 @@
   .ct-msg-img-link.ct-msg-admin-img { align-self: flex-start; }
   .ct-msg-img { max-width: 100%; max-height: 260px; border-radius: 12px; border: 1px solid var(--gray-200); }
   .ct-msg-img-link + .ct-msg { margin-top: -0.35rem; }
+  /* 톡 대화 확인 (view=list) — 대화 목록 / 상세 */
+  .ct-back-btn { display: none; border: none; background: none; color: var(--primary); font-size: 0.85rem; font-weight: 600; padding: 0; margin-bottom: 0.5rem; cursor: pointer; }
+  .ct-list { display: none; flex: 1; overflow-y: auto; flex-direction: column; gap: 0.5rem; padding-bottom: 1rem; }
+  .ct-list-item { display: block; width: 100%; text-align: left; border: 1px solid var(--gray-200); border-radius: 12px; background: var(--white); padding: 0.75rem 0.875rem; cursor: pointer; font: inherit; color: inherit; }
+  .ct-list-item:hover { border-color: var(--primary); }
+  .ct-list-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+  .ct-list-status { font-size: 0.6875rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .ct-list-status.open { background: #E8F5E9; color: #2E7D32; }
+  .ct-list-status.closed { background: var(--gray-100); color: var(--gray-600); }
+  .ct-list-date { font-size: 0.75rem; color: var(--gray-500); margin-left: auto; }
+  .ct-list-unread { font-size: 0.6875rem; font-weight: 700; color: #fff; background: #E53935; border-radius: 999px; padding: 1px 7px; }
+  .ct-list-preview { font-size: 0.85rem; color: var(--gray-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ct-closed-note { display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 640px; box-sizing: border-box; padding: 0.875rem 1rem; background: var(--gray-100); border-top: 1px solid var(--gray-200); color: var(--gray-600); font-size: 0.85rem; text-align: center; z-index: 20; }
 </style>
 </head>
 <body>
@@ -66,7 +79,11 @@
     <p id="ctSubtitle">관리사무소 담당자와 1:1로 문의하실 수 있습니다.</p>
   </div>
 
+  <button type="button" class="ct-back-btn" id="ctBackBtn">← 대화 목록</button>
+
   <div class="ct-banner" id="ctBanner"></div>
+
+  <div class="ct-list" id="ctList"></div>
 
   <div class="ct-messages" id="ctMessages">
     <div class="ct-empty" id="ctEmpty">아직 대화 내역이 없습니다. 메시지를 보내 상담을 시작해 보세요.</div>
@@ -78,11 +95,12 @@
     <input type="text" class="ct-input" id="ctInput" placeholder="메시지를 입력하세요" maxlength="2000">
     <button type="button" class="ct-send-btn" id="ctSendBtn">전송</button>
   </div>
+  <div class="ct-closed-note" id="ctClosedNote">종결된 대화입니다. 새로운 문의는 "관리실에 톡으로 직접 문의하기"를 이용해 주세요.</div>
 </div>
 
 <script src="/js/market.js?v=3"></script>
 <script src="/js/complaint.js?v=4"></script>
 <script>initCpHeader();</script>
-<script src="/js/chat-talk.js?v=5"></script>
+<script src="/js/chat-talk.js?v=6"></script>
 </body>
 </html>

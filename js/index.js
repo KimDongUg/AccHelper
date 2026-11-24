@@ -104,6 +104,7 @@ function setupChatTalkQuickLink(companyId) {
 
     wrap.style.display = '';
     refreshReserveButton(companyId);
+    setupChatTalkHistoryButton(companyId);
 
     if (companyId >= 1000) {
         anchor.classList.remove('ctql-disabled');
@@ -137,6 +138,28 @@ function setupChatTalkQuickLink(companyId) {
             note.style.display = '';
         }
     });
+}
+
+/* 톡 대화 확인 버튼 — 업무시간과 무관하게 항상 활성. 인증 전이면 1:1 톡 인증을 거쳐 대화 목록으로 이동 */
+function setupChatTalkHistoryButton(companyId) {
+    var btn = document.getElementById('chatTalkHistoryBtn');
+    if (!btn) return;
+
+    if (companyId >= 1000) {
+        btn.href = '#';
+        btn.onclick = function (e) {
+            e.preventDefault();
+            alert(SAMPLE_COMPANY_FEATURE_ALERT);
+        };
+        return;
+    }
+
+    btn.onclick = function (e) {
+        e.preventDefault();
+        var listUrl = '/chat-talk.html?company=' + companyId + '&view=list';
+        var hasMarketToken = !!sessionStorage.getItem('market_token');
+        window.location.href = hasMarketToken ? listUrl : ('/chat-talk-login.html?return=' + encodeURIComponent(listUrl));
+    };
 }
 
 /* 답변예약 바로가기 버튼 — 언제나 노출. 직전에 물어본 질문이 있으면 제목/내용에 그대로 채워서 이동,

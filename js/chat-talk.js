@@ -45,6 +45,40 @@ var ctSendBtnEl = document.getElementById('ctSendBtn');
 var ctPhotoBtnEl = document.getElementById('ctPhotoBtn');
 var ctImageInputEl = document.getElementById('ctImageInput');
 var ctInputRowEl = document.querySelector('.ct-input-row');
+var ctListEl = document.getElementById('ctList');
+var ctBackBtnEl = document.getElementById('ctBackBtn');
+var ctClosedNoteEl = document.getElementById('ctClosedNote');
+
+// ── 톡 대화 확인 모드 (?view=list) ───────────────────────────────────────────
+// 목록(본인 대화 전체) → 항목 클릭 시 상세. 종결된 대화는 입력창 대신 안내 문구.
+var ctListMode = new URLSearchParams(location.search).get('view') === 'list';
+var ctSelectedThreadId = null;
+var ctSelectedStatus = null;
+var ctLastAvail = null;
+
+if (ctListMode) {
+  document.title = '톡 대화 확인 — AI Helper';
+  var ctTitleEl = document.querySelector('.ct-header h1');
+  if (ctTitleEl) ctTitleEl.textContent = '💬 톡 대화 확인';
+  var ctSubEl = document.getElementById('ctSubtitle');
+  if (ctSubEl) ctSubEl.textContent = '관리사무소와 나눈 1:1 톡 대화를 확인할 수 있습니다.';
+}
+
+function ctInputVisible() {
+  if (!ctListMode) return true;
+  return !!ctSelectedThreadId && ctSelectedStatus !== 'closed';
+}
+
+function ctUpdateLayout() {
+  var showList = ctListMode && !ctSelectedThreadId;
+  var closed = ctListMode && !!ctSelectedThreadId && ctSelectedStatus === 'closed';
+  ctListEl.style.display = showList ? 'flex' : 'none';
+  ctMessagesEl.style.display = showList ? 'none' : '';
+  ctBackBtnEl.style.display = (ctListMode && ctSelectedThreadId) ? 'inline-block' : 'none';
+  ctInputRowEl.style.display = ctInputVisible() ? '' : 'none';
+  ctClosedNoteEl.style.display = closed ? 'block' : 'none';
+  ctApplyAvailability();
+}
 
 // ── 카카오톡 인앱 브라우저 등에서 키보드가 입력창을 가리는 문제 방지 ──────────
 // 일부 웹뷰는 키보드가 올라와도 layout viewport를 안 줄여서 position:fixed 하단
@@ -137,9 +171,94 @@ function ctRenderMessages(messages) {
 }
 
 var ctLastRenderKey = '';
-async function ctLoadThread() {
+
+function ctEscape(str) {
+  var d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+function ctFormatDate(iso) {
   try {
-    var thread = await ctFetch('/thread');
+    var d = new Date(iso);
+    return d.toLocaleString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+
+async function ctLoadList() {
+  try {
+    var items = await ctFetch('/threads');
+    var key = 'list:' + JSON.stringify(items);
+    if (key === ctLastRenderKey) return;
+    ctLastRenderKey = key;
+    if (!items.length) {
+      ctListEl.innerHTML = '<div class="ct-empty">아직 관리실과 나눈 톡 대화가 없습니다.</div>';
+      return;
+    }
+    ctListEl.innerHTML = items.map(function (t) {
+      var isOpen = t.status !== 'closed';
+      return '<button type="button" class="ct-list-item" data-id="' + t.id + '" data-status="' + ctEscape(t.status) + '">' +
+        '<div class="ct-list-top">' +
+          '<span class="ct-list-status ' + (isOpen ? 'open' : 'closed') + '">' + (isOpen ? '진행중' : '종결') + '</span>' +
+          (t.unread_count ? '<span class="ct-list-unread">' + t.unread_count + '</span>' : '') +
+          '<span class="ct-list-date">' + ctEscape(ctFormatDate(t.last_message_at)) + '</span>' +
+        '</div>' +
+        '<div class="ct-list-preview">' + (ctEscape(t.last_message_preview) || '(내용 없음)') + '</div>' +
+      '</button>';
+    }).join('');
+  } catch (e) {
+    if (!ctListEl.innerHTML) ctListEl.innerHTML = '<div class="ct-empty">대화 목록을 불러오지 못했습니다.</div>';
+  }
+}
+
+ctListEl.addEventListener('click', function (e) {
+  var item = e.target.closest('.ct-list-item');
+  if (!item) return;
+  ctOpenThread(parseInt(item.getAttribute('data-id'), 10), item.getAttribute('data-status'), true);
+});
+
+function ctOpenThread(id, status, push) {
+  ctSelectedThreadId = id;
+  ctSelectedStatus = status;
+  ctLastRenderKey = '';
+  ctMessagesEl.innerHTML = '';
+  // 휴대폰 뒤로가기로 목록에 돌아올 수 있도록 히스토리 추가
+  if (push) history.pushState({ ctThread: id, ctStatus: status }, '');
+  ctUpdateLayout();
+  ctLoadThread();
+}
+
+function ctBackToList() {
+  ctSelectedThreadId = null;
+  ctSelectedStatus = null;
+  ctLastRenderKey = '';
+  ctUpdateLayout();
+  ctLoadThread();
+}
+
+ctBackBtnEl.addEventListener('click', function () {
+  if (history.state && history.state.ctThread) history.back();
+  else ctBackToList();
+});
+
+window.addEventListener('popstate', function (e) {
+  if (!ctListMode) return;
+  var st = e.state;
+  if (st && st.ctThread) ctOpenThread(st.ctThread, st.ctStatus, false);
+  else ctBackToList();
+});
+
+async function ctLoadThread() {
+  if (ctListMode && !ctSelectedThreadId) return ctLoadList();
+  var requestedId = ctSelectedThreadId;
+  try {
+    var thread = await ctFetch(requestedId ? '/threads/' + requestedId : '/thread');
+    if (requestedId !== ctSelectedThreadId) return;  // 응답 오기 전에 다른 화면으로 이동함
+    // 보고 있는 사이 관리자가 종결/재개하면 입력창 표시를 즉시 반영
+    if (requestedId && thread.status !== ctSelectedStatus) {
+      ctSelectedStatus = thread.status;
+      ctUpdateLayout();
+    }
     // 폴링마다 다시 그리면 사진이 깜빡이므로 내용(읽음 표시 포함)이 바뀐 경우에만 렌더링
     var key = JSON.stringify(thread.messages);
     if (key === ctLastRenderKey) return;
@@ -147,35 +266,36 @@ async function ctLoadThread() {
     ctRenderMessages(thread.messages);
   } catch (e) {
     if (e.status === 404) {
+      if (requestedId) { ctBackToList(); return; }
       ctRenderMessages([]);
     }
     // 그 외 오류는 폴링 중 조용히 무시 (다음 폴링에서 재시도)
   }
 }
 
+// 업무시간 여부에 따라 입력창 활성/비활성 + 안내 배너 (입력창이 안 보이는 목록/종결 화면에선 배너 숨김)
+function ctApplyAvailability() {
+  var avail = ctLastAvail;
+  ctAvailable = !!(avail && avail.available);
+  ctInputEl.disabled = !ctAvailable;
+  ctSendBtnEl.disabled = !ctAvailable;
+  ctPhotoBtnEl.disabled = !ctAvailable;
+  if (ctAvailable || !avail || !ctInputVisible()) {
+    ctBannerEl.style.display = 'none';
+  } else {
+    ctBannerEl.textContent = avail.message || '현재 상담 가능 시간이 아닙니다.';
+    ctBannerEl.style.display = '';
+  }
+}
+
 async function ctCheckAvailability() {
   try {
-    var avail = await ctFetch('/availability');
-    ctAvailable = !!avail.available;
-    if (ctAvailable) {
-      ctBannerEl.style.display = 'none';
-      ctInputEl.disabled = false;
-      ctSendBtnEl.disabled = false;
-      ctPhotoBtnEl.disabled = false;
-    } else {
-      ctBannerEl.textContent = avail.message || '현재 상담 가능 시간이 아닙니다.';
-      ctBannerEl.style.display = '';
-      ctInputEl.disabled = true;
-      ctSendBtnEl.disabled = true;
-      ctPhotoBtnEl.disabled = true;
-    }
+    ctLastAvail = await ctFetch('/availability');
   } catch (e) {
     // 가용성 조회 실패 시 안전하게 전송 비활성화
-    ctAvailable = false;
-    ctInputEl.disabled = true;
-    ctSendBtnEl.disabled = true;
-    ctPhotoBtnEl.disabled = true;
+    ctLastAvail = { available: false, message: '' };
   }
+  ctApplyAvailability();
 }
 
 async function ctSendMessage() {
@@ -278,6 +398,7 @@ document.addEventListener('visibilitychange', function () {
 });
 
 // ── 초기 로드 ──────────────────────────────────────────────────────────────────
+if (ctListMode) ctUpdateLayout();
 ctLoadThread();
 ctCheckAvailability();
 ctStartPolling();
