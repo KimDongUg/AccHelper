@@ -10,7 +10,7 @@
  * (키가 비어 있으면 카카오톡 아이콘은 표시되지 않음)
  */
 var SHARE_CONFIG = {
-    kakaoJsKey: ''
+    kakaoJsKey: '112324dbb4427809437436680fc7c2d3'
 };
 
 (function () {
